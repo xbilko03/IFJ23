@@ -6,7 +6,6 @@ if let a {
 if (a < 0) {
 write("Faktorial nelze spocitat\n")
 } else {
-11
 var a = Int2Double(a)
 var vysl : Double = 1
 while (a > 0) {
