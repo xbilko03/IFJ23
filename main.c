@@ -1,17 +1,11 @@
 #include <stdio.h>
+#include "functions.h"
 
 int main(int argc, char **argv)
 {
 	printf("\nBegin\n");
-	//Open File
-	char c;
-
-	while((c = getc(stdin)) != EOF)
-	{
-		putchar(c);
-	}
-
-
+	
+	PerformLex();
 
 	printf("\nEnd\n");
 	return 0;
