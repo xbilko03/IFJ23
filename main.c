@@ -6,14 +6,20 @@ int main(int argc, char **argv)
 {
 	printf("\nBegin\n");
 	
+	//Create Word List
 	wordListStr* wordList;
 	wordList = malloc(sizeof(wordListStr*));
 	wordList->first = malloc(sizeof(wordStr*));
 	wordList->last = malloc(sizeof(wordStr*));
+	
+	//Fill Word List and Check for Lex Rules
 	PerformLex(wordList);
 
-	while(wordList->first->next != NULL)
-	printf("testing: %s\n", wordList->first->content);
+	PerformSyntax();
+
+	PerformSemantics();
+
+	PerformCodeGen();
 
 	printf("\nEnd\n");
 	return 0;

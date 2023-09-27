@@ -238,13 +238,12 @@ void PositiveInteger(char word[MaxWordSize], int index, char c)
 }
 void SaveWordToList(char word[MaxWordSize], char* type)
 {
-	printf("saving [%s][%s]\n",word,type);
 	//Create new Word
 	wordStr* newWord;
 	newWord = malloc(sizeof(wordStr*));
 	newWord->content = malloc(sizeof(char) * (strlen(word) + 1));
 	newWord->type = malloc(sizeof(char) * (strlen(type) + 1));
-	NewWord->next = NULL;
+	newWord->next = NULL;
 	strcpy(newWord->content, word);
 	strcpy(newWord->type, type);
 
