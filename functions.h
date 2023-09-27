@@ -2,10 +2,18 @@
 #define FUNCTIONS_H
 
 //---functions.c---
-struct word;
-struct wordList;
+typedef struct wordStr wordStr;
+struct wordStr{
+	char* content;
+	char* type;
+	struct	wordStr* next;
+};
+typedef struct {
+	struct wordStr* first;
+	struct wordStr* last;
+} wordListStr;
 //------Lex.c------
-void PerformLex();
+void PerformLex(wordListStr* wrdList);
 //-----------------
 //------Syn.c------
 //-----------------

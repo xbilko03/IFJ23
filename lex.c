@@ -2,6 +2,7 @@
 #include "functions.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MaxWordSize 255
 
@@ -16,9 +17,13 @@ void StringOpen(char word[MaxWordSize], int index);
 void StringContent(char word[MaxWordSize], int index, char c);
 void String(char word[MaxWordSize], int index);
 void PositiveInteger(char word[MaxWordSize], int index, char c);
+void SaveWordToList(char word[MaxWordSize], char* type);
 
-void PerformLex()
+wordListStr* wordList;
+
+void PerformLex(wordListStr* wrdList)
 {
+	wordList = wrdList;
 	char inputWord[MaxWordSize];
 	int index;
 	char c;
@@ -116,7 +121,7 @@ void Identifier(char word[MaxWordSize], int index, char c)
 	
 	while((c = getc(stdin)))
 	{
-		if(isalpha(c) || c == '_')
+		if(isalpha(c) || c == '_' || isdigit(c))
 			word[index++] = c;
 		else if(c == EOF)
 			return;
@@ -136,7 +141,7 @@ void Identifier(char word[MaxWordSize], int index, char c)
 	|| strcmp(word, "return") == 0
 	|| strcmp(word, "var") == 0
 	|| strcmp(word, "while") == 0)
-		printf("keyword: %s\n",word);
+		SaveWordToList(word,"keyword");
 
 	else if(
 	   strcmp(word, "Double") == 0
@@ -145,10 +150,10 @@ void Identifier(char word[MaxWordSize], int index, char c)
 		IdentifierType(word, index);
 
 	else if(strcmp(word, "nil") == 0)
-		printf("nil: %s\n",word);
+		SaveWordToList(word,"nil");
 	
 	else
-		printf("identifier: %s\n",word);
+		SaveWordToList(word,"identifier");
 	
 	return;
 }
@@ -156,6 +161,7 @@ void Sign(char word[MaxWordSize], char c)
 {
 	word[0] = c;
 	word[1] = '\0';
+	SaveWordToList(word,"sign");
 	return;
 }
 void StringOpen(char word[MaxWordSize], int index)
@@ -194,7 +200,7 @@ void StringContent(char word[MaxWordSize], int index, char c)
 void String(char word[MaxWordSize], int index)
 {
 	word[index] = '\0';
-	printf("string: %s\n",word);
+	SaveWordToList(word,"string");
 }
 void IdentifierType(char word[MaxWordSize], int index)
 {
@@ -206,7 +212,7 @@ void IdentifierType(char word[MaxWordSize], int index)
 	}
 	else
 		ungetc(c, stdin);
-	printf("identifier (type) = %s\n",word);
+	SaveWordToList(word,"identifier(type)");
 	return;
 }
 void PositiveInteger(char word[MaxWordSize], int index, char c)
@@ -226,7 +232,32 @@ void PositiveInteger(char word[MaxWordSize], int index, char c)
 			break;
 		}
 	}
-	printf("integer: %s\n",word);
+	SaveWordToList(word,"integer");
 
 	return;
+}
+void SaveWordToList(char word[MaxWordSize], char* type)
+{
+	printf("saving [%s][%s]\n",word,type);
+	//Create new Word
+	wordStr* newWord;
+	newWord = malloc(sizeof(wordStr*));
+	newWord->content = malloc(sizeof(char) * (strlen(word) + 1));
+	newWord->type = malloc(sizeof(char) * (strlen(type) + 1));
+	NewWord->next = NULL;
+	strcpy(newWord->content, word);
+	strcpy(newWord->type, type);
+
+
+	//Save to List
+	if(wordList->first->content == NULL)
+	{
+		wordList->first = newWord;
+		wordList->last = newWord;
+	}
+	else
+	{
+		wordList->last->next = newWord;
+		wordList->last = newWord;
+	}
 }
