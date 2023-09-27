@@ -21,6 +21,18 @@ int main(int argc, char **argv)
 
 	PerformCodeGen();
 
+	DeleteWordList(wordList);
+	
+	printf("%ld\n", HashFunction("buchac"));
+	printf("%ld\n", HashFunction("gg"));
+	printf("%ld\n", HashFunction("esim"));
+	printf("%ld\n", HashFunction("76"));
+	printf("%ld\n", HashFunction("76"));
+	printf("%ld\n", HashFunction("76"));
+	printf("%ld\n", HashFunction("esim"));
+	printf("%ld\n", HashFunction("gg"));
+	printf("%ld\n", HashFunction("gg"));
+
 	printf("\nEnd\n");
 	return 0;
 }
