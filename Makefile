@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS= -Wall
-DEPS = main.c lex.c sem.c TRP.c codegen.c functions.h functions.c error.c
+DEPS = main.c lex.c syn.c sem.c TRP.c codegen.c functions.h functions.c error.c
 PROGNAME = GIGACHAD
 
 $(PROGNAME): $(DEPS)
