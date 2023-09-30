@@ -18,13 +18,15 @@ void StringContent(char word[MaxWordSize], int index, char c);
 void String(char word[MaxWordSize], int index);
 void PositiveInteger(char word[MaxWordSize], int index, char c);
 void SaveWordToList(char word[MaxWordSize], char* type);
+int EscapeSequence(char word[MaxWordSize], int *index);
+int HexEscape(char word[MaxWordSize], int *index);
 
 wordListStr* wordList;
 
 void PerformLex(wordListStr* wrdList)
 {
 	wordList = wrdList;
-	char inputWord[MaxWordSize];
+	char inputWord[MaxWordSize] = "";
 	int index;
 	char c;
 
@@ -183,7 +185,8 @@ void StringOpen(char word[MaxWordSize], int index)
 void StringContent(char word[MaxWordSize], int index, char c)
 {
 	word[index++] = c;
-	while((c = getc(stdin)))
+	int esacapeReturn = 0;
+	while(esacapeReturn == 0 && (c = getc(stdin)))
 	{
 		if(c == EOF)
 			ExitProgram(1,"lex.c: string not terminated\n");
@@ -192,10 +195,67 @@ void StringContent(char word[MaxWordSize], int index, char c)
 			String(word, index);
 			return;
 		}
+		else if(c == 92)
+		{
+			esacapeReturn = EscapeSequence(word, &index);
+		}
 		else
 			word[index++] = c;
 	}
 	return;
+}
+int EscapeSequence(char word[MaxWordSize], int *index)
+{
+	char c = getc(stdin);
+	if(c == 'n')
+	{
+		word[*index] = '\n';
+		*index = *index + 1;
+	}
+	else if(c == 't')
+	{
+		word[*index] = '\t';
+		*index = *index + 1;
+	}
+	else if(c == '"')
+	{
+		word[*index] = '"';
+		*index = *index + 1;
+	}
+	else if(c == '\\')
+	{
+		word[*index] = '\\';
+		*index = *index + 1;
+	}
+	else if(c == ' ' || c == '\t' || c == '\n' || c == '\r')
+	{
+		word[*index] = '\\';
+		*index = *index + 1;
+	}
+	else if(c == 'u')
+	{
+		int value = HexEscape(word, index);
+		if(value == -1)
+			return 0;
+		else if(value == -2)
+		{
+			String(word, *index);
+			return -1;
+		}
+		else if(value == -3)
+		{
+			EscapeSequence(word, index);
+			return 0;
+		}
+		else
+		{
+			word[*index] = value;
+			*index = *index + 1;
+		}
+			
+
+	}
+	return 0;
 }
 void String(char word[MaxWordSize], int index)
 {
@@ -236,6 +296,82 @@ void PositiveInteger(char word[MaxWordSize], int index, char c)
 
 	return;
 }
+int HexEscape(char word[MaxWordSize], int *index)
+{
+	char buffer[MaxWordSize] = "\\u";
+	int bufferIndex = 3;
+	char hex[MaxWordSize]= "";
+	int hexIndex = 0;
+	char c = getc(stdin);
+	if (c == '{')
+	{
+		strcat(buffer, "{");
+		while((c = getc(stdin)))
+		{
+			//check if hex number
+			if(c >= 48 && c <= 57 || c >= 65 && c <= 70 || c >= 97 && c <= 102)
+			{
+				buffer[bufferIndex++] = c;
+				hex[hexIndex++] = c;
+			}
+			//check for white space
+			else if(c == '\t' || c == '\n' || c == '\r' || c == ' ')
+			{
+				buffer[bufferIndex++] = c;
+				strcat(word, buffer);
+				*index = strlen(word);
+				return -1;
+			}
+			else if(c == '}')
+			{
+				int len = strlen(hex);
+				// NOTE: Unsure if this should throw error or just save as string
+				if (len == 0 || len > 8)
+				{
+					buffer[bufferIndex++] = c;
+					strcat(word, buffer);
+					*index = strlen(word);
+					return -1;
+				}
+				return (int)strtol(hex, NULL, 16);
+			}
+			else if(c == '"')
+			{
+				buffer[bufferIndex++] = c;
+				strcat(word, buffer);
+				*index = strlen(word);
+				return -2;
+			}
+			else if(c == '\\')
+			{
+				strcat(word, buffer);
+				*index = strlen(word);
+				return -3;
+			}
+			else 
+			{
+				buffer[bufferIndex++] = c;
+				strcat(word, buffer);
+				*index = strlen(word);
+				return -1;
+			}
+		}
+	}
+	else if(c == '"')
+	{
+		strcat(word, buffer);
+		*index = strlen(word);
+		return -2;
+	}
+	else
+	{
+		buffer[bufferIndex++] = c;
+		strcat(word, buffer);
+		*index = strlen(word);
+		return -1;
+	}
+}
+
 void SaveWordToList(char word[MaxWordSize], char* type)
 {
 	//Create new Word
