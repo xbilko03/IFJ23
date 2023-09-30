@@ -8,9 +8,9 @@ int main(int argc, char **argv)
 	
 	//Create Word List
 	wordListStr* wordList;
-	wordList = malloc(sizeof(wordListStr*));
-	wordList->first = malloc(sizeof(wordStr*));
-	wordList->last = malloc(sizeof(wordStr*));
+	wordList = malloc(sizeof(wordListStr));
+	wordList->first = NULL;
+	wordList->last = NULL;
 	
 	//Fill Word List and Check for Lex Rules
 	PerformLex(wordList);

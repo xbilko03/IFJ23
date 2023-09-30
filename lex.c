@@ -240,7 +240,7 @@ void SaveWordToList(char word[MaxWordSize], char* type)
 {
 	//Create new Word
 	wordStr* newWord;
-	newWord = malloc(sizeof(wordStr*));
+	newWord = malloc(sizeof(wordStr));
 	newWord->content = malloc(sizeof(char) * (strlen(word) + 1));
 	newWord->type = malloc(sizeof(char) * (strlen(type) + 1));
 	newWord->next = NULL;
@@ -249,7 +249,7 @@ void SaveWordToList(char word[MaxWordSize], char* type)
 
 
 	//Save to List
-	if(wordList->first->content == NULL)
+	if(wordList->first == NULL)
 	{
 		wordList->first = newWord;
 		wordList->last = newWord;

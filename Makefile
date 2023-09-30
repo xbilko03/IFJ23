@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -Wall
+CFLAGS= -Wall 
 DEPS = main.c lex.c syn.c sem.c TRP.c codegen.c functions.h functions.c error.c
 PROGNAME = GIGACHAD
 
@@ -13,5 +13,9 @@ run: $(DEPS)
 run2: $(DEPS)
 	$(CC) $(DEPS) $(CFLAGS) -o $(PROGNAME)
 	./$(PROGNAME) <tests/example2.txt
+
+debug: $(DEPS)
+	 $(CC) $(DEPS) $(CFLAGS) -g -o $(PROGNAME)
+
 clean:
 	rm $(PROGNAME)
