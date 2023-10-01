@@ -23,6 +23,7 @@ void HexEscape(char word[MaxWordSize], int *index);
 
 wordListStr* wordList;
 
+//TODO: operators out of multiple chars as one token
 void PerformLex(wordListStr* wrdList)
 {
 	wordList = wrdList;
@@ -51,7 +52,8 @@ void PerformLex(wordListStr* wrdList)
 				c == '<' ||
 				c == '>' ||
 				c == ',' ||
-				c == '!')
+				c == '!' ||
+				c == '?')
 			Sign(inputWord, c);
 		else if(c == '"')
 			StringOpen(inputWord, index);
@@ -145,7 +147,7 @@ void Identifier(char word[MaxWordSize], int index, char c)
 	|| strcmp(word, "while") == 0)
 		SaveWordToList(word,"keyword");
 
-	else if(
+	else if( 
 	   strcmp(word, "Double") == 0
 	|| strcmp(word, "Int") == 0
 	|| strcmp(word, "String") == 0)
@@ -162,7 +164,45 @@ void Identifier(char word[MaxWordSize], int index, char c)
 void Sign(char word[MaxWordSize], char c)
 {
 	word[0] = c;
-	word[1] = '\0';
+	if (c == '<' || c == '>' || c == '=' || c == '!') {
+		char c2 = getc(stdin);
+		if (c2 == '=')
+		{
+			word[1] = c2;
+			word[2] = '\0';
+			char c2 = getc(stdin);
+			if (c2 != ' ')
+			{
+				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
+			}
+			ungetc(c2, stdin);
+		}
+		else if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r')
+		{
+			ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
+		}
+	}
+	else if (c == '?')
+	{
+		char c2 = getc(stdin);
+		if (c2 == '?')
+		{
+			word[1] = c2;
+			word[2] = '\0';
+			char c2 = getc(stdin);
+			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r')
+			{
+				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
+			}
+			ungetc(c2, stdin);
+		}
+		else
+		{
+			ExitProgram(1, "lex.c: invalid operator\n");
+		}
+	}
+	else
+		word[1] = '\0';
 	SaveWordToList(word,"sign");
 	return;
 }
@@ -273,7 +313,6 @@ void PositiveInteger(char word[MaxWordSize], int index, char c)
 		}
 	}
 	SaveWordToList(word,"integer");
-
 	return;
 }
 void HexEscape(char word[MaxWordSize], int *index)
@@ -285,7 +324,7 @@ void HexEscape(char word[MaxWordSize], int *index)
 	{
 		while((c = getc(stdin)))
 		{
-			//check if hex number
+			//Check if c is a valid hex character
 			if( (c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102) )
 			{
 				hex[hexIndex++] = c;
