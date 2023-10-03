@@ -173,33 +173,38 @@ void Identifier(char word[MaxWordSize], int index, char c)
 void Sign(char word[MaxWordSize], char c)
 {
 	word[0] = c;
-	if (c == '<' || c == '>' || c == '=' || c == '!') {
+	if (c == '<' || c == '>' || c == '=') {
 		char c2 = getc(stdin);
 		if (c2 == '=')
 		{
 			word[1] = c2;
 			word[2] = '\0';
-			char c2 = getc(stdin);
-			if (c2 != ' ')
+			c2 = getc(stdin);
+			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
 			{
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c2, stdin);
 		}
-		else if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r')
+		else if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 		}
+		else
+		{
+			word[1] = '\0';
+			ungetc(c2, stdin);
+		}
 	}
-	else if (c == '?')
+	else if (c == '!')
 	{
 		char c2 = getc(stdin);
-		if (c2 == '?')
+		if (c2 == '=')
 		{
 			word[1] = c2;
 			word[2] = '\0';
-			char c2 = getc(stdin);
-			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r')
+			c2 = getc(stdin);
+			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
 			{
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
@@ -209,6 +214,46 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
+	}
+	else if (c == '?')
+	{
+		char c = getc(stdin);
+		if (c == '?')
+		{
+			word[1] = c;
+			word[2] = '\0';
+			char c = getc(stdin);
+			if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+			{
+				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
+			}
+			ungetc(c, stdin);
+		}
+		else
+		{
+			ExitProgram(1, "lex.c: invalid operator\n");
+		}
+	}
+	else if (c == '-')
+	{
+		char c = getc(stdin);
+		if (c == '>')
+		{
+			word[1] = c;
+			word[2] = '\0';
+			char c = getc(stdin);
+			if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+			{
+				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
+			}
+			ungetc(c, stdin);
+		}
+		else if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+		{
+			ExitProgram(1, "lex.c: invalid operator\n");
+		}
+		else
+			word[1] = '\0';
 	}
 	else
 		word[1] = '\0';
