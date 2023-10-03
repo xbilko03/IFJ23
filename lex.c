@@ -20,6 +20,7 @@ void PositiveInteger(char word[MaxWordSize], int index, char c);
 void SaveWordToList(char word[MaxWordSize], char* type);
 void EscapeSequence(char word[MaxWordSize], int *index);
 void HexEscape(char word[MaxWordSize], int *index);
+void NewLine();
 
 wordListStr* wordList;
 
@@ -59,6 +60,8 @@ void PerformLex(wordListStr* wrdList)
 			StringOpen(inputWord, index);
 		else if(isdigit(c))
 			PositiveInteger(inputWord, index, c);
+		else if(c == '\n')
+			NewLine();
 		else if(c == EOF)
 			return;
 		else if(isspace(c)) {}
@@ -68,6 +71,12 @@ void PerformLex(wordListStr* wrdList)
 			ExitProgram(1, "lex.c: unknown character\n");
 		}
 	}
+	return;
+}
+void NewLine()
+{
+	char newline[MaxWordSize] = "newline";
+	SaveWordToList(newline,"newline");
 	return;
 }
 void CommentStart()
