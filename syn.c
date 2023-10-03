@@ -7,7 +7,7 @@ void PerformSyntax(wordListStr* wrdList)
 	
 	while(currentWord != NULL)
 	{
-		printf("%s\n",currentWord->content);
+		printf("%s  -  %s\n",currentWord->content, currentWord->type);
 		currentWord = currentWord->next;
 	}
 	return;

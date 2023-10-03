@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 
 #define MaxWordSize 255
 
@@ -16,7 +18,7 @@ void Sign(char word[MaxWordSize], char c);
 void StringOpen(char word[MaxWordSize], int index);
 void StringContent(char word[MaxWordSize], int index, char c);
 void String(char word[MaxWordSize], int index);
-void PositiveInteger(char word[MaxWordSize], int index, char c);
+void Integer(char word[MaxWordSize], int index, char c);
 void SaveWordToList(char word[MaxWordSize], char* type);
 void EscapeSequence(char word[MaxWordSize], int *index);
 void HexEscape(char word[MaxWordSize], int *index);
@@ -59,7 +61,7 @@ void PerformLex(wordListStr* wrdList)
 		else if(c == '"')
 			StringOpen(inputWord, index);
 		else if(isdigit(c))
-			PositiveInteger(inputWord, index, c);
+			Integer(inputWord, index, c);
 		else if(c == '\n')
 			NewLine();
 		else if(c == EOF)
@@ -173,7 +175,7 @@ void Identifier(char word[MaxWordSize], int index, char c)
 void Sign(char word[MaxWordSize], char c)
 {
 	word[0] = c;
-	if (c == '<' || c == '>' || c == '=') {
+	if (c == '<' || c == '>' || c == '=' || c == '!') {
 		char c2 = getc(stdin);
 		if (c2 == '=')
 		{
@@ -194,25 +196,6 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			word[1] = '\0';
 			ungetc(c2, stdin);
-		}
-	}
-	else if (c == '!')
-	{
-		char c2 = getc(stdin);
-		if (c2 == '=')
-		{
-			word[1] = c2;
-			word[2] = '\0';
-			c2 = getc(stdin);
-			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
-			{
-				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-			}
-			ungetc(c2, stdin);
-		}
-		else
-		{
-			ExitProgram(1, "lex.c: invalid operator\n");
 		}
 	}
 	else if (c == '?')
@@ -247,6 +230,12 @@ void Sign(char word[MaxWordSize], char c)
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c, stdin);
+		}
+		else if(c >= 48 && c <= 57)
+		{
+			word[0] = '-';
+			Integer(word, 1, c);
+			return;
 		}
 		else if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
 		{
@@ -349,7 +338,7 @@ void IdentifierType(char word[MaxWordSize], int index)
 	SaveWordToList(word,"identifier(type)");
 	return;
 }
-void PositiveInteger(char word[MaxWordSize], int index, char c)
+void Integer(char word[MaxWordSize], int index, char c)
 {
 	word[index++] = c;
 	while((c = getc(stdin)))
@@ -362,10 +351,19 @@ void PositiveInteger(char word[MaxWordSize], int index, char c)
 		}
 		else
 		{
+			if(isalpha(c))
+			{
+				ExitProgram(1,"lex.c: invalid identificator. Identificator can't start with a number\n");
+			}
 			ungetc(c, stdin);
 			break;
 		}
 	}
+	word[index++] = '\0';
+	long int i = strtol(word, NULL, 10);
+	if (((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE ) || i < -2147483648 || i > 2147483647)
+		ExitProgram(1,"lex.c: integer is too big or too small\n");
+	printf("%d\n", atoi(word));
 	SaveWordToList(word,"integer");
 	return;
 }
