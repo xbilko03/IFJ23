@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdbool.h>
 
 #define MaxWordSize 255
 
@@ -23,6 +24,7 @@ void SaveWordToList(char word[MaxWordSize], char* type);
 void EscapeSequence(char word[MaxWordSize], int *index);
 void HexEscape(char word[MaxWordSize], int *index);
 void NewLine();
+void Cdouble(char word[MaxWordSize], int index, int state);
 
 wordListStr* wordList;
 
@@ -138,8 +140,6 @@ void Identifier(char word[MaxWordSize], int index, char c)
 	{
 		if(isalpha(c) || c == '_' || isdigit(c))
 			word[index++] = c;
-		else if(c == EOF)
-			return;
 		else
 		{
 			ungetc(c, stdin);
@@ -182,13 +182,13 @@ void Sign(char word[MaxWordSize], char c)
 			word[1] = c2;
 			word[2] = '\0';
 			c2 = getc(stdin);
-			if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
+			if (!isspace(c2) && c2 != EOF)
 			{
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c2, stdin);
 		}
-		else if (c2 != ' ' && c2 != '\n' && c2 != '\t' && c2 != '\r' && c2 != EOF)
+		else if (!isspace(c2) && c2 != EOF)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 		}
@@ -206,7 +206,7 @@ void Sign(char word[MaxWordSize], char c)
 			word[1] = c;
 			word[2] = '\0';
 			char c = getc(stdin);
-			if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+			if (!isspace(c) && c != EOF)
 			{
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
@@ -225,19 +225,13 @@ void Sign(char word[MaxWordSize], char c)
 			word[1] = c;
 			word[2] = '\0';
 			char c = getc(stdin);
-			if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+			if (!isspace(c) && c != EOF)
 			{
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c, stdin);
 		}
-		else if(c >= 48 && c <= 57)
-		{
-			word[0] = '-';
-			Integer(word, 1, c);
-			return;
-		}
-		else if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != EOF)
+		else if (!isspace(c) && c != EOF)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
@@ -349,6 +343,18 @@ void Integer(char word[MaxWordSize], int index, char c)
 		{
 			word[index++] = c;
 		}
+		else if (c == '.')
+		{
+			word[index++] = c;
+			Cdouble(word, index, 1);
+			return;
+		}
+		else if (c == 'e' || c == 'E')
+		{
+			word[index++] = c;
+			Cdouble(word, index, 2);
+			return;
+		}
 		else
 		{
 			if(isalpha(c))
@@ -361,11 +367,84 @@ void Integer(char word[MaxWordSize], int index, char c)
 	}
 	word[index++] = '\0';
 	long int i = strtol(word, NULL, 10);
-	if (((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE ) || i < -2147483648 || i > 2147483647)
+	if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
 		ExitProgram(1,"lex.c: integer is too big or too small\n");
 	printf("%d\n", atoi(word));
 	SaveWordToList(word,"integer");
 	return;
+}
+void Cdouble(char word[MaxWordSize], int index, int state)
+{
+	char c;
+	char prev;
+	bool isDouble = true;
+	while(isDouble && (c = getc(stdin)))
+	{
+		switch (state)
+		{
+			//State 1: After the dot
+			case 1:
+				if(isalpha(c) && c != 'e' && c != 'E')
+					ExitProgram(1,"lex.c: invalid double\n");
+				else if(c == 'e' || c == 'E')
+				{
+					if (!isdigit(prev))
+						ExitProgram(1,"lex.c: invalid double\n");
+					state = 2;
+					word[index++] = c;
+				}
+				else if(isdigit(c))
+				{
+					word[index++] = c;
+				}
+				else
+				{
+					if (!isdigit(prev))
+						ExitProgram(1,"lex.c: invalid double\n");
+					ungetc(c, stdin);
+					isDouble = false;
+				}
+				break;
+			//State 2: After the e or E
+			case 2:
+				if(isalpha(c))
+				{
+					ExitProgram(1,"lex.c: invalid double\n");
+				}
+				else if(isdigit(c) || c == '+' || c == '-')
+				{
+					state = 3;
+					word[index++] = c;
+				}
+				else
+				{
+					ExitProgram(1,"lex.c: invalid double\n");
+				}
+				break;
+			//State 3: After the e or E and the sign
+			case 3:
+				if(isalpha(c))
+				{
+					ExitProgram(1,"lex.c: invalid double\n");
+				}
+				else if(isdigit(c))
+				{
+					state = 3;
+					word[index++] = c;
+				}
+				else
+				{
+					if (!isdigit(prev))
+						ExitProgram(1,"lex.c: invalid double\n");
+					ungetc(c, stdin);
+					isDouble = false;
+				}
+				break;
+		}
+		prev = c;
+	}
+	word[index++] = '\0';
+	SaveWordToList(word,"float");
 }
 void HexEscape(char word[MaxWordSize], int *index)
 {
@@ -377,7 +456,7 @@ void HexEscape(char word[MaxWordSize], int *index)
 		while((c = getc(stdin)))
 		{
 			//Check if c is a valid hex character
-			if( (c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102) )
+			if( isdigit(c) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102) )
 			{
 				hex[hexIndex++] = c;
 			}
