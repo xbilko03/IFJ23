@@ -20,6 +20,15 @@ typedef struct{
 void PerformLex(wordListStr* wrdList);
 //-----------------
 //------Syn.c------
+typedef struct {
+	wordStr** tokenList;
+	unsigned tokenCount;
+} command;
+typedef struct {
+	command** variableList;
+	command** functionsList;
+	command** body;
+} program;
 void PerformSyntax();
 //-----------------
 //------Sem.c------
