@@ -1,58 +1,47 @@
 #include <stdio.h>
 #include "functions.h"
+#include <stdlib.h>
+#include <string.h>
 
 #define maxCommandTokenCount 255
 
-command* CreateCommand(wordStr* Words[maxCommandTokenCount], unsigned tokenCount, char* type);
+node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList)
 {
-	wordStr* currentWord = wrdList->first;
+	wordStr* cToken = wrdList->first;
+	//node* programRoot;
+	node* cNode;
 
-	wordStr* tokenList[maxCommandTokenCount] = {NULL};
-	unsigned i = 0;
 
-	while (currentWord != NULL)
+	while (cToken != NULL)
 	{
-		/*
-		* program
-		*	command** variableList
-		*	command** functionsList
-		*	command** body
-		* function
-		*	command** params
-		*	command** body
-		* if
-		*	command** condition
-		*	command** body
-		* else
-		*	command** body
-		*/
+		cNode = CreateNode(cToken->content, "testType");
+		printf("Node = %s of type %s\n", cNode->content, cNode->type);
 
-		tokenList[i] = currentWord; //Let Tokens form a command
-		
-		if (i >= 10) //Command creation condition is just temporary, just to test smth
-		{
-			CreateCommand(tokenList, i, "commandType"); //Save command
-			i = 0;
-		}
-		
-		i++;
-		currentWord = currentWord->next;
+
+
+
+		//-------------------//
+		cToken = cToken->next;
 	}
 
 	return;
 }
 
-command* CreateCommand(wordStr* Words[maxCommandTokenCount], unsigned tokenCount, char* type)
+node* CreateNode(char* content, char* type)
 {
-	unsigned i;
-	printf("command = ");
-	for (i = 0; i < tokenCount; i++)
-	{
-		printf("%s", Words[i]->content);
-	}
-	printf("\n");
-	return NULL;
-}
+	node* newNode = malloc(sizeof(node));
+	newNode->type = malloc(sizeof(char) * (strlen(type) + 1));
+	newNode->content = malloc(sizeof(char) * (strlen(content) + 1));
+	strcpy(newNode->type, type);
+	strcpy(newNode->content, content);
+	newNode->right = NULL;
+	newNode->left = NULL;
 
+	return newNode;
+}
+void BindNode(node* parent, char* direction)
+{
+
+}

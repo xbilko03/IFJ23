@@ -21,14 +21,11 @@ void PerformLex(wordListStr* wrdList);
 //-----------------
 //------Syn.c------
 typedef struct {
-	wordStr** tokenList;
-	unsigned tokenCount;
-} command;
-typedef struct {
-	command** variableList;
-	command** functionsList;
-	command** body;
-} program;
+	char* type;
+	char* content;
+	struct node* left;
+	struct node* right;
+} node;
 void PerformSyntax();
 //-----------------
 //------Sem.c------
