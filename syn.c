@@ -41,7 +41,14 @@ node* CreateNode(char* content, char* type)
 
 	return newNode;
 }
-void BindNode(node* parent, char* direction)
+void BindNode(node* parent, node* child, char* direction)
 {
-
+	if (strcmp(direction, "left") == 0)
+	{
+		parent->left = child;
+	}
+	else if (strcmp(direction, "right") == 0)
+	{
+		parent->right = child;
+	}
 }

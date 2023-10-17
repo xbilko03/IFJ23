@@ -13,19 +13,25 @@ typedef struct {
 	struct wordStr* first;
 	struct wordStr* last;
 } wordListStr;
+typedef struct TRPitem TRPitem;
+struct TRPitem {
+	char* content;
+	TRPitem* next;
+};
 typedef struct{
-	struct wordStr* items[hashTableSize];
+	TRPitem* items[hashTableSize];
 }TRP;
 //------Lex.c------
 void PerformLex(wordListStr* wrdList);
 //-----------------
 //------Syn.c------
-typedef struct {
+typedef struct node node;
+struct node {
 	char* type;
 	char* content;
-	struct node* left;
-	struct node* right;
-} node;
+	node* left;
+	node* right;
+};
 void PerformSyntax();
 //-----------------
 //------Sem.c------
