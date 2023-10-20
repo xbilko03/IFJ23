@@ -5,7 +5,7 @@
 
 #define maxCommandTokenCount 255
 
-node* CreateNode(char* content, char* type);
+node* CreateNode(char* content, char* type);//test
 
 void PerformSyntax(wordListStr* wrdList) {
 	wordStr* currentWord = wrdList->first; //GET HEADER
