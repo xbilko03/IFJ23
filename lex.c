@@ -369,7 +369,7 @@ void Integer(char word[MaxWordSize], int index, char c)
 	long int i = strtol(word, NULL, 10);
 	if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
 		ExitProgram(1,"lex.c: integer is too big or too small\n");
-	printf("%d\n", atoi(word));
+	//printf("%d\n", atoi(word));
 	SaveWordToList(word,"integer");
 	return;
 }
