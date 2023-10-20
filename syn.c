@@ -5,7 +5,7 @@
 
 #define maxCommandTokenCount 255
 
-node* CreateNode(char* content, char* type);//test
+node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList) {
 	wordStr* currentWord = wrdList->first; //GET HEADER
@@ -71,7 +71,7 @@ void PerformSyntax(wordListStr* wrdList) {
 			
 
 			//<types>
-			if((result = types(currentWord->type))) return result;
+			if((result = types(currentWord))) return result;
 
 			//<prog_con> continuing recursively
 			return prog_con(currentWord);
@@ -92,7 +92,7 @@ void PerformSyntax(wordListStr* wrdList) {
 				else ExitProgram(2, "Missing identifier in variable definition");
 
 				//<option>
-				if((result = option(currentWord->type))) return result;
+				if((result = option(currentWord))) return result;
 
 				//<prog_con> continuing recursively
 				return prog_con(currentWord);
@@ -121,7 +121,7 @@ void PerformSyntax(wordListStr* wrdList) {
 					}
 					else ExitProgram(2, "Missing ( in write function calling");
 					//<write_params>
-					if((result = write_params(currentWord->type))) return result;
+					if((result = write_params(currentWord))) return result;
 					//)
 					if (strcmp(currentWord->content, ")") == 0) {
 						currentWord = currentWord->next;
@@ -135,7 +135,7 @@ void PerformSyntax(wordListStr* wrdList) {
 				*/
 				else{
 					//<builtin>
-					if((result = builtin(currentWord->type))) return result;
+					if((result = builtin(currentWord))) return result;
 					//OK
 					return 0;
 				}
@@ -151,13 +151,176 @@ void PerformSyntax(wordListStr* wrdList) {
 				if (strcmp(currentWord->type, "identifier") == 0) {
 					currentWord = currentWord->next;
 				}
+				//<opt>
+				if((result = opt(currentWord))) return result;
 
+				//OK
+				return 0;
 			}
 			
 
 		}
+
+		//########################################
+		/*
+		5. <prog_con> -> if <expression> {<statement>} else {<statement>} <prog_con>
+		*/
+		// if
+		if (strcmp(currentWord->content, "if") == 0) {
+			currentWord = currentWord->next;
+
+			// (
+			if (strcmp(currentWord->content, "(") == 0) {
+				currentWord = currentWord->next;
+			}
+			// <expression>
+			if((result = expression(currentWord))) return result;
+			// )
+			if (strcmp(currentWord->content, ")") == 0) {
+				currentWord = currentWord->next;
+			}
+			// {
+			if (strcmp(currentWord->content, "{") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing { in if before statement");
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+
+			//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
+			if((result = prog_con(currentWord))) return result;
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+
+			// }
+			if (strcmp(currentWord->content, "}") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing } in if after statement");
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+
+			// else
+			if (strcmp(currentWord->content, "else") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing keyword else in if section");
+
+			// {
+			if (strcmp(currentWord->content, "{") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing { in if before else statement");
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+
+			//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
+			if((result = prog_con(currentWord))) return result;
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+
+			// }
+			if (strcmp(currentWord->content, "}") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing } in if after statement");
+
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing newline after if statement to border new command");
+			//<prog_con>
+			return prog_con(currentWord);
+
+
+
+		}
+
+		//########################################
+		/*
+		6. <prog_con> -> while <expression> {<statement>} <prog_con>
+		*/
+		//while
+		if (strcmp(currentWord->content, "while") == 0) {
+			// (
+			if (strcmp(currentWord->content, "(") == 0) {
+				currentWord = currentWord->next;
+			}
+			// <expression>
+			if((result = expression(currentWord))) return result;
+			// )
+			if (strcmp(currentWord->content, ")") == 0) {
+				currentWord = currentWord->next;
+			}
+			//{				
+			if (strcmp(currentWord->content, "{") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing { before while statement to border new command");
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+			//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
+			if((result = prog_con(currentWord))) return result;
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+			//}				
+			if (strcmp(currentWord->content, "}") == 0) {
+				currentWord = currentWord->next;
+			}
+			else ExitProgram(2, "Missing } after while statement to border new command");
+			//if newline is there OVERWRITE
+			if (strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+			}
+			
+			//<prog_con>
+			return prog_con(currentWord);
+		}
+
+		else {
+			printf("Whether END OF FILE or FUCK UP");
+			return 0;
+		}
 		
-		
+		return 0;
+	}
+
+	int opt(wordStr* currentWord) {
+		int result;
+		printf("###################IN_BUILTIN#####################");
+		//########################################
+		/*
+		*52. <opt> -> <expression> EOL
+		*/
+		//<expression>
+		if((result = expression(currentWord))) return result;
+
+		// EOL
+		if (strcmp(currentWord->type, "newline") == 0) {
+			currentWord = currentWord->next;
+		}
+
+		//OK
 		return 0;
 	}
 
@@ -597,7 +760,7 @@ void PerformSyntax(wordListStr* wrdList) {
 		if((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->type, "int") == 0) || (strcmp(currentWord->type, "float") == 0) || (strcmp(currentWord->type, "string") == 0)) {
 			currentWord = currentWord->next;
 			//<write_params_more>
-			if((result = write_params_more(currentWord->type))) return result;
+			if((result = write_params_more(currentWord))) return result;
 			//OK
 			return 0;
 		}
@@ -658,16 +821,24 @@ void PerformSyntax(wordListStr* wrdList) {
 		22. <option> -> : <type_spec> <assigns>
 		*/
 		//:
-		if (strcmp(currentWord->content, ":")) {
+		if(strcmp(currentWord->content, ":") == 0) {
 			currentWord = currentWord->next;
 
 			//<type_spec>
 			if((result = type_spec(currentWord))) return result;
 
-			//<assigns> -> =
+			//<assigns>
+			//24. <assigns> -> =
 			//=
-			if (strcmp(currentWord->content, "=")) {
+			if(strcmp(currentWord->content, "=") == 0) {
 				currentWord = currentWord->next;
+			}
+			//25. <assigns> -> eps EOL
+			//EOL
+			else if(strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+				//OK
+				return 0;
 			}
 			else ExitProgram(2, "Missing = in variable definition");
 
@@ -727,6 +898,73 @@ void PerformSyntax(wordListStr* wrdList) {
 
 
 		}
+		/*
+		23. <option> -> <assign>
+		*/
+		else if(strcmp(currentWord->content, "=") == 0) {
+			currentWord = currentWord->next;
+			//<assign> -> = <expression>
+			//<assign> -> = <builtin>
+			//<assign> -> = ID <preopt>
+			//=
+
+			//whether <builtin> OR ID<opt> OR <expression>
+
+			//<builtin> readString || readInt || readDouble || Int2Double || Double2Int || length || substring || ord || chr
+			if((strcmp(currentWord->content, "readString") == 0) || (strcmp(currentWord->content, "readInt") == 0) || (strcmp(currentWord->content, "readDouble") == 0) || (strcmp(currentWord->content, "Int2Double") == 0) || (strcmp(currentWord->content, "Double2Int") == 0) || (strcmp(currentWord->content, "length") == 0) || (strcmp(currentWord->content, "substring") == 0) || (strcmp(currentWord->content, "ord") == 0) || (strcmp(currentWord->content, "chr") == 0)) {
+				//currentWord = currentWord->next;
+
+				//into <builtin>
+				if((result = builtin(currentWord))) return result;
+
+				//OK
+				return 0;
+			}	
+			//ID
+			else if(strcmp(currentWord->type, "identifier") == 0) {
+				currentWord = currentWord->next;
+				/*
+				46. <preopt> -> (<params>)
+				*/
+				//(
+				if(strcmp(currentWord->content, "(") == 0) {
+					currentWord = currentWord->next;
+
+					//<params>
+					if((result = params(currentWord))) return result;
+					//)
+					if (strcmp(currentWord->content, ")")) {
+						currentWord = currentWord->next;
+					}
+					else ExitProgram(2, "Missing ) in variable definition near called function params");
+					//OK
+					return 0;
+				}
+				//ID in the beginning of expression <expression>
+				//<sign>
+				else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
+					currentWord = currentWord->next;
+
+					//<term>
+					if((result = term(currentWord))) return result;
+
+					//<expression_more>
+					if((result = expression_more(currentWord))) return result;
+
+					//OK
+					return 0;
+				}
+				/*
+				47. <preopt> -> eps EOL
+				*/
+				//EOL
+				else if(strcmp(currentWord->type, "newline") == 0) {
+					currentWord = currentWord->next;
+				}
+				else ExitProgram(2, "Missing ID or function or builtin func after = in option");
+			}
+		}
+		else return 0; // if there is just let a || var a OVERWRITE
 
 	}
 
@@ -740,12 +978,24 @@ void PerformSyntax(wordListStr* wrdList) {
 		/*
 		81. <expression> -> <term> <sign> <term> <expression_more>
 		*/
+		if((strcmp(currentWord->content, "let") == 0) || (strcmp(currentWord->content, "var") == 0)) {
+			currentWord = currentWord->next;
+		}
+
 		//<term>
 		if((result = term(currentWord))) return result;
+
+		//can be EOL
+		if(strcmp(currentWord->type, "newline") == 0) {	//OVERWRITE
+			currentWord = currentWord->next;
+			return 0;
+		}
+
 		//<sign>
 		if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
 			currentWord = currentWord->next;
 		}
+		else ExitProgram("Missing sign in expression");
 		//<term>
 		if((result = term(currentWord))) return result;
 
@@ -833,6 +1083,7 @@ void PerformSyntax(wordListStr* wrdList) {
 
 		//printf("%s\n",currentWord->content);
 		//currentWord = currentWord->next;
+		prog(currentWord); //START OF SYNTAX
 	
 	return;
 }
