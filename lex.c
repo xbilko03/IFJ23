@@ -187,6 +187,7 @@ void Sign(char word[MaxWordSize], char c)
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c2, stdin);
+			SaveWordToList(word,"compare");
 		}
 		else if (!isspace(c2) && c2 != EOF)
 		{
@@ -196,6 +197,7 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			word[1] = '\0';
 			ungetc(c2, stdin);
+			SaveWordToList(word,"sign");
 		}
 	}
 	else if (c == '?')
@@ -216,6 +218,7 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
+		SaveWordToList(word,"sign");
 	}
 	else if (c == '-')
 	{
@@ -236,11 +239,36 @@ void Sign(char word[MaxWordSize], char c)
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
 		else
+		{
 			word[1] = '\0';
+			SaveWordToList(word,"opeator");
+		}
+			
 	}
 	else
+	{
 		word[1] = '\0';
-	SaveWordToList(word,"sign");
+		if(c == '+' || c == '*' || c == '/')
+			SaveWordToList(word,"operator");
+		else if(c == '=')
+			SaveWordToList(word,"assign");
+		else if(c == '{')
+			SaveWordToList(word,"openBlock");
+		else if(c == '}')
+			SaveWordToList(word,"closeBlock");
+		else if(c == '(')
+			SaveWordToList(word,"openBracket");
+		else if(c == ')')
+			SaveWordToList(word,"closeBracket");
+		else if(c == ',')
+			SaveWordToList(word,"comma");
+		else if(c == ':')
+			SaveWordToList(word,"colon");
+		else if(c == '?')
+			SaveWordToList(word,"questionMark");
+		else if(c == '!')
+			SaveWordToList(word,"exclamationMark");
+	}
 	return;
 }
 void StringOpen(char word[MaxWordSize], int index)
