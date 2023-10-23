@@ -7,15 +7,15 @@
 #define maxCommandTokenCount 255
 
 //In use
-void printTree(node* root, int level);
+void printTree(node* root, unsigned level);
 void BindNode(node* parent, node* child, char* direction);
-node* CreateNode(char* content, char* type);
+node* CreateNode(char* content, char* type, unsigned* level);
 wordStr* SkipNewlines(wordStr* currentWord);
-wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode);
-wordStr* args(wordStr* currentWord, int* level, node** currentNode);
-wordStr* func(wordStr* currentWord, char* id, char* direction, int* level, node** currentNode);
-wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, int* level, node** currentNode);
-wordStr* option(wordStr* currentWord, int* level);
+wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode);
+wordStr* args(wordStr* currentWord, unsigned* level, node** currentNode);
+wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode);
+wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, unsigned* level, node** currentNode);
+wordStr* option(wordStr* currentWord, unsigned* level);
 
 //unsued
 int prog(wordStr* currentWord);
@@ -31,11 +31,11 @@ void PerformSyntax(wordListStr* wrdList) {
 	
 	wordStr* currentWord = wrdList->first;
 	
-	int level = 1;
+	unsigned level = 1;
 
 	currentWord = SkipNewlines(currentWord);
 
-	node* program = CreateNode("root", "program");
+	node* program = CreateNode("root", "program", &level);
 	node* currentNode = program;
 
 	currentWord = SkipNewlines(currentWord);
@@ -48,7 +48,7 @@ void PerformSyntax(wordListStr* wrdList) {
 	return;
 }
 
-void printTree(node* root, int level)
+void printTree(node* root, unsigned level)
 {
 	node* currentNode = root;
 
@@ -67,13 +67,16 @@ void printTree(node* root, int level)
 
 //GRAMMAR
 
-wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
+wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 {
 	if (currentWord == NULL)
 		return NULL;
 
 	if(strcmp(currentWord->type,"newline") == 0)
 		currentWord = SkipNewlines(currentWord);
+
+
+	
 	
 	//<prog_con> id
 	if (strcmp(currentWord->type, "identifier") == 0)
@@ -89,16 +92,15 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 
 			//<prog_con> func_id(<args>) <prog_con>
 			currentWord = prog_con(currentWord, level, currentNode);
-			printf("level= %d \n", *level);
 			return currentWord;
 		}
 		//<prog_con> id =
 		else if (strcmp(currentWord->content, "=") == 0) 
 		{
-			node* newNode = CreateNode(id, "identifier");
+			node* newNode = CreateNode(id, "identifier", level);
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
-			(*level)++;
+			 
 
 			currentWord = currentWord->next;
 			currentWord = SkipNewlines(currentWord);
@@ -114,7 +116,6 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 					currentWord = expression(currentWord, lastWord, direction, level, currentNode);
 
 					//<prog_con> id = <expression> <prog_con>
-					*currentNode = (*currentNode)->parent;
 					currentWord = prog_con(currentWord, level, currentNode);
 					return currentWord;
 				}
@@ -128,10 +129,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 		//<prog_con> else
 		if (strcmp(currentWord->content, "else") == 0)
 		{
-			node* newNode = CreateNode(currentWord->content, "branching");
+			node* newNode = CreateNode(currentWord->content, "branching", level);
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
-			(*level)++;
+			 
 
 			currentWord = currentWord->next;
 			currentWord = SkipNewlines(currentWord);
@@ -147,10 +148,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 			//<prog_con> let id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
-				node* newNode = CreateNode(currentWord->content, "constant declaration");
+				node* newNode = CreateNode(currentWord->content, "constant declaration", level);
 				BindNode(*currentNode, newNode, "right");
 				*currentNode = newNode;
-				(*level)++;
+				 
 
 				currentWord = currentWord->next;
 				currentWord = SkipNewlines(currentWord);
@@ -163,7 +164,7 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 					//<prog_con> let id <option> <typeIdentifier>
 					if (strcmp(currentWord->type, "identifier(type)") == 0)
 					{
-						node* newNode = CreateNode(currentWord->content, "constant declaration");
+						node* newNode = CreateNode(currentWord->content, "constant declaration", level);
 						BindNode(*currentNode, newNode, "left");
 						*currentNode = newNode;
 
@@ -216,19 +217,20 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 				//<prog_con> var id <option>
 				if (strcmp(currentWord->content, ":") == 0)
 				{
-					node* newNode = CreateNode(id, "variable declaration");
+					node* newNode = CreateNode(id, "variable declaration", level);
 					BindNode(*currentNode, newNode, "right");
 					*currentNode = newNode;
-					(*level)++;
+					 
 
 					currentWord = option(currentWord, level);
 
 					//<prog_con> var id <option> <typeIdentifier>
 					if (strcmp(currentWord->type, "identifier(type)") == 0)
 					{
-						node* newNode = CreateNode(currentWord->content, "constant declaration");
+						node* newNode = CreateNode(currentWord->content, "constant declaration", level);
 						BindNode(*currentNode, newNode, "left");
 						*currentNode = newNode;
+						*currentNode = (*currentNode)->parent;
 
 						currentWord = currentWord->next;
 						currentWord = SkipNewlines(currentWord);
@@ -250,9 +252,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 								{
 									currentWord = func(currentWord, id, "right", level, currentNode);
 
+									*currentNode = (*currentNode)->parent;
+									printf("parent=%s\n", (*currentNode)->content);
+
 									//<prog_con> var id <option> <typeIdentifier> = id(<args>) <prog_con>
-									*currentNode = (*currentNode)->parent;
-									*currentNode = (*currentNode)->parent;
 									currentWord = prog_con(currentWord, level, currentNode);
 									return currentWord;
 								}
@@ -260,7 +263,7 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 							//<prog_con> var id <option> <typeIdentifier> = <integer>
 							else if (strcmp(currentWord->type, "integer") == 0)
 							{
-								node* newNode = CreateNode(currentWord->content, "integer");
+								node* newNode = CreateNode(currentWord->content, "integer", level);
 								BindNode(*currentNode, newNode, "left");
 								*currentNode = newNode;
 
@@ -268,6 +271,9 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 								currentWord = SkipNewlines(currentWord);
 
 								*currentNode = (*currentNode)->parent;
+								*currentNode = (*currentNode)->parent;
+								printf("parent=%s\n", (*currentNode)->content);
+
 								currentWord = prog_con(currentWord, level, currentNode);
 								return currentWord;
 							}
@@ -279,10 +285,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 				//<prog_con> var id =
 				else if (strcmp(currentWord->content, "=") == 0)
 				{
-					node* newNode = CreateNode(id, "variable declaration");
+					node* newNode = CreateNode(id, "variable declaration", level);
 					BindNode(*currentNode, newNode, "right");
 					*currentNode = newNode;
-					(*level)++;
+					 
 
 					currentWord = currentWord->next;
 					currentWord = SkipNewlines(currentWord);
@@ -296,9 +302,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 						if (strcmp(currentWord->content, "(") == 0)
 						{
 							currentWord = func(currentWord, id, "left", level, currentNode);
-							//<prog_con> var id <option> = id <prog_con>
 
 							*currentNode = (*currentNode)->parent;
+							//<prog_con> var id <option> = id <prog_con>
+
 							currentWord = prog_con(currentWord, level, currentNode);
 							return currentWord;
 						}
@@ -310,10 +317,10 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 		//<prog_con> while
 		else if (strcmp(currentWord->content, "while") == 0) 
 		{
-			node* newNode = CreateNode(currentWord->content, "loop");
+			node* newNode = CreateNode(currentWord->content, "loop", level);
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
-			(*level)++;
+			 
 			currentWord = currentWord->next;
 			currentWord = SkipNewlines(currentWord);
 
@@ -341,7 +348,6 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 							currentWord = SkipNewlines(currentWord);
 
 							//<prog_con> while (<expression>) <prog_con>
-							*currentNode = (*currentNode)->parent;
 							currentWord = prog_con(currentWord, level, currentNode);
 							return currentWord;
 						}
@@ -352,7 +358,7 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 		//<prog_con> if
 		else if(strcmp(currentWord->content, "if") == 0)
 		{
-			node* newNode = CreateNode(currentWord->content, "branching");
+			node* newNode = CreateNode(currentWord->content, "branching", level);
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
 
@@ -367,15 +373,14 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 				//<prog_con> if let id
 				if (strcmp(currentWord->type, "identifier") == 0)
 				{
-					node* newNode = CreateNode(currentWord->content, "constant declaration");
+					node* newNode = CreateNode(currentWord->content, "constant declaration", level);
 					BindNode(*currentNode, newNode, "left");
 					*currentNode = newNode;
-
+					
 					currentWord = currentWord->next;
 					currentWord = SkipNewlines(currentWord);
 
 					//<prog_con> if let id <prog_con>
-					*currentNode = (*currentNode)->parent;
 					currentWord = prog_con(currentWord, level, currentNode);
 					return currentWord;
 				}
@@ -404,7 +409,6 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 							currentWord = SkipNewlines(currentWord);
 							currentWord = currentWord->next;
 
-							*currentNode = (*currentNode)->parent;
 							currentWord = prog_con(currentWord, level, currentNode);
 							return currentWord;
 						}
@@ -419,6 +423,9 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 		currentWord = currentWord->next;
 		currentWord = SkipNewlines(currentWord);
 
+		(*level)++;
+		printf("levelup\n");
+
 		//<prog_con> { <prog_con>
 		currentWord = prog_con(currentWord, level, currentNode);
 		return currentWord;
@@ -428,7 +435,16 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 		currentWord = currentWord->next;
 		currentWord = SkipNewlines(currentWord);
 		//<prog_con> { <prog_con>
-		*currentNode = (*currentNode)->parent;
+
+		unsigned targetLevel = *(*currentNode)->level;
+		unsigned clevel;
+		do
+		{
+			clevel = *(*currentNode)->level;
+			*currentNode = (*currentNode)->parent;
+		} while (clevel >= targetLevel);
+		(*level)--;
+		
 		currentWord = prog_con(currentWord, level, currentNode);
 
 		return currentWord;
@@ -436,13 +452,12 @@ wordStr* prog_con(wordStr* currentWord, int* level, node** currentNode)
 
 	return currentWord; //return to prog_con
 }
-wordStr* func(wordStr* currentWord, char* id, char* direction, int* level, node** currentNode)
+wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode)
 {
-	node* newNode = CreateNode(id, "function");
+	node* newNode = CreateNode(id, "function", level);
 	BindNode(*currentNode, newNode, direction);
 	*currentNode = newNode;
-	if(strcmp(direction,"right") == 0)
-		(*level)++;
+		 
 
 	currentWord = currentWord->next;
 	
@@ -460,27 +475,27 @@ wordStr* func(wordStr* currentWord, char* id, char* direction, int* level, node*
 		return NULL; //Should return error instead
 
 }	
-wordStr* args(wordStr* currentWord, int* level, node** currentNode) {
+wordStr* args(wordStr* currentWord, unsigned* level, node** currentNode) {
 	
 	node* newNode;
 
 	if (strcmp(currentWord->type, "string") == 0) //is OK
 	{
-		newNode = CreateNode(currentWord->content, "string");
+		newNode = CreateNode(currentWord->content, "string", level);
 		BindNode(*currentNode, newNode, "left");
 		*currentNode = newNode;
 		currentWord = currentWord->next;
 	}
 	else if (strcmp(currentWord->type, "identifier") == 0) //is OK
 	{
-		newNode = CreateNode(currentWord->content, "identifier");
+		newNode = CreateNode(currentWord->content, "identifier", level);
 		BindNode(*currentNode, newNode, "left");
 		*currentNode = newNode;
 		currentWord = currentWord->next;
 	}
 	else if (strcmp(currentWord->type, "integer") == 0) //is OK
 	{
-		newNode = CreateNode(currentWord->content, "integer");
+		newNode = CreateNode(currentWord->content, "integer", level);
 		BindNode(*currentNode, newNode, "left");
 		*currentNode = newNode;
 		currentWord = currentWord->next;
@@ -500,26 +515,25 @@ wordStr* args(wordStr* currentWord, int* level, node** currentNode) {
 	{
 		newNode = newNode->parent;
 		*currentNode = newNode;
-		(*level)--;
 	}
 
 	return currentWord;
 }
-wordStr* option(wordStr* currentWord, int* level) {
+wordStr* option(wordStr* currentWord, unsigned* level) {
 	currentWord = currentWord->next;
 	currentWord = SkipNewlines(currentWord);
 
 	return currentWord;
 }
-wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, int* level, node** currentNode)
+wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, unsigned* level, node** currentNode)
 {
-	node* newNode = CreateNode(currentWord->content, "expression");
+	node* newNode = CreateNode(currentWord->content, "expression", level);
 	BindNode(*currentNode, newNode, direction);
 	*currentNode = newNode;
-	if(strcmp(direction,"right") == 0)
-		(*level)++;
+	
+		 
 
-	newNode = CreateNode(lastWord->content, "expression");
+	newNode = CreateNode(lastWord->content, "expression", level);
 	BindNode(*currentNode, newNode, "left");
 	*currentNode = newNode;
 
@@ -527,38 +541,40 @@ wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, in
 	currentWord = SkipNewlines(currentWord);
 	if (strcmp(currentWord->type, "integer") == 0)
 	{
-		node* newNode = CreateNode(currentWord->content, "integer");
+		node* newNode = CreateNode(currentWord->content, "integer", level);
 		BindNode(*currentNode, newNode, "right");
-
-		*currentNode = (*currentNode)->parent;
 
 		currentWord = currentWord->next;
 		currentWord = SkipNewlines(currentWord);
 	}
 	else if (strcmp(currentWord->type, "identifier") == 0)
 	{
-		node* newNode = CreateNode(currentWord->content, "identifier");
+		node* newNode = CreateNode(currentWord->content, "identifier", level);
 		BindNode(*currentNode, newNode, "right");
-
-		*currentNode = (*currentNode)->parent;
 
 		currentWord = currentWord->next;
 		currentWord = SkipNewlines(currentWord);
 	}
+	*currentNode = (*currentNode)->parent;
 	return currentWord;
 }
 
 //NODES//
 
-node* CreateNode(char* content, char* type)
+node* CreateNode(char* content, char* type, unsigned* level)
 {
 	node* newNode = malloc(sizeof(node));
 	newNode->type = malloc(sizeof(char) * (strlen(type) + 1));
 	newNode->content = malloc(sizeof(char) * (strlen(content) + 1));
+	newNode->level = malloc(sizeof(unsigned));
+	memcpy(newNode->level, level, sizeof(unsigned));
+	
 	strcpy(newNode->type, type);
 	strcpy(newNode->content, content);
 	newNode->right = NULL;
 	newNode->left = NULL;
+
+	printf("lvl=%d\n", *newNode->level);
 
 	return newNode;
 }

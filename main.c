@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("\nBegin\n-----------\n");
+	//printf("\nBegin\n-----------\n");
 	
 	//Create Word List
 	wordListStr* wordList;
@@ -23,6 +23,6 @@ int main(int argc, char **argv)
 
 	DeleteWordList(wordList);
 
-	printf("\n-----------\nEnd\n");
+	//printf("\n-----------\nEnd\n");
 	return 0;
 }

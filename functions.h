@@ -29,8 +29,10 @@ typedef struct node node;
 struct node {
 	char* type;
 	char* content;
+	node* parent;
 	node* left;
 	node* right;
+	unsigned* level;
 };
 void PerformSyntax();
 //-----------------
