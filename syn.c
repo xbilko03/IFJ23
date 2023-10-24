@@ -230,7 +230,6 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						node* newNode = CreateNode(currentWord->content, "constant declaration", level);
 						BindNode(*currentNode, newNode, "left");
 						*currentNode = newNode;
-						*currentNode = (*currentNode)->parent;
 
 						currentWord = currentWord->next;
 						currentWord = SkipNewlines(currentWord);
