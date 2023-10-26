@@ -5,28 +5,29 @@
 
 #define maxCommandTokenCount 255
 
-int prog(wordStr* currentWord);
-int prog_con(wordStr* currentWord);
-int opt(wordStr* currentWord);
-int builtin(wordStr* currentWord);
-int arg(wordStr* currentWord);
-int args_more(wordStr* currentWord);
-int types(wordStr* currentWord);
-int params(wordStr* currentWord);
-int params_more(wordStr* currentWord);
-int type_spec(wordStr* currentWord);
-int write_params(wordStr* currentWord);
-int write_params_more(wordStr* currentWord);
-int option(wordStr* currentWord);
-int expression(wordStr* currentWord);
-int expression_more(wordStr* currentWord);
-int term(wordStr* currentWord);
+wordStr* prog(wordStr* currentWord);
+wordStr* prog_con(wordStr* currentWord);
+wordStr* opt(wordStr* currentWord);
+wordStr* builtin(wordStr* currentWord);
+wordStr* arg(wordStr* currentWord);
+wordStr* args_more(wordStr* currentWord);
+wordStr* types(wordStr* currentWord);
+wordStr* params(wordStr* currentWord);
+wordStr* params_more(wordStr* currentWord);
+wordStr* type_spec(wordStr* currentWord);
+wordStr* write_params(wordStr* currentWord);
+wordStr* write_params_more(wordStr* currentWord);
+wordStr* option(wordStr* currentWord);
+wordStr* expression(wordStr* currentWord);
+wordStr* expression_more(wordStr* currentWord);
+wordStr* term(wordStr* currentWord);
 
 
-node* CreateNode(char* content, char* type);
+//node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList) {
 	wordStr* currentWord = wrdList->first; //GET HEADER
+	printf("%s\n", currentWord->content);
 	//node* cNode;
 	//cNode = CreateNode(cToken->content, "testType");
 	//printf("Node = %s of type %s\n", cNode->content, cNode->type);
@@ -48,7 +49,7 @@ void PerformSyntax(wordListStr* wrdList) {
 
 		//printf("%s\n",currentWord->content);
 		//currentWord = currentWord->next;
-		prog(currentWord); //START OF SYNTAX
+		currentWord = prog(currentWord); //START OF SYNTAX
 	
 	return;
 }
@@ -59,25 +60,24 @@ void PerformSyntax(wordListStr* wrdList) {
 	/*
 	1. <prog> -> HEADER <prog_con>
 	*/
-int prog(wordStr* currentWord) {
-	int result;
+wordStr* prog(wordStr* currentWord) {
 	printf("IN PROG\n");
 	//HEADER
 	if((strcmp(currentWord->type, "identifier") == 0) && (strcmp(currentWord->content, ".IFJcode23") == 0)) {
 		printf("<prog> -> HEADER <prog_con>\n");
 		currentWord = currentWord->next;
 		//<prog_con>
-		if ((result = prog_con(currentWord))) return result;
+		currentWord = prog_con(currentWord);
+		//if ((result = prog_con(currentWord))) return result;
 		
 	}
 	else ExitProgram(2, "Missing Header");
-	
+	//DELETE currentWord = prog_con(currentWord);
 
-	return 0;
+	return currentWord;
 }
 
-int prog_con(wordStr* currentWord) {
-	int result;
+wordStr* prog_con(wordStr* currentWord) {
 	printf("IN PROG_CON\n");
 
 	//########################################
@@ -103,7 +103,7 @@ int prog_con(wordStr* currentWord) {
 		else ExitProgram(2, "Missing ( in function definition");
 
 		//<arg>
-		if((result = arg(currentWord))) return result;
+		currentWord = arg(currentWord); 
 		//after ARG
 
 		//)
@@ -114,7 +114,8 @@ int prog_con(wordStr* currentWord) {
 		
 
 		//<types>
-		if((result = types(currentWord))) return result;
+		currentWord = types(currentWord);
+		//if((result = types(currentWord))) return result;
 
 		//<prog_con> continuing recursively
 		return prog_con(currentWord);
@@ -135,7 +136,8 @@ int prog_con(wordStr* currentWord) {
 			else ExitProgram(2, "Missing identifier in variable definition");
 
 			//<option>
-			if((result = option(currentWord))) return result;
+			currentWord = option(currentWord);
+			//if((result = option(currentWord))) return result;
 
 			//<prog_con> continuing recursively
 			return prog_con(currentWord);
@@ -146,7 +148,6 @@ int prog_con(wordStr* currentWord) {
 	4. <prog_con> -> <id_type> <prog_con>
 	*/
 	if ((strcmp(currentWord->content, "write") == 0) || (strcmp(currentWord->content, "readString") == 0) || (strcmp(currentWord->content, "readInt") == 0) || (strcmp(currentWord->content, "readDouble") == 0) || (strcmp(currentWord->content, "Int2Double") == 0) || (strcmp(currentWord->content, "Double2Int") == 0) || (strcmp(currentWord->content, "length") == 0) || (strcmp(currentWord->content, "substring") == 0) || (strcmp(currentWord->content, "ord") == 0) || (strcmp(currentWord->content, "chr") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-		
 		/*
 		29. <id_type> -> <builtin_extra> //Including write
 		*/
@@ -164,23 +165,28 @@ int prog_con(wordStr* currentWord) {
 				}
 				else ExitProgram(2, "Missing ( in write function calling");
 				//<write_params>
-				if((result = write_params(currentWord))) return result;
+				printf("%s", currentWord->content);
+				currentWord = write_params(currentWord);
+				//if((result = write_params(currentWord))) return result;
+				printf("aktualny token po vykone funkcie write:%s\n", currentWord->content);
+				
 				//)
 				if (strcmp(currentWord->content, ")") == 0) {
 					currentWord = currentWord->next;
 				}
 				else ExitProgram(2, "Missing ) in write function calling");
 				//OK
-				return 0;
+				return currentWord;
 			}
 			/*
 			32. <builtin_extra> -> <builtin>
 			*/
 			else{
 				//<builtin>
-				if((result = builtin(currentWord))) return result;
+				currentWord = builtin(currentWord);
+				//if((result = builtin(currentWord))) return result;
 				//OK
-				return 0;
+				return currentWord;
 			}
 
 
@@ -195,10 +201,11 @@ int prog_con(wordStr* currentWord) {
 				currentWord = currentWord->next;
 			}
 			//<opt>
-			if((result = opt(currentWord))) return result;
+			currentWord = opt(currentWord);
+			//if((result = opt(currentWord))) return result;
 
 			//OK
-			return 0;
+			return currentWord;
 		}
 		
 
@@ -217,7 +224,8 @@ int prog_con(wordStr* currentWord) {
 			currentWord = currentWord->next;
 		}
 		// <expression>
-		if((result = expression(currentWord))) return result;
+		currentWord = expression(currentWord);
+		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
 			currentWord = currentWord->next;
@@ -228,18 +236,19 @@ int prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing { in if before statement");
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 
 		//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
-		if((result = prog_con(currentWord))) return result;
+		currentWord = prog_con(currentWord); //OVERWRITE to STATEMENT
+		//if((result = prog_con(currentWord))) return result;
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
@@ -247,10 +256,10 @@ int prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing } in if after statement");
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 
 		// else
 		if (strcmp(currentWord->content, "else") == 0) {
@@ -264,18 +273,19 @@ int prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing { in if before else statement");
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 
 		//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
-		if((result = prog_con(currentWord))) return result;
+		currentWord = prog_con(currentWord); // OVERWRITE for STATEMENT
+		//if((result = prog_con(currentWord))) return result;
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
@@ -283,11 +293,11 @@ int prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing } in if after statement");
 
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
 		}
-		else ExitProgram(2, "Missing newline after if statement to border new command");
+		else ExitProgram(2, "Missing newline after if statement to border new command");*/
 		//<prog_con>
 		return prog_con(currentWord);
 
@@ -306,7 +316,8 @@ int prog_con(wordStr* currentWord) {
 			currentWord = currentWord->next;
 		}
 		// <expression>
-		if((result = expression(currentWord))) return result;
+		currentWord = expression(currentWord);
+		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
 			currentWord = currentWord->next;
@@ -316,25 +327,26 @@ int prog_con(wordStr* currentWord) {
 			currentWord = currentWord->next;
 		}
 		else ExitProgram(2, "Missing { before while statement to border new command");
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 		//<statement> FOR TESTING just PROG_CON instead of statement OVERWRITE
-		if((result = prog_con(currentWord))) return result;
-		//if newline is there OVERWRITE
+		currentWord = prog_con(currentWord); // OVERWRITE to STATEMENT
+		//if((result = prog_con(currentWord))) return result;
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 		//}				
 		if (strcmp(currentWord->content, "}") == 0) {
 			currentWord = currentWord->next;
 		}
 		else ExitProgram(2, "Missing } after while statement to border new command");
-		//if newline is there OVERWRITE
+		/*if newline is there OVERWRITE
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
-		}
+		}*/
 		
 		//<prog_con>
 		return prog_con(currentWord);
@@ -342,36 +354,129 @@ int prog_con(wordStr* currentWord) {
 
 	else {
 		printf("Whether END OF FILE or FUCK UP");
-		return 0;
+		return currentWord;
 	}
 	
-	return 0;
+	return currentWord;
 }
 
-int opt(wordStr* currentWord) {
-	int result;
-	printf("###################IN_BUILTIN#####################");
+wordStr* opt(wordStr* currentWord) {
+	//int result;
+	printf("###################IN_OPT#####################");
 	//########################################
 	/*
-	*52. <opt> -> <expression> EOL
+	*48. <opt> -> (<params>)
 	*/
-	//<expression>
-	if((result = expression(currentWord))) return result;
-
-	// EOL
-	if (strcmp(currentWord->type, "newline") == 0) {
+	//(
+	if(strcmp(currentWord->content, "(") == 0) {
 		currentWord = currentWord->next;
+		//<params>
+		currentWord = params(currentWord);
+
+		//)
+		if (strcmp(currentWord->content, ")") == 0) {
+			currentWord = currentWord->next;
+		}
+		else ExitProgram(2, "Missing ) in rule 4 in opt (<params>)");
+
+		//OK
+		return currentWord;
+	}
+	/*
+	49.-52. FOR NOW, WILL OVERWRITE
+	*/
+	else if(strcmp(currentWord->content, "=") == 0) {
+		currentWord = currentWord->next;
+
+		/*
+		51. = <builtin>
+		*/
+		//<builtin> WITHOUT WRITE readString || readInt || readDouble || Int2Double || Double2Int || length || substring || ord || chr
+		if((strcmp(currentWord->content, "readString") == 0) || (strcmp(currentWord->content, "readInt") == 0) || (strcmp(currentWord->content, "readDouble") == 0) || (strcmp(currentWord->content, "Int2Double") == 0) || (strcmp(currentWord->content, "Double2Int") == 0) || (strcmp(currentWord->content, "length") == 0) || (strcmp(currentWord->content, "substring") == 0) || (strcmp(currentWord->content, "ord") == 0) || (strcmp(currentWord->content, "chr") == 0)) {
+			//<builtin>
+			currentWord = builtin(currentWord);
+			//OK
+			return currentWord;
+		}
+
+		else if(strcmp(currentWord->type, "identifier") == 0) {
+			
+			/*
+			49. <opt> -> = ID EOL
+			*/
+			// EOL
+			if(strcmp(currentWord->type, "newline") == 0) {
+				currentWord = currentWord->next;
+				//OK
+				return currentWord;
+			}
+			/*
+			50. <opt> -> = ID (<params>)
+			*/
+			//(
+			else if(strcmp(currentWord->content, "(") == 0) {
+				currentWord = currentWord->next;
+				//<params>
+				currentWord = params(currentWord);
+				//)
+				if(strcmp(currentWord->content, ")") == 0) {
+					currentWord = currentWord->next;
+				}
+				//OK
+				return currentWord;
+			}
+
+			/*
+			part of 52. if first is operand is ID not expr
+			*/
+			// <sign> after ID
+			else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
+				currentWord = expression_more(currentWord); //have to return token after EOL if correct
+
+				//EOL already checked in exp_more
+				//OK
+				return currentWord;
+			}
+
+			else ExitProgram(2, "Wrong token after ID token in opt");
+
+		}
+
+		 /*
+		  another part of 52. <term> excluding ID as term
+		 */
+		else if ((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "int") == 0) || (strcmp(currentWord->type, "float") == 0)) {
+			currentWord = currentWord->next;
+
+			//<expression_more>
+			currentWord = expression_more(currentWord); //return token after EOL
+
+			//OK
+			return currentWord;
+		}
+
+		else ExitProgram(2, "Wrong expression after = in opt");
+
+
+		return currentWord;
 	}
 
+	else ExitProgram(2, "Wrong expression after ID in ID_TYPE");
+
+	/* EOL
+	if (strcmp(currentWord->type, "newline") == 0) {
+		currentWord = currentWord->next;
+	}*/
+
 	//OK
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <builtin> rule implementation
 */
-int builtin(wordStr* currentWord) {
+wordStr* builtin(wordStr* currentWord) {
 	
 	printf("###################IN_BUILTIN#####################");
 	//########################################
@@ -392,7 +497,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in readString function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//readInt
 	else if(strcmp(currentWord->content, "readInt") == 0) {
@@ -408,7 +513,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in readInt function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//readDouble
 	else if(strcmp(currentWord->content, "readDouble") == 0) {
@@ -424,7 +529,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in readDouble function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//Int2Double
 	else if(strcmp(currentWord->content, "Int2Double") == 0) {
@@ -445,7 +550,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in Int2Double function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//Double2Int
 	else if(strcmp(currentWord->content, "Double2Int") == 0) {
@@ -466,7 +571,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in Double2Int function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//length
 	else if(strcmp(currentWord->content, "length") == 0) {
@@ -487,7 +592,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in length function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//substring
 	else if(strcmp(currentWord->content, "substring") == 0) {
@@ -546,7 +651,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in length function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//ord
 	else if(strcmp(currentWord->content, "ord") == 0) {
@@ -567,7 +672,7 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in ord function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//chr
 	else if(strcmp(currentWord->content, "chr") == 0) {
@@ -588,21 +693,21 @@ int builtin(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in chr function");
 		//OK
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Wrong builtin name");
 
 
 	
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <arg> rule implementation
 */
-int arg(wordStr* currentWord) {
-	int result;
+wordStr* arg(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_ARG#####################");
 	//########################################
 	/*
@@ -627,13 +732,15 @@ int arg(wordStr* currentWord) {
 		else ExitProgram(2, "Missing : in arg");
 		
 		//<type_spec>
-		if((result = type_spec(currentWord))) return result;
+		currentWord = type_spec(currentWord);
+		//if((result = type_spec(currentWord))) return result;
 
 		//<args_more>
-		if((result = args_more(currentWord))) return result;
+		currentWord = args_more(currentWord);
+		//if((result = args_more(currentWord))) return result;
 
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//########################################
 	/*
@@ -641,19 +748,19 @@ int arg(wordStr* currentWord) {
 	*/
 	// eps
 	else if(strcmp(currentWord->content, ")")) {
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Missing param_name in arg");
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <args_more> rule implementation
 */
-int args_more(wordStr* currentWord) {
-	int result;
+wordStr* args_more(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_ARGS_MORE#####################");
 	/*
 	10. <args_more> -> , PARAM_NAME ID : <type_spec> <args_more>
@@ -683,7 +790,8 @@ int args_more(wordStr* currentWord) {
 		else ExitProgram(2, "Missing , in args_more");
 
 		//<type_spec>
-		if((result = type_spec(currentWord))) return result;
+		currentWord = type_spec(currentWord);
+		//if((result = type_spec(currentWord))) return result;
 
 		//<args_more>
 		return args_more(currentWord);
@@ -692,16 +800,16 @@ int args_more(wordStr* currentWord) {
 	//11. <args_more> -> eps
 	//)
 	else if(strcmp(currentWord->content, ")") == 0) {
-		return 0;
+		return currentWord;
 	}
 	//NOT OKAY
 	else ExitProgram(2, "Missing , in args_more");
 
-	return 0;
+	return currentWord;
 }
 
-int types(wordStr* currentWord) {
-	int result;
+wordStr* types(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_TYPES#####################");
 	/*
 	12. <types> -> -> <type_spec> {statement_with_return} 
@@ -710,7 +818,8 @@ int types(wordStr* currentWord) {
 	if (strcmp(currentWord->content, "->") == 0) {
 		currentWord = currentWord->next;
 		//<type_spec>
-		if((result = type_spec(currentWord))) return result;
+		currentWord = type_spec(currentWord);
+		//if((result = type_spec(currentWord))) return result;
 
 		//{
 		if (strcmp(currentWord->content, "{") == 0) {
@@ -719,7 +828,8 @@ int types(wordStr* currentWord) {
 		else ExitProgram(2, "Missing { in function definition");
 
 		//<statement_with_return> OVERWRITE FROM PROGCON TO STATEMENTWITHRETURN
-		if((result = prog_con(currentWord))) return result;
+		currentWord = prog_con(currentWord); //OVERWRITE to STATEMENT
+		//if((result = prog_con(currentWord))) return result;
 		//after <statement_with_return>
 
 		//}
@@ -729,7 +839,7 @@ int types(wordStr* currentWord) {
 		else ExitProgram(2, "Missing } in function definition");
 
 		//OK
-		return 0;
+		return currentWord;
 	}
 
 	/*
@@ -740,22 +850,24 @@ int types(wordStr* currentWord) {
 		currentWord = currentWord->next;
 
 		//<statement_with_return> OVERWRITE FROM PROG_CON TO STATEMENTWITHRETURN
-		if((result = prog_con(currentWord))) return result;
+		currentWord = prog_con(currentWord);
+		//if((result = prog_con(currentWord))) return result;
 		//after <statement_with_return>
 
 		//}
 		if (strcmp(currentWord->content, "}") == 0) {
 			currentWord = currentWord->next;
 		}
+		else ExitProgram(2, "Missing } in types rule, func definition");
 
 		//OK
-		return 0;
+		return currentWord;
 	}
 
 	//NOT OKAY
 	else ExitProgram(2, "missing -> or { in function definition");
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
@@ -763,8 +875,8 @@ int types(wordStr* currentWord) {
 <params> rule implementation CHANGE RULES
 */
 //<params>
-int params(wordStr* currentWord) {
-	int result;
+wordStr* params(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_PARAMS#####################");
 	//ID
 	if (strcmp(currentWord->type, "identifier") == 0) {
@@ -776,49 +888,53 @@ int params(wordStr* currentWord) {
 			currentWord = currentWord->next;
 
 			//<term>
-			if((result = term(currentWord))) return result;
+			currentWord = term(currentWord);
+			//if((result = term(currentWord))) return result;
 
 			//<params_more>
-			if((result = params_more(currentWord))) return result;
+			currentWord = params_more(currentWord);
+			//if((result = params_more(currentWord))) return result;
 
 
 		}
 		//<params_more>
 		else {
-			if((result = params_more(currentWord))) return result;
+			currentWord = params_more(currentWord);
+			//if((result = params_more(currentWord))) return result;
 		}
 
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//<term> without ID
 	else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "int") == 0) || (strcmp(currentWord->type, "float") == 0)) {
 		currentWord = currentWord->next;
 		//<params_more>
-		if((result = params_more(currentWord))) return result;
+		currentWord = params_more(currentWord);
+		//if((result = params_more(currentWord))) return result;
 		//OK
-		return 0;
+		return currentWord;
 	}
 	/*
 	55. <params> -> eps
 	*/
 	else if(strcmp(currentWord->content, ")") == 0) {
 		//OK
-		return 0;
+		return currentWord;
 	}
 	//NOT OK
 	else ExitProgram(2, "Wrong parameter in called function");
 
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <params_more> rule implementation CHANGE RULES
 */
-int params_more(wordStr* currentWord) {
-	int result;
+wordStr* params_more(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_PARAMS_MORE#####################");
 
 	if(strcmp(currentWord->content, ",") == 0) {
@@ -832,7 +948,8 @@ int params_more(wordStr* currentWord) {
 				currentWord = currentWord->next;
 
 				//<term>
-				if((result = term(currentWord))) return result;
+				currentWord = term(currentWord);
+				//if((result = term(currentWord))) return result;
 
 				//<params_more>
 				return params_more(currentWord);
@@ -845,7 +962,7 @@ int params_more(wordStr* currentWord) {
 			}
 
 			//OK
-			return 0;
+			return currentWord;
 		}
 		//<term> without ID
 		else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "int") == 0) || (strcmp(currentWord->type, "float") == 0)) {
@@ -853,7 +970,7 @@ int params_more(wordStr* currentWord) {
 			//<params_more>
 			return params_more(currentWord);
 			//OK
-			return 0;
+			return currentWord;
 		}
 		//NOT OK
 		else ExitProgram(2, "Wrong parameter after , in params_more");
@@ -863,18 +980,18 @@ int params_more(wordStr* currentWord) {
 	58. <params_more> -> eps
 	*/
 	else if(strcmp(currentWord->content, ")") == 0) {
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Missing ',' or wrong parameter in params_more");
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <type_spec> rule implementation
 */
-int type_spec(wordStr* currentWord) {
+wordStr* type_spec(wordStr* currentWord) {
 	
 	printf("###################IN_TYPE_SPEC#####################");
 	//14.-19. <type_spec>
@@ -900,15 +1017,15 @@ int type_spec(wordStr* currentWord) {
 	else ExitProgram(2, "Missing type_spec");
 
 	//OK
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <write_params> rule implementation
 */
-int write_params(wordStr* currentWord) {
-	int result;
+wordStr* write_params(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_WRITE_PARAMS#####################");
 	/*
 	33. <write_params> -> <term> <write_params_more>
@@ -916,28 +1033,31 @@ int write_params(wordStr* currentWord) {
 	//<term>
 	if((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->type, "int") == 0) || (strcmp(currentWord->type, "float") == 0) || (strcmp(currentWord->type, "string") == 0)) {
 		currentWord = currentWord->next;
+		printf("tu som:%s\n", currentWord->content);
 		//<write_params_more>
-		if((result = write_params_more(currentWord))) return result;
+		currentWord = write_params_more(currentWord);
+		//if((result = write_params_more(currentWord))) return result;
+		printf("vraciam sa s:%s\n", currentWord->content);
 		//OK
-		return 0;
+		return currentWord;
 	}
 	/*
 	34. <write_params> -> eps
 	*/
 	else if(strcmp(currentWord->content, ")")) {
 		//OK
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Missing write params or ) in write function calling");	
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <write_params_more> rule implementation
 */
-int write_params_more(wordStr* currentWord) {
+wordStr* write_params_more(wordStr* currentWord) {
 	
 	printf("###################IN_WRITE_PARAMS_MORE#####################");
 	/*
@@ -961,19 +1081,22 @@ int write_params_more(wordStr* currentWord) {
 	//)
 	else if(strcmp(currentWord->content, ")") == 0) {
 		//OK
-		return 0;
+		printf("tu som:%s", currentWord->content);
+		currentWord = currentWord->next;
+		printf("mam sa vratit s:%s\n", currentWord->content);
+		return currentWord;
 	}
 	else ExitProgram(2, "Wrong parameter in write_params_more part");
 
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <option> rule implementation
 */
-int option(wordStr* currentWord) {
-	int result;
+wordStr* option(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_OPTION#####################");
 	/*
 	22. <option> -> : <type_spec> <assigns>
@@ -983,7 +1106,8 @@ int option(wordStr* currentWord) {
 		currentWord = currentWord->next;
 
 		//<type_spec>
-		if((result = type_spec(currentWord))) return result;
+		currentWord = type_spec(currentWord);
+		//if((result = type_spec(currentWord))) return result;
 
 		//<assigns>
 		//24. <assigns> -> =
@@ -996,7 +1120,7 @@ int option(wordStr* currentWord) {
 		else if(strcmp(currentWord->type, "newline") == 0) {
 			currentWord = currentWord->next;
 			//OK
-			return 0;
+			return currentWord;
 		}
 		else ExitProgram(2, "Missing = in variable definition");
 
@@ -1007,10 +1131,11 @@ int option(wordStr* currentWord) {
 			currentWord = currentWord->next;
 
 			//into <builtin>
-			if((result = builtin(currentWord))) return result;
+			currentWord = builtin(currentWord);
+			//if((result = builtin(currentWord))) return result;
 
 			//OK
-			return 0;
+			return currentWord;
 		}	
 		//ID
 		else if(strcmp(currentWord->type, "identifier") == 0) {
@@ -1021,14 +1146,15 @@ int option(wordStr* currentWord) {
 				currentWord = currentWord->next;
 
 				//<params>
-				if((result = params(currentWord))) return result;
+				currentWord = params(currentWord);
+				//if((result = params(currentWord))) return result;
 				//)
 				if (strcmp(currentWord->content, ")")) {
 					currentWord = currentWord->next;
 				}
 				else ExitProgram(2, "Missing ) in variable definition near called function params");
 				//OK
-				return 0;
+				return currentWord;
 			}
 			//ID in the beginning of expression <expression>
 			//<sign>
@@ -1036,23 +1162,25 @@ int option(wordStr* currentWord) {
 				currentWord = currentWord->next;
 
 				//<term>
-				if((result = term(currentWord))) return result;
+				currentWord = term(currentWord);
+				//if((result = term(currentWord))) return result;
 
 				//<expression_more>
-				if((result = expression_more(currentWord))) return result;
+				currentWord = expression_more(currentWord);
+				//if((result = expression_more(currentWord))) return result;
 
 				//OK
-				return 0;
+				return currentWord;
 			}
 			// EOL
 			else if(strcmp(currentWord->type, "newline") == 0) {
 				currentWord = currentWord->next;
 				//OK
-				return 0;
+				return currentWord;
 			}
 			else ExitProgram(2, "Missing ( or sign after ID in typed definition of variable");
 		
-			return 0;
+			return currentWord;
 		}
 
 
@@ -1074,10 +1202,11 @@ int option(wordStr* currentWord) {
 			//currentWord = currentWord->next;
 
 			//into <builtin>
-			if((result = builtin(currentWord))) return result;
+			currentWord = builtin(currentWord);
+			//if((result = builtin(currentWord))) return result;
 
 			//OK
-			return 0;
+			return currentWord;
 		}	
 		//ID
 		else if(strcmp(currentWord->type, "identifier") == 0) {
@@ -1090,14 +1219,15 @@ int option(wordStr* currentWord) {
 				currentWord = currentWord->next;
 
 				//<params>
-				if((result = params(currentWord))) return result;
+				currentWord = params(currentWord);
+				//if((result = params(currentWord))) return result;
 				//)
 				if (strcmp(currentWord->content, ")")) {
 					currentWord = currentWord->next;
 				}
 				else ExitProgram(2, "Missing ) in variable definition near called function params");
 				//OK
-				return 0;
+				return currentWord;
 			}
 			//ID in the beginning of expression <expression>
 			//<sign>
@@ -1105,13 +1235,15 @@ int option(wordStr* currentWord) {
 				currentWord = currentWord->next;
 
 				//<term>
-				if((result = term(currentWord))) return result;
+				currentWord = term(currentWord);
+				//if((result = term(currentWord))) return result;
 
 				//<expression_more>
-				if((result = expression_more(currentWord))) return result;
+				currentWord = expression_more(currentWord);
+				//if((result = expression_more(currentWord))) return result;
 
 				//OK
-				return 0;
+				return currentWord;
 			}
 			/*
 			47. <preopt> -> eps EOL
@@ -1119,21 +1251,30 @@ int option(wordStr* currentWord) {
 			//EOL
 			else if(strcmp(currentWord->type, "newline") == 0) {
 				currentWord = currentWord->next;
+				return currentWord;
+				//MAYBE RETURN CURRENTWORD?
 			}
 			else ExitProgram(2, "Missing ID or function or builtin func after = in option");
 		}
 	}
-	else return 0; // if there is just let a || var a OVERWRITE
 
-	return 0;
+	//if there is jsut let a || var a
+	else if(strcmp(currentWord->type, "newline") == 0) {
+		currentWord = currentWord->next; //MAYBE CHECK
+		return currentWord;
+	}
+
+	else ExitProgram(2, "There is no : or = after ID in prog_con variable definition beginning");
+
+	return currentWord;
 }
 
 //########################################
 /*
 <expression> rule implementation
 */
-int expression(wordStr* currentWord) {
-	int result;
+wordStr* expression(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_EXPRESSION#####################");
 	/*
 	81. <expression> -> <term> <sign> <term> <expression_more>
@@ -1143,13 +1284,14 @@ int expression(wordStr* currentWord) {
 	}
 
 	//<term>
-	if((result = term(currentWord))) return result;
+	currentWord = term(currentWord);
+	//if((result = term(currentWord))) return result;
 
-	//can be EOL
+	/*can be EOL
 	if(strcmp(currentWord->type, "newline") == 0) {	//OVERWRITE
 		currentWord = currentWord->next;
 		return 0;
-	}
+	}*/
 
 	//<sign>
 	if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
@@ -1157,24 +1299,26 @@ int expression(wordStr* currentWord) {
 	}
 	else ExitProgram(2, "Missing sign in expression");
 	//<term>
-	if((result = term(currentWord))) return result;
+	currentWord = term(currentWord);
+	//if((result = term(currentWord))) return result;
 
 	//<expression_more>
-	if((result = expression_more(currentWord))) return result;
+	currentWord = expression_more(currentWord);
+	//if((result = expression_more(currentWord))) return result; //getting token after EOL from expression_more
 
 	//OK
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <expression_more> rule implementation
 */
-int expression_more(wordStr* currentWord) {
-	int result;
+wordStr* expression_more(wordStr* currentWord) {
+	//int result;
 	printf("###################IN_EXPRESSION_MORE#####################");
 	/*
-	81. <expression_more> -> <sign> <term> <expression_more>
+	81. <expression_more> -> <sign> <term> <expression_more> EOL
 	*/
 
 	//<sign>
@@ -1182,49 +1326,51 @@ int expression_more(wordStr* currentWord) {
 		currentWord = currentWord->next;
 
 		//<term>
-		if((result = term(currentWord))) return result;
+		currentWord = term(currentWord);
+		//if((result = term(currentWord))) return result;
 
 		//<expression_more> continuing recursively
 		return expression_more(currentWord);
 	}
+	//EOL
 	else if (strcmp(currentWord->content, "newline") == 0) {
 		currentWord = currentWord->next;
 		//OK
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Missing newline or sign in expression (expression_more)");
 
 	//OK
-	return 0;
+	return currentWord;
 }
 
 //########################################
 /*
 <term> rule implementation
 */
-int term(wordStr* currentWord) {
+wordStr* term(wordStr* currentWord) {
 	
 	printf("###################IN_TERM#####################");
 	//"STRINGLIT" || INTLIT || DOUBLELIT || ID
 	if(strcmp(currentWord->type, "string") == 0) {
 		currentWord = currentWord->next;
-		return 0;
+		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "int") == 0) {
 		currentWord = currentWord->next;
-		return 0;
+		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "float") == 0) {
 		currentWord = currentWord->next;
-		return 0;
+		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "identifier") == 0) {
 		currentWord = currentWord->next;
-		return 0;
+		return currentWord;
 	}
 	else ExitProgram(2, "Wrong term");
 
-	return 0;
+	return currentWord;
 }
 
 
@@ -1233,7 +1379,7 @@ int term(wordStr* currentWord) {
 /*
 NODE CREATENODE FUNC
 */
-node* CreateNode(char* content, char* type) {
+/*node* CreateNode(char* content, char* type) {
 	node* newNode = malloc(sizeof(node));
 	newNode->type = malloc(sizeof(char) * (strlen(type) + 1));
 	newNode->content = malloc(sizeof(char) * (strlen(content) + 1));
@@ -1252,4 +1398,4 @@ void BindNode(node* parent, node* child, char* direction) {
 	else if (strcmp(direction, "right") == 0) {
 		parent->right = child;
 	}
-}
+}*/
