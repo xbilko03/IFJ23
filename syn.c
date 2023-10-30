@@ -18,6 +18,7 @@ wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, 
 wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, unsigned* level, node** currentNode);
 wordStr* option(wordStr* currentWord, unsigned* level);
 wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode);
+wordStr* GetToken(wordStr* currentWord, char* ignoreNewLines);
 
 //unsued
 int prog(wordStr* currentWord);
@@ -34,8 +35,6 @@ void PerformSyntax(wordListStr* wrdList) {
 	wordStr* currentWord = wrdList->first;
 	
 	unsigned level = 1;
-
-	currentWord = SkipNewlines(currentWord);
 
 	node* program = CreateNode("root", "program", &level);
 	node* currentNode = program;
@@ -71,19 +70,17 @@ void printTree(node* root, unsigned level)
 
 wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 {
+	//<prog_con> <EOF>
 	if (currentWord == NULL)
-		return NULL;
+		return NULL; //EOF
 	printf("entering...%s\n", currentWord->content);
-
-	if(strcmp(currentWord->type,"newline") == 0)
-		currentWord = SkipNewlines(currentWord);
-	
+		
 	//<prog_con> id
 	if (strcmp(currentWord->type, "identifier") == 0)
 	{
 		char* id = currentWord->content;
 		wordStr* lastWord = currentWord;
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 
 		//<prog_con> func_id(<args>)
 		if (strcmp(currentWord->content, "(") == 0)
@@ -101,13 +98,13 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;			 
 
-			currentWord = currentWord->next;
-			currentWord = SkipNewlines(currentWord);
+			currentWord = GetToken(currentWord, "yes");
+			
 			//<prog_con> id = id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
 				{
 					char* direction = "left";
@@ -119,11 +116,12 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				}
 			}
 			//<prog_con> id = <integer>
-			else if(strcmp(currentWord->type, "integer") == 0)
+			else if (strcmp(currentWord->type, "integer") == 0)
 			{
 				char* intValue = currentWord->content;
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+
+				currentWord = GetToken(currentWord, "yes");
+
 				//<prog_con> id = <expression>
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
 				{
@@ -146,7 +144,7 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				currentWord = prog_con(currentWord, level, currentNode);
 				return currentWord;
 			}
-		}
+		}		
 
 	}
 	//<prog_con> <keyword>
@@ -159,8 +157,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;			 
 
-			currentWord = currentWord->next;
-			currentWord = SkipNewlines(currentWord);
+			currentWord = GetToken(currentWord, "yes");
+			
 
 			//<prog_con> else <prog_con>
 			currentWord = prog_con(currentWord, level, currentNode);
@@ -169,8 +167,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		//<prog_con> let
 		else if (strcmp(currentWord->content, "let") == 0)
 		{
-			currentWord = SkipNewlines(currentWord);
-			currentWord = currentWord->next;
+			
+			currentWord = GetToken(currentWord, "yes");
 			//<prog_con> let id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
@@ -181,8 +179,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					BindNode(*currentNode, newNode, "right");
 				*currentNode = newNode;				 
 
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 
 				//<prog_con> let id <option>
 				if (strcmp(currentWord->content, ":") == 0)
@@ -196,21 +194,21 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						BindNode(*currentNode, newNode, "left");
 						*currentNode = newNode;
 
-						currentWord = currentWord->next;
-						currentWord = SkipNewlines(currentWord);
+						currentWord = GetToken(currentWord, "yes");
+						
 
 						//<prog_con> let id <option> <typeIdentifier> =
 						if (strcmp(currentWord->content, "=") == 0)
 						{
-							currentWord = currentWord->next;
-							currentWord = SkipNewlines(currentWord);
+							currentWord = GetToken(currentWord, "yes");
+							
 
 							//<prog_con> let id <option> <typeIdentifier> = id
 							if (strcmp(currentWord->type, "identifier") == 0)
 							{
 								char* id = currentWord->content;
-								currentWord = currentWord->next;
-								currentWord = SkipNewlines(currentWord);
+								currentWord = GetToken(currentWord, "yes");
+								
 								//<prog_con> let id <option> <typeIdentifier> = id(<args>)
 								if (strcmp(currentWord->content, "(") == 0)
 								{
@@ -229,15 +227,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				//<prog_con> let id =
 				else if (strcmp(currentWord->content, "=") == 0)
 				{
-					currentWord = currentWord->next;
-					currentWord = SkipNewlines(currentWord);
+					currentWord = GetToken(currentWord, "yes");
+					
 					
 					//<prog_con> var id = id
 					if (strcmp(currentWord->type, "identifier") == 0)
 					{
 						char* id = currentWord->content;
-						currentWord = currentWord->next;
-						currentWord = SkipNewlines(currentWord);
+						currentWord = GetToken(currentWord, "yes");
+						
 						if (strcmp(currentWord->content, "(") == 0)
 						{
 							currentWord = func(currentWord, id, "left", level, currentNode);
@@ -256,15 +254,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		//<prog_con> var
 		else if (strcmp(currentWord->content, "var") == 0)
 		{
-			currentWord = SkipNewlines(currentWord);
-			currentWord = currentWord->next;
+			
+			currentWord = GetToken(currentWord, "yes");
 			//<prog_con> var id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				char* id = currentWord->content;
 
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 
 				//<prog_con> var id <option>
 				if (strcmp(currentWord->content, ":") == 0)
@@ -283,21 +281,21 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						BindNode(*currentNode, newNode, "left");
 						*currentNode = newNode;
 
-						currentWord = currentWord->next;
-						currentWord = SkipNewlines(currentWord);
+						currentWord = GetToken(currentWord, "yes");
+						
 
 						//<prog_con> var id <option> <typeIdentifier> =
 						if (strcmp(currentWord->content, "=") == 0)
 						{
-							currentWord = currentWord->next;
-							currentWord = SkipNewlines(currentWord);
+							currentWord = GetToken(currentWord, "yes");
+							
 
 							//<prog_con> var id <option> <typeIdentifier> = id
 							if (strcmp(currentWord->type, "identifier") == 0)
 							{
 								char* id = currentWord->content;
-								currentWord = currentWord->next;
-								currentWord = SkipNewlines(currentWord);
+								currentWord = GetToken(currentWord, "yes");
+								
 								//<prog_con> var id <option> <typeIdentifier> = id(<args>)
 								if (strcmp(currentWord->content, "(") == 0)
 								{
@@ -317,8 +315,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 								BindNode(*currentNode, newNode, "left");
 								*currentNode = newNode;
 
-								currentWord = currentWord->next;
-								currentWord = SkipNewlines(currentWord);
+								currentWord = GetToken(currentWord, "yes");
+								
 
 								*currentNode = (*currentNode)->parent;
 								*currentNode = (*currentNode)->parent;
@@ -348,15 +346,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					*currentNode = newNode;
 					 
 
-					currentWord = currentWord->next;
-					currentWord = SkipNewlines(currentWord);
+					currentWord = GetToken(currentWord, "yes");
+					
 
 					//<prog_con> var id <option> = id
 					if (strcmp(currentWord->type, "identifier") == 0)
 					{
 						char* id = currentWord->content;
-						currentWord = currentWord->next;
-						currentWord = SkipNewlines(currentWord);
+						currentWord = GetToken(currentWord, "yes");
+						
 						if (strcmp(currentWord->content, "(") == 0)
 						{
 							currentWord = func(currentWord, id, "left", level, currentNode);
@@ -379,20 +377,20 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
 			 
-			currentWord = currentWord->next;
-			currentWord = SkipNewlines(currentWord);
+			currentWord = GetToken(currentWord, "yes");
+			
 
 			//<prog_con> while (
 			if (strcmp(currentWord->content, "(") == 0)
 			{
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 				//<prog_con> while (id
 				if (strcmp(currentWord->type, "identifier") == 0)
 				{
 					wordStr* lastWord = currentWord;
-					currentWord = SkipNewlines(currentWord);
-					currentWord = currentWord->next;
+					
+					currentWord = GetToken(currentWord, "yes");
 
 					//<prog_con> while (<expression>
 					if (strcmp(currentWord->content, ">") == 0)
@@ -402,8 +400,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						//<prog_con> while (<expression>)
 						if (strcmp(currentWord->content, ")") == 0)
 						{
-							currentWord = currentWord->next;
-							currentWord = SkipNewlines(currentWord);
+							currentWord = GetToken(currentWord, "yes");
+							
 
 							//<prog_con> while (<expression>) <prog_con>
 							currentWord = prog_con(currentWord, level, currentNode);
@@ -420,14 +418,14 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
 
-			currentWord = SkipNewlines(currentWord);
-			currentWord = currentWord->next;
+			
+			currentWord = GetToken(currentWord, "yes");
 
 			//<prog_con> if let
 			if (strcmp(currentWord->content, "let") == 0)
 			{
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 				//<prog_con> if let id
 				if (strcmp(currentWord->type, "identifier") == 0)
 				{
@@ -435,8 +433,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					BindNode(*currentNode, newNode, "left");
 					*currentNode = newNode;
 					
-					currentWord = currentWord->next;
-					currentWord = SkipNewlines(currentWord);
+					currentWord = GetToken(currentWord, "yes");
+					
 
 					//<prog_con> if let id <prog_con>
 					currentWord = prog_con(currentWord, level, currentNode);
@@ -447,14 +445,14 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			//<prog_con> if (
 			if (strcmp(currentWord->content, "(") == 0)
 			{
-				currentWord = SkipNewlines(currentWord);
-				currentWord = currentWord->next;
+				
+				currentWord = GetToken(currentWord, "yes");
 				//<prog_con> if (id
 				if (strcmp(currentWord->type, "identifier") == 0)
 				{
 					wordStr* lastWord = currentWord;
-					currentWord = SkipNewlines(currentWord);
-					currentWord = currentWord->next;
+					
+					currentWord = GetToken(currentWord, "yes");
 					
 					//<prog_con> if (<expression>
 					if (strcmp(currentWord->content, "<") == 0)
@@ -464,8 +462,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						//<prog_con> if (<expression>)
 						if (strcmp(currentWord->content, ")") == 0)
 						{
-							currentWord = SkipNewlines(currentWord);
-							currentWord = currentWord->next;
+							
+							currentWord = GetToken(currentWord, "yes");
 
 							currentWord = prog_con(currentWord, level, currentNode);
 							return currentWord;
@@ -477,14 +475,14 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		//<prog_con> func
 		else if (strcmp(currentWord->content, "func") == 0)
 		{
-			currentWord = currentWord->next;
-			currentWord = SkipNewlines(currentWord);
+			currentWord = GetToken(currentWord, "yes");
+			
 			//<prog_con> func id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				char* id = currentWord->content;
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 				//<prog_con> func id(
 				if (strcmp(currentWord->content, "(") == 0)
 				{
@@ -503,14 +501,14 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			BindNode(*currentNode, newNode, "right");
 			*currentNode = newNode;
 
-			currentWord = currentWord->next;
-			currentWord = SkipNewlines(currentWord);
+			currentWord = GetToken(currentWord, "yes");
+			
 			//<prog_con> return id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				wordStr* lastWord = currentWord;
-				currentWord = currentWord->next;
-				currentWord = SkipNewlines(currentWord);
+				currentWord = GetToken(currentWord, "yes");
+				
 				//<prog_con> return id <expression>
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
 				{
@@ -523,18 +521,18 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				else if(strcmp(currentWord->content, "!") == 0)
 				{
 					//SKIP '!'
-					currentWord = currentWord->next;
-					currentWord = SkipNewlines(currentWord);
+					currentWord = GetToken(currentWord, "yes");
+					
 				}
 			}
 		}
 	}
 	
-	
+	//<prog_con> { <prog_con>
 	if (strcmp(currentWord->content, "{") == 0)
 	{
-		currentWord = currentWord->next;
-		currentWord = SkipNewlines(currentWord);
+		currentWord = GetToken(currentWord, "yes");
+		
 
 		(*level)++;
 
@@ -542,11 +540,12 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		currentWord = prog_con(currentWord, level, currentNode);
 		return currentWord;
 	}
+	//<prog_con> } <prog_con>
 	else if (strcmp(currentWord->content, "}") == 0)
 	{
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 		//End of File detect?
-		currentWord = SkipNewlines(currentWord);
+		
 		if (currentWord == NULL)
 			return NULL;
 		//<prog_con> { <prog_con>
@@ -598,15 +597,15 @@ wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, 
 	*currentNode = newNode;
 
 
-	currentWord = currentWord->next;
+	currentWord = GetToken(currentWord, "yes");
 
 	currentWord = args(currentWord, "left", level, &newNode);
 
-	currentWord = SkipNewlines(currentWord);
+	
 	if (strcmp(currentWord->content, ")") == 0)
 	{
-		currentWord = currentWord->next;
-		currentWord = SkipNewlines(currentWord);
+		currentWord = GetToken(currentWord, "yes");
+		
 
 		return currentWord;
 	}
@@ -620,17 +619,17 @@ wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* lev
 	BindNode(*currentNode, newNode, direction);
 	*currentNode = newNode;
 
-	currentWord = currentWord->next;
+	currentWord = GetToken(currentWord, "yes");
 
 	currentWord = args(currentWord, "left", level, &newNode);
 
-	currentWord = SkipNewlines(currentWord);
+	
 	if (strcmp(currentWord->content, ")") == 0)
 	{
-		currentWord = currentWord->next;
-		currentWord = SkipNewlines(currentWord);
-		currentWord = currentWord->next; //ignore ->
-		currentWord = SkipNewlines(currentWord);
+		currentWord = GetToken(currentWord, "yes");
+		
+		currentWord = GetToken(currentWord, "yes"); //ignore ->
+		
 	}
 	if (strcmp(currentWord->content, "Int") == 0)
 	{
@@ -643,8 +642,8 @@ wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* lev
 		BindNode(*currentNode, newNode, "right");
 		*currentNode = newNode;
 	}
-	currentWord = currentWord->next;
-	currentWord = SkipNewlines(currentWord);
+	currentWord = GetToken(currentWord, "yes");
+	
 
 
 	return currentWord;
@@ -658,17 +657,17 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 		newNode = CreateNode(currentWord->content, "string", level);
 		BindNode(*currentNode, newNode, direction);
 		*currentNode = newNode;
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 	}
 	else if (strcmp(currentWord->type, "identifier") == 0) //is OK
 	{
 		if (strcmp(currentWord->content, "of") == 0 || strcmp(currentWord->content, "by") == 0 || strcmp(currentWord->content, "_") == 0) //is OK
 		{
-			currentWord = currentWord->next;
+			currentWord = GetToken(currentWord, "yes");
 
 			if (strcmp(currentWord->content, ":") == 0)
 			{
-				currentWord = currentWord->next;
+				currentWord = GetToken(currentWord, "yes");
 
 				if(strcmp(currentWord->type,"identifier") == 0)
 					newNode = CreateNode(currentWord->content, "identifier", level);
@@ -678,16 +677,16 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 				BindNode(*currentNode, newNode, direction);
 				*currentNode = newNode;
 
-				currentWord = currentWord->next;
+				currentWord = GetToken(currentWord, "yes");
 			}
 			else
 			{
 				newNode = CreateNode(currentWord->content, "functionType", level);
 				BindNode(*currentNode, newNode, direction);
 				*currentNode = newNode;
-				currentWord = currentWord->next;
-				currentWord = currentWord->next;
-				currentWord = currentWord->next;
+				currentWord = GetToken(currentWord, "yes");
+				currentWord = GetToken(currentWord, "yes");
+				currentWord = GetToken(currentWord, "yes");
 			}
 		}
 		else
@@ -695,7 +694,7 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 			newNode = CreateNode(currentWord->content, "identifier", level);
 			BindNode(*currentNode, newNode, "left");
 			*currentNode = newNode;
-			currentWord = currentWord->next;
+			currentWord = GetToken(currentWord, "yes");
 		}
 	}
 	else if (strcmp(currentWord->type, "integer") == 0) //is OK
@@ -703,7 +702,7 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 		newNode = CreateNode(currentWord->content, "integer", level);
 		BindNode(*currentNode, newNode, "left");
 		*currentNode = newNode;
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 	}
 	else if (strcmp(currentWord->content, ",") == 0) //is OK
 	{
@@ -716,7 +715,7 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 
 	if (strcmp(currentWord->content, ",") == 0) //is OK
 	{
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 		currentWord = args(currentWord, "right", level, &newNode);
 		return currentWord;
 	}
@@ -729,8 +728,8 @@ wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** cur
 	return currentWord;
 }
 wordStr* option(wordStr* currentWord, unsigned* level) {
-	currentWord = currentWord->next;
-	currentWord = SkipNewlines(currentWord);
+	currentWord = GetToken(currentWord, "yes");
+	
 
 	return currentWord;
 }
@@ -744,23 +743,23 @@ wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, un
 	BindNode(*currentNode, newNode, "left");
 	*currentNode = newNode;
 
-	currentWord = currentWord->next;
-	currentWord = SkipNewlines(currentWord);
+	currentWord = GetToken(currentWord, "yes");
+	
 	if (strcmp(currentWord->type, "integer") == 0)
 	{
 		node* newNode = CreateNode(currentWord->content, "integer", level);
 		BindNode(*currentNode, newNode, "right");
 
-		currentWord = currentWord->next;
-		currentWord = SkipNewlines(currentWord);
+		currentWord = GetToken(currentWord, "yes");
+		
 	}
 	else if (strcmp(currentWord->type, "identifier") == 0)
 	{
 		node* newNode = CreateNode(currentWord->content, "identifier", level);
 		BindNode(*currentNode, newNode, "right");
 
-		currentWord = currentWord->next;
-		currentWord = SkipNewlines(currentWord);
+		currentWord = GetToken(currentWord, "yes");
+		
 	}
 	*currentNode = (*currentNode)->parent;
 	return currentWord;
@@ -804,9 +803,19 @@ wordStr* SkipNewlines(wordStr* currentWord)
 		return NULL;
 	while (currentWord == NULL || strcmp(currentWord->content, "newline") == 0) //Skip all newlines before first valid token
 	{
-		currentWord = currentWord->next;
+		currentWord = GetToken(currentWord, "yes");
 		if (currentWord == NULL)
 			return NULL;
 	}
+	return currentWord;
+}
+wordStr* GetToken(wordStr* currentWord, char* ignoreNewLines)
+{
+	currentWord = currentWord->next;
+	if(strcmp(ignoreNewLines,"yes") == 0)
+		currentWord = SkipNewlines(currentWord);
+	if (currentWord == NULL)
+		return NULL;//EOF
+
 	return currentWord;
 }
