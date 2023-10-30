@@ -4,7 +4,7 @@
 
 //---functions.c---
 typedef struct wordStr wordStr;
-struct wordStr{
+struct wordStr {
 	char* content;
 	char* type;
 	struct	wordStr* next;
@@ -18,7 +18,7 @@ struct TRPitem {
 	char* content;
 	TRPitem* next;
 };
-typedef struct{
+typedef struct {
 	TRPitem* items[hashTableSize];
 }TRP;
 //------Lex.c------
@@ -29,8 +29,10 @@ typedef struct node node;
 struct node {
 	char* type;
 	char* content;
+	node* parent;
 	node* left;
 	node* right;
+	unsigned* level;
 };
 void PerformSyntax();
 //-----------------
