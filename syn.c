@@ -20,17 +20,7 @@ wordStr* option(wordStr* currentWord, unsigned* level);
 wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode);
 wordStr* GetToken(wordStr* currentWord, char* ignoreNewLines);
 
-//unsued
-int prog(wordStr* currentWord);
-int builtin(wordStr* currentWord);
-int types(wordStr* currentWord);
-int type_spec(wordStr* currentWord);
-int write_params(wordStr* currentWord);
-int write_params_more(wordStr* currentWord);
-
-
-
-void PerformSyntax(wordListStr* wrdList) {
+void PerformSyntax(wordListStr* wrdList, node** AST) {
 	
 	wordStr* currentWord = wrdList->first;
 	
@@ -42,9 +32,9 @@ void PerformSyntax(wordListStr* wrdList) {
 	currentWord = SkipNewlines(currentWord);
 	currentWord = prog_con(currentWord, &level, &currentNode);
 
-	//printf("ENTERING LAST PROGCON=%s\n\n", currentWord->content);
+	//printTree(program, 1);
 
-	printTree(program, 1);
+	*AST = program;
 
 	return;
 }
@@ -73,7 +63,6 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 	//<prog_con> <EOF>
 	if (currentWord == NULL)
 		return NULL; //EOF
-	printf("entering...%s\n", currentWord->content);
 		
 	//<prog_con> id
 	if (strcmp(currentWord->type, "identifier") == 0)

@@ -15,7 +15,11 @@ typedef struct {
 } wordListStr;
 typedef struct TRPitem TRPitem;
 struct TRPitem {
+	char* name; //a
+	char* type; //int
 	char* content;
+	TRPitem** arguments;
+
 	TRPitem* next;
 };
 typedef struct {
@@ -34,10 +38,10 @@ struct node {
 	node* right;
 	unsigned* level;
 };
-void PerformSyntax();
+void PerformSyntax(wordListStr* wrdList, node** AST);
 //-----------------
 //------Sem.c------
-void PerformSemantics();
+void PerformSemantics(node** AST);
 //-----------------
 //------TRP.c------
 //-----------------

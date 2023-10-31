@@ -11,13 +11,15 @@ int main(int argc, char **argv)
 	wordList = malloc(sizeof(wordListStr));
 	wordList->first = NULL;
 	wordList->last = NULL;
+
+	node* AST = NULL;
 	
 	//Fill Word List and Check for Lex Rules
 	PerformLex(wordList);
 
-	PerformSyntax(wordList);
+	PerformSyntax(wordList, &AST);
 
-	PerformSemantics();
+	PerformSemantics(&AST);
 
 	PerformCodeGen();
 
