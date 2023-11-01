@@ -193,12 +193,25 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 		}
-		else
+		else if (c != '!' && c != '=')
 		{
 			word[1] = '\0';
 			ungetc(c2, stdin);
-			SaveWordToList(word,"sign");
+			SaveWordToList(word,"compare");
 		}
+		else if(c == '=')
+		{
+			word[1] = '\0';
+			ungetc(c2, stdin);
+			SaveWordToList(word,"assign");
+		}
+		else if(c == '!')
+		{
+			word[1] = '\0';
+			ungetc(c2, stdin);
+			SaveWordToList(word,"exclamationMark");
+		}
+		
 	}
 	else if (c == '?')
 	{
@@ -213,12 +226,15 @@ void Sign(char word[MaxWordSize], char c)
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c, stdin);
+			SaveWordToList(word,"compare");
+
 		}
 		else
 		{
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
-		SaveWordToList(word,"sign");
+		word[1] = '\0';
+		SaveWordToList(word,"questionMark");
 	}
 	else if (c == '-')
 	{
@@ -233,6 +249,7 @@ void Sign(char word[MaxWordSize], char c)
 				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
 			}
 			ungetc(c, stdin);
+			SaveWordToList(word,"arrow");
 		}
 		else if (!isspace(c) && c != EOF)
 		{
@@ -250,8 +267,6 @@ void Sign(char word[MaxWordSize], char c)
 		word[1] = '\0';
 		if(c == '+' || c == '*' || c == '/')
 			SaveWordToList(word,"operator");
-		else if(c == '=')
-			SaveWordToList(word,"assign");
 		else if(c == '{')
 			SaveWordToList(word,"openBlock");
 		else if(c == '}')
@@ -264,10 +279,6 @@ void Sign(char word[MaxWordSize], char c)
 			SaveWordToList(word,"comma");
 		else if(c == ':')
 			SaveWordToList(word,"colon");
-		else if(c == '?')
-			SaveWordToList(word,"questionMark");
-		else if(c == '!')
-			SaveWordToList(word,"exclamationMark");
 	}
 	return;
 }

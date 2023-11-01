@@ -17,6 +17,14 @@ int main(int argc, char **argv)
 	//Fill Word List and Check for Lex Rules
 	PerformLex(wordList);
 
+	wordStr* currentWord = wordList->first;
+	
+	while(currentWord != NULL)
+	{
+		printf("%s  -  %s\n",currentWord->content, currentWord->type);
+		currentWord = currentWord->next;
+	}
+
 	PerformSyntax(wordList, &AST);
 
 	PerformSemantics(&AST);

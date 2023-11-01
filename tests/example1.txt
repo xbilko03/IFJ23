@@ -11,7 +11,7 @@ var a = Int2Double(a)
 var vysl : Double = 1
 while (a > 0) {
 vysl = vysl * a
-a = a - 1
+a = a - 1 ??
 }
 write("Vysledek je: ", vysl, "\n")
 }
