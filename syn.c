@@ -11,7 +11,6 @@
 void printTree(node* root, unsigned level);
 void BindNode(node* parent, node* child, char* direction);
 node* CreateNode(char* content, char* type, unsigned* level);
-wordStr* SkipNewlines(wordStr* currentWord);
 wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode);
 wordStr* args(wordStr* currentWord, char* direction, unsigned* level, node** currentNode);
 wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode);
@@ -29,7 +28,7 @@ void PerformSyntax(wordListStr* wrdList, node** AST) {
 	node* program = CreateNode("root", "program", &level);
 	node* currentNode = program;
 
-	currentWord = SkipNewlines(currentWord);
+	currentWord = GetToken(currentWord, "yes");
 	currentWord = prog_con(currentWord, &level, &currentNode);
 
 	//printTree(program, 1);
@@ -70,6 +69,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		char* id = currentWord->content;
 		wordStr* lastWord = currentWord;
 		currentWord = GetToken(currentWord, "yes");
+		if(currentWord == NULL)
+			exit(2);
 
 		//<prog_con> func_id(<args>)
 		if (strcmp(currentWord->content, "(") == 0)
@@ -88,11 +89,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			*currentNode = newNode;			 
 
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			
 			//<prog_con> id = id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
 				{
@@ -110,6 +115,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				char* intValue = currentWord->content;
 
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 
 				//<prog_con> id = <expression>
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
@@ -134,7 +141,6 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				return currentWord;
 			}
 		}		
-
 	}
 	//<prog_con> <keyword>
 	else if (strcmp(currentWord->type, "keyword") == 0)
@@ -147,6 +153,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			*currentNode = newNode;			 
 
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			
 
 			//<prog_con> else <prog_con>
@@ -158,10 +166,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		{
 			
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			//<prog_con> let id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				node* newNode = CreateNode(currentWord->content, "constant declaration", level);
+				if((*currentNode)->parent == NULL)
+					BindNode(*currentNode, newNode, "left");
+				else
 				if ((*currentNode)->parent->left == NULL)
 					BindNode(*currentNode, newNode, "left");
 				else
@@ -169,6 +182,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				*currentNode = newNode;				 
 
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 
 				//<prog_con> let id <option>
@@ -184,12 +199,16 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						*currentNode = newNode;
 
 						currentWord = GetToken(currentWord, "yes");
+						if(currentWord == NULL)
+							exit(2);
 						
 
 						//<prog_con> let id <option> <typeIdentifier> =
 						if (strcmp(currentWord->content, "=") == 0)
 						{
 							currentWord = GetToken(currentWord, "yes");
+							if(currentWord == NULL)
+								exit(2);
 							
 
 							//<prog_con> let id <option> <typeIdentifier> = id
@@ -198,6 +217,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 								char* id = currentWord->content;
 								currentWord = GetToken(currentWord, "yes");
 								
+								if(currentWord == NULL)
+									exit(2);
 								//<prog_con> let id <option> <typeIdentifier> = id(<args>)
 								if (strcmp(currentWord->content, "(") == 0)
 								{
@@ -217,6 +238,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				else if (strcmp(currentWord->content, "=") == 0)
 				{
 					currentWord = GetToken(currentWord, "yes");
+					if(currentWord == NULL)
+						exit(2);
 					
 					
 					//<prog_con> var id = id
@@ -224,6 +247,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					{
 						char* id = currentWord->content;
 						currentWord = GetToken(currentWord, "yes");
+						if(currentWord == NULL)
+							exit(2);
 						
 						if (strcmp(currentWord->content, "(") == 0)
 						{
@@ -245,13 +270,16 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		{
 			
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			//<prog_con> var id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				char* id = currentWord->content;
 
 				currentWord = GetToken(currentWord, "yes");
-				
+				if(currentWord == NULL)
+					exit(2);
 
 				//<prog_con> var id <option>
 				if (strcmp(currentWord->content, ":") == 0)
@@ -271,19 +299,24 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						*currentNode = newNode;
 
 						currentWord = GetToken(currentWord, "yes");
+						if(currentWord == NULL)
+							exit(2);
 						
 
 						//<prog_con> var id <option> <typeIdentifier> =
 						if (strcmp(currentWord->content, "=") == 0)
 						{
 							currentWord = GetToken(currentWord, "yes");
-							
+							if(currentWord == NULL)
+								exit(2);
 
 							//<prog_con> var id <option> <typeIdentifier> = id
 							if (strcmp(currentWord->type, "identifier") == 0)
 							{
 								char* id = currentWord->content;
 								currentWord = GetToken(currentWord, "yes");
+								if(currentWord == NULL)
+									exit(2);
 								
 								//<prog_con> var id <option> <typeIdentifier> = id(<args>)
 								if (strcmp(currentWord->content, "(") == 0)
@@ -305,6 +338,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 								*currentNode = newNode;
 
 								currentWord = GetToken(currentWord, "yes");
+								if(currentWord == NULL)
+									exit(2);
 								
 
 								*currentNode = (*currentNode)->parent;
@@ -336,6 +371,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					 
 
 					currentWord = GetToken(currentWord, "yes");
+					if(currentWord == NULL)
+						exit(2);
 					
 
 					//<prog_con> var id <option> = id
@@ -343,6 +380,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					{
 						char* id = currentWord->content;
 						currentWord = GetToken(currentWord, "yes");
+						if(currentWord == NULL)
+							exit(2);
 						
 						if (strcmp(currentWord->content, "(") == 0)
 						{
@@ -367,12 +406,16 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			*currentNode = newNode;
 			 
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			
 
 			//<prog_con> while (
 			if (strcmp(currentWord->content, "(") == 0)
 			{
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 				//<prog_con> while (id
 				if (strcmp(currentWord->type, "identifier") == 0)
@@ -380,6 +423,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					wordStr* lastWord = currentWord;
 					
 					currentWord = GetToken(currentWord, "yes");
+					if(currentWord == NULL)
+						exit(2);
 
 					//<prog_con> while (<expression>
 					if (strcmp(currentWord->content, ">") == 0)
@@ -390,7 +435,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						if (strcmp(currentWord->content, ")") == 0)
 						{
 							currentWord = GetToken(currentWord, "yes");
-							
+							if(currentWord == NULL)
+								exit(2);
 
 							//<prog_con> while (<expression>) <prog_con>
 							currentWord = prog_con(currentWord, level, currentNode);
@@ -409,11 +455,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 
 			
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 
 			//<prog_con> if let
 			if (strcmp(currentWord->content, "let") == 0)
 			{
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 				//<prog_con> if let id
 				if (strcmp(currentWord->type, "identifier") == 0)
@@ -423,12 +473,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 					*currentNode = newNode;
 					
 					currentWord = GetToken(currentWord, "yes");
+					if(currentWord == NULL)
+						exit(2);
 					
 
 					//<prog_con> if let id <prog_con>
 					currentWord = prog_con(currentWord, level, currentNode);
 					return currentWord;
 				}
+				exit(2);
 			}
 
 			//<prog_con> if (
@@ -436,12 +489,16 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			{
 				
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				//<prog_con> if (id
 				if (strcmp(currentWord->type, "identifier") == 0)
 				{
 					wordStr* lastWord = currentWord;
 					
 					currentWord = GetToken(currentWord, "yes");
+					if(currentWord == NULL)
+						exit(2);
 					
 					//<prog_con> if (<expression>
 					if (strcmp(currentWord->content, "<") == 0)
@@ -453,24 +510,31 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 						{
 							
 							currentWord = GetToken(currentWord, "yes");
+							if(currentWord == NULL)
+								exit(2);
 
 							currentWord = prog_con(currentWord, level, currentNode);
 							return currentWord;
 						}
 					}
 				}
+				exit(2);
 			}
 		}
 		//<prog_con> func
 		else if (strcmp(currentWord->content, "func") == 0)
 		{
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			
 			//<prog_con> func id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				char* id = currentWord->content;
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 				//<prog_con> func id(
 				if (strcmp(currentWord->content, "(") == 0)
@@ -491,12 +555,16 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 			*currentNode = newNode;
 
 			currentWord = GetToken(currentWord, "yes");
+			if(currentWord == NULL)
+				exit(2);
 			
 			//<prog_con> return id
 			if (strcmp(currentWord->type, "identifier") == 0)
 			{
 				wordStr* lastWord = currentWord;
 				currentWord = GetToken(currentWord, "yes");
+				if(currentWord == NULL)
+					exit(2);
 				
 				//<prog_con> return id <expression>
 				if (strcmp(currentWord->content, "*") == 0 || strcmp(currentWord->content, "-") == 0)
@@ -515,13 +583,14 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 				}
 			}
 		}
+		exit(2);
 	}
-	
 	//<prog_con> { <prog_con>
 	if (strcmp(currentWord->content, "{") == 0)
 	{
 		currentWord = GetToken(currentWord, "yes");
-		
+		if(currentWord == NULL)
+			exit(2);
 
 		(*level)++;
 
@@ -533,10 +602,13 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 	else if (strcmp(currentWord->content, "}") == 0)
 	{
 		currentWord = GetToken(currentWord, "yes");
+
 		//End of File detect?
 		
 		if (currentWord == NULL)
 			return NULL;
+		else if(currentWord == NULL)
+			exit(2);
 		//<prog_con> { <prog_con>
 				
 		unsigned targetLevel = *(*currentNode)->level;
@@ -545,13 +617,15 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 		{
 			clevel = *(*currentNode)->level;
 			*currentNode = (*currentNode)->parent;
+			if(*currentNode == NULL)
+				return NULL;
 			if (strcmp((*currentNode)->type, "functionType") == 0)
 			{
 				do
 				{
 					*currentNode = (*currentNode)->parent;
 					if (strcmp((*currentNode)->type, "root") == 0)
-						exit(2);//neco není v pohode
+						exit(2);//neco nenï¿½ v pohode
 
 				} while (strcmp((*currentNode)->type, "functionDeclaration"));
 				break;
@@ -576,6 +650,8 @@ wordStr* prog_con(wordStr* currentWord, unsigned* level, node** currentNode)
 
 		return currentWord;
 	}
+	else
+		exit(2);
 
 	return currentWord; //return to prog_con
 }
@@ -587,6 +663,8 @@ wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, 
 
 
 	currentWord = GetToken(currentWord, "yes");
+	if(currentWord == NULL)
+			exit(2);
 
 	currentWord = args(currentWord, "left", level, &newNode);
 
@@ -594,12 +672,14 @@ wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, 
 	if (strcmp(currentWord->content, ")") == 0)
 	{
 		currentWord = GetToken(currentWord, "yes");
+		if(currentWord == NULL)
+			return NULL;
 		
 
 		return currentWord;
 	}
 	else
-		return NULL; //Should return error instead
+		exit(2);
 
 }
 wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode)
@@ -609,6 +689,8 @@ wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* lev
 	*currentNode = newNode;
 
 	currentWord = GetToken(currentWord, "yes");
+	if(currentWord == NULL)
+			exit(2);
 
 	currentWord = args(currentWord, "left", level, &newNode);
 
@@ -632,7 +714,8 @@ wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* lev
 		*currentNode = newNode;
 	}
 	currentWord = GetToken(currentWord, "yes");
-	
+	if(currentWord == NULL)
+		exit(2);
 
 
 	return currentWord;
@@ -786,23 +869,16 @@ void BindNode(node* parent, node* child, char* direction)
 
 //OTHER//
 
-wordStr* SkipNewlines(wordStr* currentWord)
-{
-	if (currentWord == NULL)
-		return NULL;
-	while (currentWord == NULL || strcmp(currentWord->content, "newline") == 0) //Skip all newlines before first valid token
-	{
-		currentWord = GetToken(currentWord, "yes");
-		if (currentWord == NULL)
-			return NULL;
-	}
-	return currentWord;
-}
 wordStr* GetToken(wordStr* currentWord, char* ignoreNewLines)
 {
 	currentWord = currentWord->next;
 	if(strcmp(ignoreNewLines,"yes") == 0)
-		currentWord = SkipNewlines(currentWord);
+		{
+			while (currentWord != NULL && strcmp(currentWord->content, "newline") == 0) //Skip all newlines before first valid token
+			{
+				currentWord = currentWord->next;
+			}
+		}
 	if (currentWord == NULL)
 		return NULL;//EOF
 
