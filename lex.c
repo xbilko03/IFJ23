@@ -220,21 +220,13 @@ void Sign(char word[MaxWordSize], char c)
 		{
 			word[1] = c;
 			word[2] = '\0';
-			char c = getc(stdin);
-			if (!isspace(c) && c != EOF)
-			{
-				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-			}
-			ungetc(c, stdin);
 			SaveWordToList(word,"compare");
-
+			return;
 		}
 		else
 		{
 			ExitProgram(1, "lex.c: invalid operator\n");
 		}
-		word[1] = '\0';
-		SaveWordToList(word,"questionMark");
 	}
 	else if (c == '-')
 	{
@@ -483,7 +475,7 @@ void Cdouble(char word[MaxWordSize], int index, int state)
 		prev = c;
 	}
 	word[index++] = '\0';
-	SaveWordToList(word,"float");
+	SaveWordToList(word,"double");
 }
 void HexEscape(char word[MaxWordSize], int *index)
 {
