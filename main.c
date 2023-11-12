@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("\nBegin\n");
+	//printf("\nBegin\n-----------\n");
 	
 	//Create Word List
 	wordListStr* wordList;
@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 	wordList->last = wordList->first;
 	wordList->first->type = NULL;
 	wordStr* LastToken = wordList->first;
+
 	
 	//Fill Word List and Check for Lex Rules
 	Tokenizer(LastToken);
@@ -22,14 +23,22 @@ int main(int argc, char **argv)
 
 	printf("--------------------------------\n\n");
 
-	PerformSyntax(wordList);
+	wordStr* currentWord = wordList->first;
+	
+	while(currentWord != NULL)
+	{
+		printf("%s  -  %s\n",currentWord->content, currentWord->type);
+		currentWord = currentWord->next;
+	}
 
-	PerformSemantics();
+	PerformSyntax(wordList, &AST);
+
+	PerformSemantics(&AST);
 
 	PerformCodeGen();
 
 	//DeleteWordList(wordList);
 
-	printf("\nEnd\n");
+	//printf("\n-----------\nEnd\n");
 	return 0;
 }

@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include "functions.h"
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
 #define maxCommandTokenCount 255
 
+//In use
 void printTree(node* root, unsigned level);
 void BindNode(node* parent, node* child, char* direction);
 node* CreateNode(char* content, char* type, unsigned* level);
@@ -240,7 +242,9 @@ wordStr* statement(wordStr* currentWord) {
 		//<statement>
 		return statement(currentWord);
 
-
+void printTree(node* root, unsigned level)
+{
+	node* currentNode = root;
 
 	}
 
@@ -355,6 +359,28 @@ wordStr* prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in function definition\n");
 		
+	//<prog_con> id
+	if (strcmp(currentWord->type, "identifier") == 0)
+	{
+		char* id = currentWord->content;
+		wordStr* lastWord = currentWord;
+		currentWord = GetToken(currentWord, "yes");
+
+		//<prog_con> func_id(<args>)
+		if (strcmp(currentWord->content, "(") == 0)
+		{
+			currentWord = func(currentWord, id, "right", level, currentNode);
+
+			//<prog_con> func_id(<args>) <prog_con>
+			currentWord = prog_con(currentWord, level, currentNode);
+			return currentWord;
+		}
+		//<prog_con> id =
+		else if (strcmp(currentWord->content, "=") == 0) 
+		{
+			node* newNode = CreateNode(id, "identifier", level);
+			BindNode(*currentNode, newNode, "right");
+			*currentNode = newNode;			 
 
 		//<types> SKIPFALSE
 		currentWord = types(currentWord);
@@ -455,9 +481,23 @@ wordStr* prog_con(wordStr* currentWord) {
 				//if((result = builtin(currentWord))) return result;
 				//OK
 				return prog_con(currentWord);
+
 			}
+		}		
 
+	}
+	//<prog_con> <keyword>
+	else if (strcmp(currentWord->type, "keyword") == 0)
+	{
+		//<prog_con> else
+		if (strcmp(currentWord->content, "else") == 0)
+		{
+			node* newNode = CreateNode(currentWord->content, "branching", level);
+			BindNode(*currentNode, newNode, "right");
+			*currentNode = newNode;			 
 
+			currentWord = GetToken(currentWord, "yes");
+			
 
 		}
 		/*
@@ -481,9 +521,91 @@ wordStr* prog_con(wordStr* currentWord) {
 			//OK
 			return prog_con(currentWord);
 		}
-		
+		//<prog_con> let
+		else if (strcmp(currentWord->content, "let") == 0)
+		{
+			
+			currentWord = GetToken(currentWord, "yes");
+			//<prog_con> let id
+			if (strcmp(currentWord->type, "identifier") == 0)
+			{
+				node* newNode = CreateNode(currentWord->content, "constant declaration", level);
+				if ((*currentNode)->parent->left == NULL)
+					BindNode(*currentNode, newNode, "left");
+				else
+					BindNode(*currentNode, newNode, "right");
+				*currentNode = newNode;				 
 
-	}
+				currentWord = GetToken(currentWord, "yes");
+				
+
+				//<prog_con> let id <option>
+				if (strcmp(currentWord->content, ":") == 0)
+				{
+					currentWord = option(currentWord, level);
+
+					//<prog_con> let id <option> <typeIdentifier>
+					if (strcmp(currentWord->type, "identifier(type)") == 0)
+					{
+						node* newNode = CreateNode(currentWord->content, "constant declaration", level);
+						BindNode(*currentNode, newNode, "left");
+						*currentNode = newNode;
+
+						currentWord = GetToken(currentWord, "yes");
+						
+
+						//<prog_con> let id <option> <typeIdentifier> =
+						if (strcmp(currentWord->content, "=") == 0)
+						{
+							currentWord = GetToken(currentWord, "yes");
+							
+
+							//<prog_con> let id <option> <typeIdentifier> = id
+							if (strcmp(currentWord->type, "identifier") == 0)
+							{
+								char* id = currentWord->content;
+								currentWord = GetToken(currentWord, "yes");
+								
+								//<prog_con> let id <option> <typeIdentifier> = id(<args>)
+								if (strcmp(currentWord->content, "(") == 0)
+								{
+									currentWord = func(currentWord, id, "left", level, currentNode);
+
+									//<prog_con> let id <option> <typeIdentifier> = id(<args>) <prog_con>
+									*currentNode = (*currentNode)->parent;
+									*currentNode = (*currentNode)->parent;
+									currentWord = prog_con(currentWord, level, currentNode);
+									return currentWord;
+								}
+							}
+						}
+					}
+				}
+				//<prog_con> let id =
+				else if (strcmp(currentWord->content, "=") == 0)
+				{
+					currentWord = GetToken(currentWord, "yes");
+					
+					
+					//<prog_con> var id = id
+					if (strcmp(currentWord->type, "identifier") == 0)
+					{
+						char* id = currentWord->content;
+						currentWord = GetToken(currentWord, "yes");
+						
+						if (strcmp(currentWord->content, "(") == 0)
+						{
+							currentWord = func(currentWord, id, "left", level, currentNode);
+
+							*currentNode = (*currentNode)->parent;
+							//<prog_con> var id = id <prog_con>
+
+							currentWord = prog_con(currentWord, level, currentNode);
+							return currentWord;
+						}
+					}
+				}
+			}
 
 	//########################################
 	/*
@@ -619,8 +741,11 @@ wordStr* prog_con(wordStr* currentWord) {
 	//ERROR
 	else ExitProgram(2, "Wrong first keyword in prog_con section\n");
 	
-	return currentWord;
-}
+	//<prog_con> { <prog_con>
+	if (strcmp(currentWord->content, "{") == 0)
+	{
+		currentWord = GetToken(currentWord, "yes");
+		
 
 wordStr* opt(wordStr* currentWord) {
 	//int result;
@@ -642,7 +767,8 @@ wordStr* opt(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing ) in rule 4 in opt (<params>)\n");
 
-		//OK
+		//<prog_con> { <prog_con>
+		currentWord = prog_con(currentWord, level, currentNode);
 		return currentWord;
 	}
 	/*
@@ -687,6 +813,8 @@ wordStr* opt(wordStr* currentWord) {
 				//OK
 				return currentWord;
 			}
+		} while (clevel >= targetLevel);
+
 
 			/*
 			part of 52. if first is operand is ID not expr
@@ -696,9 +824,14 @@ wordStr* opt(wordStr* currentWord) {
 				//SKIPFALSE
 				currentWord = expression_more(currentWord); //have to return token after EOL if correct
 
-				//EOL already checked in exp_more
-				//OK
-				return currentWord;
+		if (strcmp((*currentNode)->content, "if") == 0)
+		{
+			if ((*currentNode)->right != NULL)
+			{
+				if (strcmp((*currentNode)->right->content, "else") == 0)
+				{
+					*currentNode = (*currentNode)->right;
+				}
 			}
 
 			else ExitProgram(2, "Wrong token after ID token in opt\n");
@@ -729,6 +862,11 @@ wordStr* opt(wordStr* currentWord) {
 	//OK
 	return currentWord;
 }
+wordStr* func(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode)
+{
+	node* newNode = CreateNode(id, "function", level);
+	BindNode(*currentNode, newNode, direction);
+	*currentNode = newNode;
 
 //########################################
 /*
@@ -956,6 +1094,7 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	else ExitProgram(2, "Wrong builtin name\n");
 
+	currentWord = args(currentWord, "left", level, &newNode);
 
 	
 	return currentWord;
@@ -1064,9 +1203,12 @@ wordStr* args_more(wordStr* currentWord) {
 	//NOT OKAY
 	else ExitProgram(2, "Missing , in args_more\n");
 
-	return currentWord;
 }
-
+wordStr* funcdecl(wordStr* currentWord, char* id, char* direction, unsigned* level, node** currentNode)
+{
+	node* newNode = CreateNode(id, "functionDeclaration", level);
+	BindNode(*currentNode, newNode, direction);
+	*currentNode = newNode;
 wordStr* types(wordStr* currentWord) {
 	//int result;
 	printf("###################IN_TYPES#####################\n");
@@ -1119,9 +1261,17 @@ wordStr* types(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing } in types rule, func definition\n");
 
-		//OK
-		return currentWord;
+	
+	if (strcmp(currentWord->content, ")") == 0)
+	{
+		currentWord = GetToken(currentWord, "yes");
+		
+		currentWord = GetToken(currentWord, "yes"); //ignore ->
+		
 	}
+	if (strcmp(currentWord->content, "Int") == 0)
+	{
+		*currentNode = (*currentNode)->left;
 
 	//NOT OKAY
 	else ExitProgram(2, "missing -> or { in function definition\n");
@@ -1213,16 +1363,16 @@ wordStr* params_more(wordStr* currentWord) {
 
 				//<params_more>
 				return params_more(currentWord);
-
-
 			}
-			//<params_more>
-			else {
-				return params_more(currentWord);
+			else
+			{
+				newNode = CreateNode(currentWord->content, "functionType", level);
+				BindNode(*currentNode, newNode, direction);
+				*currentNode = newNode;
+				currentWord = GetToken(currentWord, "yes");
+				currentWord = GetToken(currentWord, "yes");
+				currentWord = GetToken(currentWord, "yes");
 			}
-
-			//OK
-			return currentWord;
 		}
 		//<term> without ID
 		else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
@@ -1236,11 +1386,12 @@ wordStr* params_more(wordStr* currentWord) {
 		else ExitProgram(2, "Wrong parameter after , in params_more\n");
 		
 	}
-	/*
-	58. <params_more> -> eps
-	*/
-	else if(strcmp(currentWord->content, ")") == 0) {
-		return currentWord;
+	else if (strcmp(currentWord->type, "integer") == 0) //is OK
+	{
+		newNode = CreateNode(currentWord->content, "integer", level);
+		BindNode(*currentNode, newNode, "left");
+		*currentNode = newNode;
+		currentWord = GetToken(currentWord, "yes");
 	}
 	else ExitProgram(2, "Missing ',' or wrong parameter in params_more\n");
 
@@ -1301,23 +1452,17 @@ wordStr* write_params(wordStr* currentWord) {
 		//OK
 		return currentWord;
 	}
-	/*
-	34. <write_params> -> eps
-	*/
-	else if(strcmp(currentWord->content, ")")) {
-		//OK
-		return currentWord;
+	else
+	{
+		newNode = newNode->parent;
+		*currentNode = newNode;
 	}
 	else ExitProgram(2, "Missing write params or ) in write function calling\n");	
 
 	return currentWord;
 }
-
-//########################################
-/*
-<write_params_more> rule implementation
-*/
-wordStr* write_params_more(wordStr* currentWord) {
+wordStr* option(wordStr* currentWord, unsigned* level) {
+	currentWord = GetToken(currentWord, "yes");
 	
 	printf("###################IN_WRITE_PARAMS_MORE#####################\n");
 	/*
@@ -1347,6 +1492,11 @@ wordStr* write_params_more(wordStr* currentWord) {
 
 	return currentWord;
 }
+wordStr* expression(wordStr* currentWord, wordStr* lastWord, char* direction, unsigned* level, node** currentNode)
+{
+	node* newNode = CreateNode(currentWord->content, "expression", level);
+	BindNode(*currentNode, newNode, direction);
+	*currentNode = newNode;		 
 
 //########################################
 /*
@@ -1712,29 +1862,10 @@ wordStr* term(wordStr* currentWord) {
 	return currentWord;
 }
 
+//NODES//
 
-
-
-/*
-NODE CREATENODE FUNC
-*/
-void printTree(node* root, unsigned level) {
-	node* currentNode = root;
-
-	for (int i = 0; i < level; i++)
-		printf(i == level - 1 ? "|-" : "  ");
-
-	if(strcmp(currentNode->type,"string") == 0)
-		printf("'TESTSTRING' of type '%s'\n", currentNode->type);
-	else
-		printf("'%s' of type '%s'\n", currentNode->content, currentNode->type);
-	if (currentNode->left != NULL)
-		printTree(currentNode->left, (level + 1));
-	if (currentNode->right != NULL)
-		printTree(currentNode->right, (level + 1) );
-}
-
-node* CreateNode(char* content, char* type, unsigned* level) {
+node* CreateNode(char* content, char* type, unsigned* level)
+{
 	node* newNode = malloc(sizeof(node));
 	newNode->type = malloc(sizeof(char) * (strlen(type) + 1));
 	newNode->content = malloc(sizeof(char) * (strlen(content) + 1));
@@ -1748,20 +1879,18 @@ node* CreateNode(char* content, char* type, unsigned* level) {
 
 	return newNode;
 }
-
-void BindNode(node* parent, node* child, char* direction) {
+void BindNode(node* parent, node* child, char* direction) 
+{
 	child->parent = parent;
 
 	if (strcmp(direction, "left") == 0) {
 		parent->left = child;
 	}
-	else if (strcmp(direction, "right") == 0) {
+	else if (strcmp(direction, "right") == 0)
+	{
 		parent->right = child;
 	}
 }
-
-
-
 
 wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved) {
 	currentWord = currentWord->next;
@@ -1779,3 +1908,4 @@ wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved) 
 	}
 	return currentWord;
 }
+

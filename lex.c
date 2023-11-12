@@ -126,7 +126,9 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
     }
 }
 
+
 void PrintWordList(wordStr *wordList)
+
 {
     while (wordList != NULL)
     {
@@ -202,6 +204,7 @@ char* EscapeSequence(char *word)
     free(word);
     tmp = realloc(tmp, sizeof(char) * tmpIndex);
     return tmp;
+
 }
 
 char HexEscape(char *word, int *i, int *lenght)
