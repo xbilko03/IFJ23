@@ -1,537 +1,497 @@
-#include <stdio.h>
-#include "functions.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdbool.h>
+#include "lex.h"
 
-#define MaxWordSize 255
-
-void CommentStart();
-void CommentContentSingle();
-void CommentContentMultiLine();
-void CommentEndMultiLine();
-void Identifier(char word[MaxWordSize], int index, char c);
-void IdentifierType(char word[MaxWordSize], int index);
-void Sign(char word[MaxWordSize], char c);
-void StringOpen(char word[MaxWordSize], int index);
-void StringContent(char word[MaxWordSize], int index, char c);
-void String(char word[MaxWordSize], int index);
-void Integer(char word[MaxWordSize], int index, char c);
-void SaveWordToList(char word[MaxWordSize], char* type);
-void EscapeSequence(char word[MaxWordSize], int *index);
-void HexEscape(char word[MaxWordSize], int *index);
-void NewLine();
-void Cdouble(char word[MaxWordSize], int index, int state);
-
-wordListStr* wordList;
-
-//TODO: operators out of multiple chars as one token
-void PerformLex(wordListStr* wrdList)
+void AddToken(MachineStates state, wordStr **Tokens, char *word)
 {
-	wordList = wrdList;
-	char inputWord[MaxWordSize] = "";
-	int index;
-	char c;
-
-	while((c = getc(stdin)) != EOF)
-	{
-		index = 0;
-
-		if(c == '/')
-			CommentStart();
-		else if(isalpha(c) || c == '_')
-			Identifier(inputWord, index, c);
-		else if(c == '+' ||
-				c == '-' ||
-				c == '*' ||
-				c == '/' ||
-				c == '(' ||
-				c == ')' ||
-				c == '{' ||
-				c == '}' ||
-				c == ':' ||
-				c == '=' ||
-				c == '<' ||
-				c == '>' ||
-				c == ',' ||
-				c == '!' ||
-				c == '?')
-			Sign(inputWord, c);
-		else if(c == '"')
-			StringOpen(inputWord, index);
-		else if(isdigit(c))
-			Integer(inputWord, index, c);
-		else if(c == '\n')
-			NewLine();
-		else if(c == EOF)
-			return;
-		else if(isspace(c)) {}
-		else
-		{
-			fprintf(stderr,"character : '%c' : ", c);
-			ExitProgram(1, "lex.c: unknown character\n");
-		}
-	}
-	return;
-}
-void NewLine()
-{
-	char newline[MaxWordSize] = "newline";
-	SaveWordToList(newline,"newline");
-	return;
-}
-void CommentStart()
-{
-	char c = getc(stdin);
-	if(c == '*')
-		CommentContentMultiLine();
-	else if(c == '/')
-		CommentContentSingle();
-	else
-		ExitProgram(1, "lex.c: comment syntax token not correctly initialized\n");
-	return;
-}
-void CommentContentSingle()
-{
-	char c;
-	while((c = getc(stdin)))
-	{
-		if(c == '\n' || c == EOF)
-			return;
-	}
-	return;
-}
-void CommentContentMultiLine()
-{
-	char c;
-	while((c = getc(stdin)))
-	{
-		if(c == '*')
-		{
-			CommentEndMultiLine();
-			return;
-		}
-		else if(c == EOF)
-			return;
-	}
-	return;
-}
-void CommentEndMultiLine()
-{
-	char c;
-	c = getc(stdin);
-	if(c == '/')
-		return;
-	else if(c == EOF)
-		ExitProgram(1, "lex.c: multi-line comment was not terminated correctly\n");
-	else
-		CommentContentMultiLine();
-	
-	return;
-}
-void Identifier(char word[MaxWordSize], int index, char c)
-{
-	word[index++] = c;
-	
-	while((c = getc(stdin)))
-	{
-		if(isalpha(c) || c == '_' || isdigit(c))
-			word[index++] = c;
-		else
-		{
-			ungetc(c, stdin);
-			break;
-		}
-	}
-	word[index++] = '\0';
-	
-	if(
-	   strcmp(word, "else") == 0
-	|| strcmp(word, "func") == 0
-	|| strcmp(word, "if") == 0
-	|| strcmp(word, "let") == 0
-	|| strcmp(word, "return") == 0
-	|| strcmp(word, "var") == 0
-	|| strcmp(word, "while") == 0)
-		SaveWordToList(word,"keyword");
-
-	else if( 
-	   strcmp(word, "Double") == 0
-	|| strcmp(word, "Int") == 0
-	|| strcmp(word, "String") == 0)
-		IdentifierType(word, index);
-
-	else if(strcmp(word, "nil") == 0)
-		SaveWordToList(word,"nil");
-	
-	else
-		SaveWordToList(word,"identifier");
-	
-	return;
-}
-void Sign(char word[MaxWordSize], char c)
-{
-	word[0] = c;
-	if (c == '<' || c == '>' || c == '=' || c == '!') {
-		char c2 = getc(stdin);
-		if (c2 == '=')
-		{
-			word[1] = c2;
-			word[2] = '\0';
-			c2 = getc(stdin);
-			if (!isspace(c2) && c2 != EOF)
-			{
-				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-			}
-			ungetc(c2, stdin);
-			SaveWordToList(word,"compare");
-		}
-		else if (!isspace(c2) && c2 != EOF)
-		{
-			ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-		}
-		else
-		{
-			word[1] = '\0';
-			ungetc(c2, stdin);
-			SaveWordToList(word,"sign");
-		}
-	}
-	else if (c == '?')
-	{
-		char c = getc(stdin);
-		if (c == '?')
-		{
-			word[1] = c;
-			word[2] = '\0';
-			char c = getc(stdin);
-			if (!isspace(c) && c != EOF)
-			{
-				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-			}
-			ungetc(c, stdin);
-		}
-		else
-		{
-			ExitProgram(1, "lex.c: invalid operator\n");
-		}
-		SaveWordToList(word,"sign");
-	}
-	else if (c == '-')
-	{
-		char c = getc(stdin);
-		if (c == '>')
-		{
-			word[1] = c;
-			word[2] = '\0';
-			char c = getc(stdin);
-			if (!isspace(c) && c != EOF)
-			{
-				ExitProgram(1, "lex.c: invalid operator\n"); //NOTE: double check there are no other operators
-			}
-			ungetc(c, stdin);
-		}
-		else if (!isspace(c) && c != EOF)
-		{
-			ExitProgram(1, "lex.c: invalid operator\n");
-		}
-		else
-		{
-			word[1] = '\0';
-			SaveWordToList(word,"opeator");
-		}
-			
-	}
-	else
-	{
-		word[1] = '\0';
-		if(c == '+' || c == '*' || c == '/')
-			SaveWordToList(word,"operator");
-		else if(c == '=')
-			SaveWordToList(word,"assign");
-		else if(c == '{')
-			SaveWordToList(word,"openBlock");
-		else if(c == '}')
-			SaveWordToList(word,"closeBlock");
-		else if(c == '(')
-			SaveWordToList(word,"openBracket");
-		else if(c == ')')
-			SaveWordToList(word,"closeBracket");
-		else if(c == ',')
-			SaveWordToList(word,"comma");
-		else if(c == ':')
-			SaveWordToList(word,"colon");
-		else if(c == '?')
-			SaveWordToList(word,"questionMark");
-		else if(c == '!')
-			SaveWordToList(word,"exclamationMark");
-	}
-	return;
-}
-void StringOpen(char word[MaxWordSize], int index)
-{
-	char c = getc(stdin);
-	if(c == '"')
-	{
-		word[0] = '"';
-		word[1] = '"';
-		word[2] = '\0';
-		return;
-	}
-	else if( c > 31)
-		StringContent(word, index, c);
-	else
-		ExitProgram(1,"lex.c: value inside of a string is not valid\n");
-	return;
-}
-void StringContent(char word[MaxWordSize], int index, char c)
-{
-	word[index++] = c;
-	while((c = getc(stdin)))
-	{
-		if(c == EOF)
-			ExitProgram(1,"lex.c: string not terminated\n");
-		else if(c == '"')
-		{
-			String(word, index);
-			return;
-		}
-		else if(c == 92)
-		{
-			EscapeSequence(word, &index);
-		}
-		else
-			word[index++] = c;
-	}
-	return;
-}
-void EscapeSequence(char word[MaxWordSize], int *index)
-{
-	char c = getc(stdin);
-	if(c == 'n')
-	{
-		word[*index] = '\n';
-		*index = *index + 1;
-	}
-	else if(c == 't')
-	{
-		word[*index] = '\t';
-		*index = *index + 1;
-	}
-	else if(c == '"')
-	{
-		word[*index] = '"';
-		*index = *index + 1;
-	}
-	else if(c == '\\')
-	{
-		word[*index] = '\\';
-		*index = *index + 1;
-	}
-	else if(c == ' ' || c == '\t' || c == '\n' || c == '\r')
-	{
-		word[*index] = '\\';
-		*index = *index + 1;
-	}
-	else if(c == 'u')
-	{
-		HexEscape(word, index);
-	}
-	return;
-}
-void String(char word[MaxWordSize], int index)
-{
-	word[index] = '\0';
-	SaveWordToList(word,"string");
-}
-void IdentifierType(char word[MaxWordSize], int index)
-{
-	char c = getc(stdin);
-	if(c == '?')
-	{
-		word[--index] = c;
-		word[++index] = '\0';
-	}
-	else
-		ungetc(c, stdin);
-	SaveWordToList(word,"identifier(type)");
-	return;
-}
-void Integer(char word[MaxWordSize], int index, char c)
-{
-	word[index++] = c;
-	while((c = getc(stdin)))
-	{
-		if(c == EOF || isspace(c))
-			break;
-		else if(isdigit(c))
-		{
-			word[index++] = c;
-		}
-		else if (c == '.')
-		{
-			word[index++] = c;
-			Cdouble(word, index, 1);
-			return;
-		}
-		else if (c == 'e' || c == 'E')
-		{
-			word[index++] = c;
-			Cdouble(word, index, 2);
-			return;
-		}
-		else
-		{
-			if(isalpha(c))
-			{
-				ExitProgram(1,"lex.c: invalid identificator. Identificator can't start with a number\n");
-			}
-			ungetc(c, stdin);
-			break;
-		}
-	}
-	word[index++] = '\0';
-	long int i = strtol(word, NULL, 10);
-	if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
-		ExitProgram(1,"lex.c: integer is too big or too small\n");
-	printf("%d\n", atoi(word));
-	SaveWordToList(word,"integer");
-	return;
-}
-void Cdouble(char word[MaxWordSize], int index, int state)
-{
-	char c;
-	char prev;
-	bool isDouble = true;
-	while(isDouble && (c = getc(stdin)))
-	{
-		switch (state)
-		{
-			//State 1: After the dot
-			case 1:
-				if(isalpha(c) && c != 'e' && c != 'E')
-					ExitProgram(1,"lex.c: invalid double\n");
-				else if(c == 'e' || c == 'E')
-				{
-					if (!isdigit(prev))
-						ExitProgram(1,"lex.c: invalid double\n");
-					state = 2;
-					word[index++] = c;
-				}
-				else if(isdigit(c))
-				{
-					word[index++] = c;
-				}
-				else
-				{
-					if (!isdigit(prev))
-						ExitProgram(1,"lex.c: invalid double\n");
-					ungetc(c, stdin);
-					isDouble = false;
-				}
-				break;
-			//State 2: After the e or E
-			case 2:
-				if(isalpha(c))
-				{
-					ExitProgram(1,"lex.c: invalid double\n");
-				}
-				else if(isdigit(c) || c == '+' || c == '-')
-				{
-					state = 3;
-					word[index++] = c;
-				}
-				else
-				{
-					ExitProgram(1,"lex.c: invalid double\n");
-				}
-				break;
-			//State 3: After the e or E and the sign
-			case 3:
-				if(isalpha(c))
-				{
-					ExitProgram(1,"lex.c: invalid double\n");
-				}
-				else if(isdigit(c))
-				{
-					state = 3;
-					word[index++] = c;
-				}
-				else
-				{
-					if (!isdigit(prev))
-						ExitProgram(1,"lex.c: invalid double\n");
-					ungetc(c, stdin);
-					isDouble = false;
-				}
-				break;
-		}
-		prev = c;
-	}
-	word[index++] = '\0';
-	SaveWordToList(word,"float");
-}
-void HexEscape(char word[MaxWordSize], int *index)
-{
-	char hex[MaxWordSize]= "";
-	int hexIndex = 0;
-	char c = getc(stdin);
-	if (c == '{')
-	{
-		while((c = getc(stdin)))
-		{
-			//Check if c is a valid hex character
-			if( isdigit(c) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102) )
-			{
-				hex[hexIndex++] = c;
-			}
-			else if(c == '}')
-			{
-				int len = strlen(hex);
-				if (len == 0 || len > 8)
-				{
-					ExitProgram(1,"lex.c: Invalid escape sequence\n");
-				}
-				word[*index] = (char)strtol(hex, NULL, 16);
-				*index = *index + 1;
-				return;
-			}
-			else 
-			{
-				ExitProgram(1,"lex.c: Invalid escape sequence\n");
-			}
-		}
-	}
-	else
-	{
-		ExitProgram(1,"lex.c: Invalid escape sequence\n");
-	}
+    if((*Tokens)->type != NULL)
+    {
+        (*Tokens)->next = malloc(sizeof(wordStr));
+        (*Tokens) = (*Tokens)->next;
+        (*Tokens)->next = NULL;
+    }
+    if(state == String_end)
+    {
+        (*Tokens)->type = "string";
+        (*Tokens)->content = EscapeSequence(word);
+    }
+    else if(state == Compare_end || state == Operator || state == Operator3 || state == Operator4 )
+    {
+        (*Tokens)->type = "operator";
+        (*Tokens)->content = word;
+    }
+    else if(state == Open_bracket)
+    {
+        (*Tokens)->type = "openBracket";
+        (*Tokens)->content = word;
+    }
+    else if(state == Close_bracket)
+    {
+        (*Tokens)->type = "closeBracket";
+        (*Tokens)->content = word;
+    }
+    else if(state == Open_block)
+    {
+        (*Tokens)->type = "openBlock";
+        (*Tokens)->content = word;
+    }
+    else if(state == Close_block)
+    {
+        (*Tokens)->type = "closeBlock";
+        (*Tokens)->content = word;
+    }
+    else if(state == Colon)
+    {
+        (*Tokens)->type = "colon";
+        (*Tokens)->content = word;
+    }
+    else if(state == Comma)
+    {
+        (*Tokens)->type = "comma";
+        (*Tokens)->content = word;
+    }
+    else if(state == Assign)
+    {
+        (*Tokens)->type = "assign";
+        (*Tokens)->content = word;
+    }
+    else if(state == Compare || state == Compare2)
+    {
+        (*Tokens)->type = "compare";
+        (*Tokens)->content = word;
+    }
+    else if(state == ExclamationMark)
+    {
+        (*Tokens)->type = "exclamationMark";
+        (*Tokens)->content = word;
+    }
+    else if(state == Identifier)
+    {
+        if(Keyword(word))
+        {
+            (*Tokens)->type = "keyword";
+            (*Tokens)->content = word;
+        }
+        else if(Type(word))
+        {
+            (*Tokens)->type = "identifier(type)";
+            (*Tokens)->content = word;
+        }
+        else
+        {
+            (*Tokens)->type = "identifier";
+            (*Tokens)->content = word;
+        }
+    }
+    else if(state == Identifier_type)
+    {
+        if(Type(word))
+        {
+            (*Tokens)->type = "identifier(type)";
+            (*Tokens)->content = word;
+        }
+        else
+        {
+            exit(1);
+            //TODO: Print error unknown type
+        }
+    }
+    else if (state == Integer)
+    {
+        long int i = strtol(word, NULL, 10);
+        if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
+        {
+            exit(1);
+        }
+        (*Tokens)->type = "integer";
+        (*Tokens)->content = word;
+    }
+    else if (state == Double || state == Double_exp_op2)
+    {
+        strtod(word, NULL);
+        if(errno == ERANGE)
+        {
+            exit(1);
+        }
+        (*Tokens)->type = "double";
+        (*Tokens)->content = word;
+    }
+    else if (state == Arrow)
+    {
+        (*Tokens)->type = "arrow";
+        (*Tokens)->content = word;
+    }
+    else if (state == Newline)
+    {
+        (*Tokens)->type = "newline";
+        (*Tokens)->content = "newline";
+    }
 }
 
-void SaveWordToList(char word[MaxWordSize], char* type)
+void PrintWordList(wordStr *wordList)
 {
-	//Create new Word
-	wordStr* newWord;
-	newWord = malloc(sizeof(wordStr));
-	newWord->content = malloc(sizeof(char) * (strlen(word) + 1));
-	newWord->type = malloc(sizeof(char) * (strlen(type) + 1));
-	newWord->next = NULL;
-	strcpy(newWord->content, word);
-	strcpy(newWord->type, type);
+    while (wordList != NULL)
+    {
+        printf("%s %s\n", wordList->type, wordList->content);
+        wordList = wordList->next;
+    }
+}
 
+bool Keyword(char* word)
+{
+    if (strcmp(word, "else") == 0 || strcmp(word, "func") == 0 || strcmp(word, "if") == 0 
+    || strcmp(word, "let") == 0 || strcmp(word, "nil") == 0 || strcmp(word, "return") == 0
+    || strcmp(word, "var") == 0 || strcmp(word, "while") == 0)
+        return true;
+    return false;
+}
 
-	//Save to List
-	if(wordList->first == NULL)
-	{
-		wordList->first = newWord;
-		wordList->last = newWord;
-	}
-	else
-	{
-		wordList->last->next = newWord;
-		wordList->last = newWord;
-	}
+bool Type(char* word)
+{
+    if (strcmp(word, "Double") == 0 || strcmp(word, "Double?") == 0 || strcmp(word, "Int") == 0 
+    || strcmp(word,"Int?") == 0 || strcmp(word, "String") == 0 || strcmp(word, "String?") == 0)
+        return true;
+    return false;
+}
+
+char* EscapeSequence(char *word)
+{
+    int lenght = strlen(word);
+    char *tmp = malloc(sizeof(char) * lenght);
+    int tmpIndex = 0;
+    for (int i = 1; i < lenght-1; i++)
+    {
+        if (word[i] == '\\')
+        {
+            i++;
+            if (word[i] == 'n')
+            {
+                tmp[tmpIndex] = '\n';
+                tmpIndex += 1;
+            }
+            else if (word[i] == 't')
+            {
+                tmp[tmpIndex] = '\t';
+                tmpIndex += 1;
+            }
+            else if (word[i] == '"')
+            {
+                tmp[tmpIndex] = '"';
+                tmpIndex += 1;
+            }
+            else if (word[i] == '\\')
+            {
+                tmp[tmpIndex] = '\\';
+                tmpIndex += 1;
+            }
+            else if (word[i] == 'u')
+            {
+                tmp[tmpIndex] = HexEscape(word, &i, &lenght);
+                tmpIndex += 1;
+            }
+            else
+            {
+                // TODO: Print error
+                exit(1);
+            }
+        }
+        else
+        {
+            tmp[tmpIndex] = word[i];
+            tmpIndex += 1;
+        }
+    }
+    free(word);
+    tmp = realloc(tmp, sizeof(char) * tmpIndex);
+    return tmp;
+}
+
+char HexEscape(char *word, int *i, int *lenght)
+{
+    char *hex = malloc(sizeof(char) * 9);
+    int hexIndex = 0;
+    *i += 1;
+    if (word[*i] == '{')
+    {
+        for (*i += 1; *i < *lenght; *i += 1)
+        {
+            if (isxdigit(word[*i]))
+            {
+                if (hexIndex == 7)
+                {
+                    // TODO: print error escape sequence
+                    exit(1);
+                }
+                hex[hexIndex] = word[*i];
+                hexIndex += 1;
+            }
+            else if (word[*i] == '}')
+            {
+                if (hexIndex == 0)
+                {
+                    // TODO: print error escape sequence
+                    exit(1);
+                }
+                hex[hexIndex] = '\0';
+                break;
+            }
+            else
+            {
+                // TODO: print error escape sequence
+                    exit(1);
+            }
+        }
+        int tmp = strtol(hex, NULL, 16);
+
+        if (tmp <= 255)
+        {
+            char tmp2 = tmp;
+            return tmp2;
+        }
+        else
+        {
+            //TODO: print error escape sequence
+            exit(1);
+        }
+    }
+    else
+    {
+        // TODO: print error escape sequence
+        exit(1);
+    }
+    exit(1);
+}
+
+void Tokenizer(wordStr *LastToken)
+{
+    MachineStates currentState = Start;
+    MachineStates nextState = Start;
+    size_t bufferSize = 32;
+    size_t bufferLenght = 0;
+    char *buffer;
+    while (true)
+    {
+        char input = getchar();
+        nextState = StateMachine(input, currentState);
+        if (currentState == Start)
+        {
+            if (nextState == Start)
+                continue;
+            buffer = (char *)malloc(bufferSize);
+        }
+        if (nextState == Error)
+        {
+            // TODO: Print lex error
+            exit(1);
+        }
+        else if (nextState == End)
+        {
+            buffer[bufferLenght] = '\0';
+            if (currentState != Comment_one_line && currentState != Comment_multi_line_end2)
+                AddToken(currentState, &LastToken, buffer);
+            else
+                free(buffer);
+            nextState = Start;
+            bufferSize = 32;
+            bufferLenght = 0;
+            ungetc(input, stdin);
+        }
+        else if (nextState == Comment_one_line)
+        {
+            while (input != '\n')
+            {
+                input = getchar();
+            }
+            ungetc(input, stdin);
+        }
+        else if (nextState == Endoffile)
+        {
+            break;
+        }
+        else
+        {
+            if (bufferSize == bufferLenght)
+            {
+                char *temp = realloc(buffer, bufferSize * 2);
+                if (temp == NULL)
+                {
+                    // TODO: Print memory error
+                    exit(99);
+                }
+                bufferSize *= 2;
+                buffer = temp;
+            }
+            buffer[bufferLenght] = input;
+            bufferLenght++;
+        }
+        currentState = nextState;
+    }
+}
+
+MachineStates StateMachine(char input, MachineStates currentState)
+{
+    switch (currentState)
+    {
+    case Start:
+        if (input == '"')
+            return String_start;
+        if (input == '/')
+            return Operator3;
+        if (input == '?')
+            return Compare_start;
+        if (input == ')')
+            return Close_bracket;
+        if (input == '(')
+            return Open_bracket;
+        if (input == '{')
+            return Open_block;
+        if (input == '}')
+            return Close_block;
+        if (input == ':')
+            return Colon;
+        if (input == ',')
+            return Comma;
+        if (input == '*' || input == '+')
+            return Operator;
+        if (input == '=')
+            return Assign;
+        if (input == '<' || input == '>')
+            return Compare;
+        if (input == '!')
+            return ExclamationMark;
+        if (isalpha(input))
+            return Identifier;
+        if (input == '_')
+            return Identifier_start;
+        if (isdigit(input))
+            return Integer;
+        if (input == '-')
+            return Operator4;
+        if (input == '\n')
+            return Newline;
+        if (input == EOF)
+            return Endoffile;
+        if (isspace(input))
+            return Start;
+        return Error;
+    case String_start:
+        if (input > 31 && input != '"' && input != '\\')
+            return String_start;
+        if (input == '\\')
+            return String_escape;
+        if (input == '"')
+            return String_end;
+        return Error;
+    case String_escape:
+        return String_start;
+    case String_end:
+        return End;
+    case Operator3:
+        if (input == '/')
+            return Comment_one_line;
+        if (input == '*')
+            return Comment_multi_line_start;
+        return End;
+    case Comment_one_line:
+        return End;
+    case Comment_multi_line_start:
+        if (input == '*')
+            return Comment_multi_line_end1;
+        return Comment_multi_line_start;
+    case Comment_multi_line_end1:
+        if (input == '/')
+            return Comment_multi_line_end2;
+        return Comment_multi_line_start;
+    case Comment_multi_line_end2:
+        return End;
+    case Compare_start:
+        if (input == '?')
+            return Compare_end;
+        return Error;
+    case Compare_end:
+        return End;
+    case Close_bracket:
+        return End;
+    case Open_bracket:
+        return End;
+    case Open_block:
+        return End;
+    case Close_block:
+        return End;
+    case Colon:
+        return End;
+    case Comma:
+        return End;
+    case Operator:
+        return End;
+    case Assign:
+        if (input == '=')
+            return Compare2;
+        return End;
+    case Compare:
+        if (input == '=')
+            return Compare2;
+        return End;
+    case ExclamationMark:
+        if (input == '=')
+            return Compare2;
+        return End;
+    case Compare2:
+        return End;
+    case Identifier:
+        if (isdigit(input) || isalpha(input) || input == '_')
+            return Identifier;
+        if (input == '?')
+            return Identifier_type;
+        return End;
+    case Identifier_start:
+        if (isdigit(input) || isalpha(input) || input == '_')
+            return Identifier;
+        return Error;
+    case Identifier_type:
+        return End;
+    case Integer:
+        if (isdigit(input))
+            return Integer;
+        if (input == '.')
+            return Double_start;
+        if (input == 'E' || input == 'e')
+            return Double_exp;
+        return End;
+    case Double_start:
+        if (isdigit(input))
+            return Double;
+        return Error;
+    case Double:
+        if (input == 'E' || input == 'e')
+            return Double_exp;
+        return End;
+    case Double_exp:
+        if (input == '+' || input == '-')
+            return Double_exp_op;
+        if (isdigit(input))
+            return Double_exp;
+        return Error;
+    case Double_exp_op:
+        if (isdigit(input))
+            return Double_exp_op2;
+        return Error;
+    case Double_exp_op2:
+        if (isdigit(input))
+            return Double_exp_op2;
+        return End;
+    case Operator4:
+        if (input == '>')
+            return Arrow;
+        return End;
+    case Arrow:
+        return End;
+    case Error:
+        return Error;
+    case End:
+        return Error;
+    case Newline:
+        return End;
+    case Endoffile:
+        return Error;
+    }
+    return Error;
 }
