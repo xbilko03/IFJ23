@@ -6,9 +6,6 @@
 
 #define maxCommandTokenCount 255
 
-void printTree(node* root, unsigned level);
-void BindNode(node* parent, node* child, char* direction);
-node* CreateNode(char* content, char* type, unsigned* level);
 wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved);
 
 wordStr* prog(wordStr* currentWord);
@@ -1711,57 +1708,6 @@ wordStr* term(wordStr* currentWord) {
 
 	return currentWord;
 }
-
-
-
-
-/*
-NODE CREATENODE FUNC
-*/
-void printTree(node* root, unsigned level) {
-	node* currentNode = root;
-
-	for (int i = 0; i < level; i++)
-		printf(i == level - 1 ? "|-" : "  ");
-
-	if(strcmp(currentNode->type,"string") == 0)
-		printf("'TESTSTRING' of type '%s'\n", currentNode->type);
-	else
-		printf("'%s' of type '%s'\n", currentNode->content, currentNode->type);
-	if (currentNode->left != NULL)
-		printTree(currentNode->left, (level + 1));
-	if (currentNode->right != NULL)
-		printTree(currentNode->right, (level + 1) );
-}
-
-node* CreateNode(char* content, char* type, unsigned* level) {
-	node* newNode = malloc(sizeof(node));
-	newNode->type = malloc(sizeof(char) * (strlen(type) + 1));
-	newNode->content = malloc(sizeof(char) * (strlen(content) + 1));
-	newNode->level = malloc(sizeof(unsigned));
-	memcpy(newNode->level, level, sizeof(unsigned));
-	
-	strcpy(newNode->type, type);
-	strcpy(newNode->content, content);
-	newNode->right = NULL;
-	newNode->left = NULL;
-
-	return newNode;
-}
-
-void BindNode(node* parent, node* child, char* direction) {
-	child->parent = parent;
-
-	if (strcmp(direction, "left") == 0) {
-		parent->left = child;
-	}
-	else if (strcmp(direction, "right") == 0) {
-		parent->right = child;
-	}
-}
-
-
-
 
 wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved) {
 	currentWord = currentWord->next;
