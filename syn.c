@@ -9,7 +9,7 @@
 void printTree(node* root, unsigned level);
 void BindNode(node* parent, node* child, char* direction);
 node* CreateNode(char* content, char* type, unsigned* level);
-wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines);
+wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved);
 
 wordStr* prog(wordStr* currentWord);
 wordStr* prog_con(wordStr* currentWord);
@@ -60,11 +60,11 @@ wordStr* statement(wordStr* currentWord) {
 	*/
 	// let || var
 	if ((strcmp(currentWord->content, "let") == 0) || (strcmp(currentWord->content, "var") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//ID
 		if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, false);
 		}
 		else ExitProgram(2, "Missing identifier in variable definition in statement\n");
 
@@ -73,7 +73,7 @@ wordStr* statement(wordStr* currentWord) {
 
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing EOL after statement variant ID definition in statement\n");
 
@@ -97,10 +97,10 @@ wordStr* statement(wordStr* currentWord) {
 			*/
 			//write
 			if(strcmp(currentWord->content, "write") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 				//(
 				if (strcmp(currentWord->content, "(") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing ( in write function calling\n");
 				//<write_params>
@@ -113,13 +113,13 @@ wordStr* statement(wordStr* currentWord) {
 				
 				//)
 				if (strcmp(currentWord->content, ")") == 0) {
-					currentWord = GetToken(currentWord, false);
+					currentWord = GetToken(currentWord, false, false);
 				}
 				else ExitProgram(2, "Missing ) in write function calling\n");
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing EOL after id_type in statement section\n");
 
@@ -135,7 +135,7 @@ wordStr* statement(wordStr* currentWord) {
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing EOL after id_type (builtin case) in statement section\n");
 
@@ -152,7 +152,7 @@ wordStr* statement(wordStr* currentWord) {
 		else {
 			// ID
 			if (strcmp(currentWord->type, "identifier") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 			}
 			//<opt> SKIPFALSE
 			currentWord = opt(currentWord);
@@ -161,7 +161,7 @@ wordStr* statement(wordStr* currentWord) {
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
 					printf("token pred:%s\n", currentWord->content);
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 					printf("token po:%s\n", currentWord->content);
 			}
 			else ExitProgram(2, "Missing EOL after id_type (ID <opt>) in statement section\n");
@@ -180,22 +180,22 @@ wordStr* statement(wordStr* currentWord) {
 	*/
 	// if
 	else if (strcmp(currentWord->content, "if") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		// (
 		if (strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord);
 		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// {
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { in if before statement\n");
 
@@ -207,19 +207,19 @@ wordStr* statement(wordStr* currentWord) {
 
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 
 		// else
 		if (strcmp(currentWord->content, "else") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing keyword else in if section\n");
 
 		// {
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { in if before else statement\n");
 
@@ -228,13 +228,13 @@ wordStr* statement(wordStr* currentWord) {
 
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, false);
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 	
 		// EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing newline after if statement to border new command\n");
 		//<statement>
@@ -250,22 +250,22 @@ wordStr* statement(wordStr* currentWord) {
 	*/
 	//while
 	else if (strcmp(currentWord->content, "while") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		// (
 		if (strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord);
 		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		//{				
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { before while statement to border new command\n");
 		
@@ -274,13 +274,13 @@ wordStr* statement(wordStr* currentWord) {
 		
 		//}				
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, false);
 		}
 		else ExitProgram(2, "Missing } after while statement to border new command\n");
 		
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing EOL after if statement in statement\n");
 		
@@ -292,14 +292,14 @@ wordStr* statement(wordStr* currentWord) {
 	69. <statement> -> return <return_value> EOL <statement>
 	*/
 	else if(strcmp(currentWord->content, "return") == 0) {
-		currentWord = GetToken(currentWord, false); // CAUTION
+		currentWord = GetToken(currentWord, false, false); // CAUTION
 
 		//<return_value> SKIPFALSE
 		currentWord = return_value(currentWord); // return EOL if success
 
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing EOL after return in statement\n");
 
@@ -330,18 +330,18 @@ wordStr* prog_con(wordStr* currentWord) {
 	//func
 	if(strcmp(currentWord->content, "func") == 0) {
 		printf("<prog_con> -> func FID (<arg>) <types> {<statement>} <prog_con>");
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//FID
 		if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing FID\n");
 	
 
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in function definition\n");
 
@@ -351,7 +351,7 @@ wordStr* prog_con(wordStr* currentWord) {
 
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ) in function definition\n");
 		
@@ -362,7 +362,7 @@ wordStr* prog_con(wordStr* currentWord) {
 
 		//EOL
 		if(strcmp(currentWord->type, "newline") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing EOL after function definition in prog_con section\n");
 
@@ -376,11 +376,11 @@ wordStr* prog_con(wordStr* currentWord) {
 	*/
 	// let || var
 	else if ((strcmp(currentWord->content, "let") == 0) || (strcmp(currentWord->content, "var") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 
 			//ID
 			if(strcmp(currentWord->type, "identifier") == 0) {
-				currentWord = GetToken(currentWord, false);
+				currentWord = GetToken(currentWord, false, false);
 			}
 			else ExitProgram(2, "Missing identifier in variable definition\n");
 
@@ -389,7 +389,7 @@ wordStr* prog_con(wordStr* currentWord) {
 
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 			}
 			else ExitProgram(2, "Missing EOL after variable definition in prog_con section\n");
 
@@ -412,10 +412,10 @@ wordStr* prog_con(wordStr* currentWord) {
 			*/
 			//write
 			if(strcmp(currentWord->content, "write") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 				//(
 				if (strcmp(currentWord->content, "(") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing ( in write function calling\n");
 
@@ -427,13 +427,13 @@ wordStr* prog_con(wordStr* currentWord) {
 				
 				//)
 				if (strcmp(currentWord->content, ")") == 0) {
-					currentWord = GetToken(currentWord, false);
+					currentWord = GetToken(currentWord, false, true);
 				}
 				else ExitProgram(2, "Missing ) in write function calling\n");
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing EOL after id_type in statement section\n");
 
@@ -449,7 +449,7 @@ wordStr* prog_con(wordStr* currentWord) {
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing EOL after id_type (builtin case) in statement section\n");
 				//if((result = builtin(currentWord))) return result;
@@ -466,7 +466,7 @@ wordStr* prog_con(wordStr* currentWord) {
 		else {
 			// ID
 			if (strcmp(currentWord->type, "identifier") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 			}
 			//<opt> SKIPFALSE
 			currentWord = opt(currentWord);
@@ -474,7 +474,7 @@ wordStr* prog_con(wordStr* currentWord) {
 
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 			}
 			else ExitProgram(2, "Missing EOL after id_type (ID <opt>) in statement section\n");
 
@@ -491,22 +491,22 @@ wordStr* prog_con(wordStr* currentWord) {
 	*/
 	// if
 	else if (strcmp(currentWord->content, "if") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		// (
 		if (strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord);
 		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// {
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { in if before statement\n");
 
@@ -516,19 +516,19 @@ wordStr* prog_con(wordStr* currentWord) {
 
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 
 		// else
 		if (strcmp(currentWord->content, "else") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing keyword else in if section\n");
 
 		// {
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { in if before else statement\n");
 
@@ -539,18 +539,19 @@ wordStr* prog_con(wordStr* currentWord) {
 		// }
 		if (strcmp(currentWord->content, "}") == 0) {
 			printf("aktual tokenhere:%s\n", currentWord->type);
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 			//printf("aktual tokenhere:%s\n", currentWord->type);
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 
-		if (currentWord == NULL) {
+		/*if (currentWord == NULL) {
 			printf("END of file\n");
 			return currentWord;
-		}
+		}*/
+		
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 			printf("aktual token:%s\n", currentWord->type);
 		}
 
@@ -568,22 +569,22 @@ wordStr* prog_con(wordStr* currentWord) {
 	*/
 	//while
 	else if (strcmp(currentWord->content, "while") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		// (
 		if (strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord);
 		
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		//{				
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { before while statement to border new command\n");
 		
@@ -593,13 +594,13 @@ wordStr* prog_con(wordStr* currentWord) {
 
 		//}				
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing } after while statement to border new command\n");
 
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		
 		//<prog_con>
@@ -630,14 +631,14 @@ wordStr* opt(wordStr* currentWord) {
 	*/
 	//(
 	if(strcmp(currentWord->content, "(") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//<params> SKIPTRUE
 		currentWord = params(currentWord);//returns )
 
 		//)
 		if (strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false); //NEWLINE CONTINUES
+			currentWord = GetToken(currentWord, false, true); //NEWLINE CONTINUES
 		}
 		else ExitProgram(2, "Missing ) in rule 4 in opt (<params>)\n");
 
@@ -648,7 +649,7 @@ wordStr* opt(wordStr* currentWord) {
 	49.-52. FOR NOW, WILL OVERWRITE
 	*/
 	else if(strcmp(currentWord->content, "=") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		/*
 		51. = <builtin>
@@ -662,13 +663,12 @@ wordStr* opt(wordStr* currentWord) {
 		}
 
 		else if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 			/*
 			49. <opt> -> = ID EOL
 			*/
 			// EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
-				//currentWord = GetToken(currentWord, true);
 				//OK
 				return currentWord;
 			}
@@ -677,12 +677,12 @@ wordStr* opt(wordStr* currentWord) {
 			*/
 			//(
 			else if(strcmp(currentWord->content, "(") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 				//<params> SKIPTRUE
 				currentWord = params(currentWord);
 				//)
 				if(strcmp(currentWord->content, ")") == 0) {
-					currentWord = GetToken(currentWord, false);
+					currentWord = GetToken(currentWord, false, true);
 				}
 				//OK
 				return currentWord;
@@ -709,7 +709,7 @@ wordStr* opt(wordStr* currentWord) {
 		another part of 52. <term> excluding ID as term
 		*/
 		else if ((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 
 			//<expression_more> SKIPFALSE
 			currentWord = expression_more(currentWord); //return token after EOL
@@ -743,15 +743,15 @@ wordStr* builtin(wordStr* currentWord) {
 	*/
 	//readString
 	if(strcmp(currentWord->content, "readString") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in readString function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in readString function\n");
 		//OK
@@ -760,15 +760,15 @@ wordStr* builtin(wordStr* currentWord) {
 	//readInt
 	else if(strcmp(currentWord->content, "readInt") == 0) {
 		printf("in readINT\n");
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in readInt function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in readInt function\n");
 		//OK
@@ -776,15 +776,15 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//readDouble
 	else if(strcmp(currentWord->content, "readDouble") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in readDouble function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in readDouble function\n");
 		//OK
@@ -792,20 +792,20 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//Int2Double
 	else if(strcmp(currentWord->content, "Int2Double") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in Int2Double function\n");
 		//<chr_t>
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters chr_t in Int2Double function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in Int2Double function\n");
 		//OK
@@ -813,20 +813,20 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//Double2Int
 	else if(strcmp(currentWord->content, "Double2Int") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in Double2Int function\n");
 		//<chr_t>
 		if((strcmp(currentWord->type, "float") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters double_t in Double2Int function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in Double2Int function\n");
 		//OK
@@ -834,20 +834,20 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//length
 	else if(strcmp(currentWord->content, "length") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in length function\n");
 		//<length_t>
 		if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters length_t in length function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in length function\n");
 		//OK
@@ -855,58 +855,58 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//substring
 	else if(strcmp(currentWord->content, "substring\n") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in substring function\n");
 
 		//of
 		if(strcmp(currentWord->content, "of") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing of in substring function\n");
 		//<length_t>
 		if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters length_t in substring function\n");
 		//,
 		if(strcmp(currentWord->content, ",") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing , in substring function after of\n");
 
 		//startingAt
 		if(strcmp(currentWord->content, "startingAt") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing startingAt in substring function\n");
 		//<chr_t>
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters chr_t in substring function\n");
 		//,
 		if(strcmp(currentWord->content, ",") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing , in substring function after startingAt\n");
 
 		//endingBefore
 		if(strcmp(currentWord->content, "endingBefore") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing endingBefore in substring function\n");
 		//<chr_t>
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters chr_t in substring function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in length function\n");
 		//OK
@@ -914,20 +914,20 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//ord
 	else if(strcmp(currentWord->content, "ord") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in ord function\n");
 		//<length_t>
 		if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters length_t in ord function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in ord function\n");
 		//OK
@@ -935,20 +935,20 @@ wordStr* builtin(wordStr* currentWord) {
 	}
 	//chr
 	else if(strcmp(currentWord->content, "chr") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//(
 		if(strcmp(currentWord->content, "(") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ( in chr function\n");
 		//<chr_t>
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing parameters chr_t in chr function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing ) in chr function\n");
 		//OK
@@ -976,17 +976,17 @@ wordStr* arg(wordStr* currentWord) {
 	if ((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->content, "_") == 0)) {
 
 		char* tmp_id = currentWord->content; // param_name cannot be same as ID name
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		
 		//ID
 		if ((strcmp(currentWord->type, "identifier") == 0) && (strcmp(currentWord->content, tmp_id) != 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ID in arg or id has same name as param_name\n");
 		
 		//:
 		if (strcmp(currentWord->content, ":") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing : in arg\n");
 		
@@ -1026,25 +1026,25 @@ wordStr* args_more(wordStr* currentWord) {
 	*/
 	//,
 	if (strcmp(currentWord->content, ",") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		char* tmp_id = currentWord->content; // for comparing param_name with id
 
 		//PARAM_NAME
 		if ((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->content, "_") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing param_name\n");
 		
 		//ID
 		if ((strcmp(currentWord->type, "identifier") == 0) && (strcmp(currentWord->content, tmp_id) != 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ID in args_more or id has same name as param_name\n");
 
 		//:
 		if (strcmp(currentWord->content, ":") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing , in args_more\n");
 
@@ -1075,14 +1075,14 @@ wordStr* types(wordStr* currentWord) {
 	*/
 	// ->
 	if (strcmp(currentWord->content, "->") == 0) {
-		currentWord = GetToken(currentWord, true);
-		//<type_spec>
+		currentWord = GetToken(currentWord, true, false);
+		//<type_spec> SKIPTRUE
 		currentWord = type_spec(currentWord);
 		//if((result = type_spec(currentWord))) return result;
 
 		//{
 		if (strcmp(currentWord->content, "{") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing { in function definition\n");
 
@@ -1093,7 +1093,7 @@ wordStr* types(wordStr* currentWord) {
 
 		//}
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, true);
 		}
 		else ExitProgram(2, "Missing } in function definition\n");
 
@@ -1106,7 +1106,7 @@ wordStr* types(wordStr* currentWord) {
 	*/
 	//{
 	else if(strcmp(currentWord->content, "{") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//<statement_with_return> SKIPTRUE
 		currentWord = statement(currentWord);
@@ -1115,7 +1115,7 @@ wordStr* types(wordStr* currentWord) {
 
 		//}
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing } in types rule, func definition\n");
 
@@ -1138,12 +1138,12 @@ wordStr* params(wordStr* currentWord) {
 	printf("###################IN_PARAMS#####################\n");
 	//ID
 	if (strcmp(currentWord->type, "identifier") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//whether : || <params_more>
 		//:
 		if (strcmp(currentWord->content, ":") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 
 			//<term>
 			currentWord = term(currentWord);
@@ -1167,7 +1167,7 @@ wordStr* params(wordStr* currentWord) {
 	}
 	//<term> without ID
 	else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//<params_more> SKIPTRUE
 		currentWord = params_more(currentWord);
 		//if((result = params_more(currentWord))) return result;
@@ -1197,15 +1197,15 @@ wordStr* params_more(wordStr* currentWord) {
 	printf("###################IN_PARAMS_MORE#####################\n");
 
 	if(strcmp(currentWord->content, ",") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//ID
 		if (strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 
 			//whether : || <params_more>
 			//:
 			if (strcmp(currentWord->content, ":") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<term> SKIPTRUE
 				currentWord = term(currentWord);
@@ -1226,7 +1226,7 @@ wordStr* params_more(wordStr* currentWord) {
 		}
 		//<term> without ID
 		else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 			//<params_more> SKIPTRUE
 			return params_more(currentWord);
 			//OK
@@ -1256,22 +1256,22 @@ wordStr* type_spec(wordStr* currentWord) {
 	printf("###################IN_TYPE_SPEC#####################\n");
 	//14.-19. <type_spec>
 	if (strcmp(currentWord->content, "Double")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	else if(strcmp(currentWord->content, "Int")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	else if(strcmp(currentWord->content, "String")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	else if(strcmp(currentWord->content, "Double?")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	else if(strcmp(currentWord->content, "Int?")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	else if(strcmp(currentWord->content, "String?")) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 	}
 	//missing TYPE_SPEC
 	else ExitProgram(2, "Missing type_spec\n");
@@ -1292,7 +1292,7 @@ wordStr* write_params(wordStr* currentWord) {
 	*/
 	//<term>
 	if((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0) || (strcmp(currentWord->type, "string") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		printf("tu som:%s\n", currentWord->content);
 		//<write_params_more> SKIPTRUE
 		currentWord = write_params_more(currentWord); // should return )
@@ -1325,11 +1325,11 @@ wordStr* write_params_more(wordStr* currentWord) {
 	*/
 	//,
 	if(strcmp(currentWord->content, ",") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//<term>
 		if((strcmp(currentWord->type, "identifier") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0) || (strcmp(currentWord->type, "string") == 0)) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing term in write_params_more part\n");
 		//<write_params_more>
@@ -1360,7 +1360,7 @@ wordStr* option(wordStr* currentWord) {
 	*/
 	//:
 	if(strcmp(currentWord->content, ":") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//<type_spec> SKIPFALSE bc after typespec can be EOL
 		currentWord = type_spec(currentWord);
@@ -1369,7 +1369,7 @@ wordStr* option(wordStr* currentWord) {
 		//24. <assigns> -> =
 		//=
 		if(strcmp(currentWord->content, "=") == 0) {
-			currentWord = GetToken(currentWord, true);
+			currentWord = GetToken(currentWord, true, false);
 		}
 		//25. <assigns> -> eps EOL
 		//EOL
@@ -1394,18 +1394,18 @@ wordStr* option(wordStr* currentWord) {
 		}	
 		//ID
 		else if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 
 			//(
 			if(strcmp(currentWord->content, "(") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<params> SKIPTRUE
 				currentWord = params(currentWord);
 				//if((result = params(currentWord))) return result;
 				//)
 				if (strcmp(currentWord->content, ")")) {
-					currentWord = GetToken(currentWord, false);
+					currentWord = GetToken(currentWord, false, true);
 				}
 				else ExitProgram(2, "Missing ) in variable definition near called function params\n");
 				//OK
@@ -1414,7 +1414,7 @@ wordStr* option(wordStr* currentWord) {
 			//ID in the beginning of expression <expression>
 			//<sign>
 			else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<term> SKIPTRUE
 				currentWord = term(currentWord);
@@ -1436,15 +1436,16 @@ wordStr* option(wordStr* currentWord) {
 		}
 		//<expression>??
 		else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 
+			//<EOL>
 			if(strcmp(currentWord->type, "newline") == 0) {
 				return currentWord;
 			}
 
 			//<sign>
 			else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<term> SKIPTRUE
 				currentWord = term(currentWord);
@@ -1454,7 +1455,7 @@ wordStr* option(wordStr* currentWord) {
 				
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true);
+					currentWord = GetToken(currentWord, true, false);
 				}
 				else ExitProgram(2, "Missing newline in option part expression, statement");
 
@@ -1472,7 +1473,7 @@ wordStr* option(wordStr* currentWord) {
 	23. <option> -> <assign>
 	*/
 	else if(strcmp(currentWord->content, "=") == 0) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 		//<assign> -> = <expression>
 		//<assign> -> = <builtin>
 		//<assign> -> = ID <preopt>
@@ -1492,20 +1493,20 @@ wordStr* option(wordStr* currentWord) {
 		}	
 		//ID
 		else if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 			/*
 			46. <preopt> -> (<params>)
 			*/
 			//(
 			if(strcmp(currentWord->content, "(") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<params> SKIPTRUE
 				currentWord = params(currentWord);
 				
 				//)
 				if (strcmp(currentWord->content, ")")) {
-					currentWord = GetToken(currentWord, false);
+					currentWord = GetToken(currentWord, false, true);
 				}
 				else ExitProgram(2, "Missing ) in variable definition near called function params\n");
 				//OK
@@ -1514,7 +1515,7 @@ wordStr* option(wordStr* currentWord) {
 			//ID in the beginning of expression <expression>
 			//<sign>
 			else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 
 				//<term> SKIPTRUE
 				currentWord = term(currentWord);
@@ -1530,7 +1531,7 @@ wordStr* option(wordStr* currentWord) {
 			*/
 			//EOL
 			else if(strcmp(currentWord->type, "newline") == 0) {
-				currentWord = GetToken(currentWord, true);
+				currentWord = GetToken(currentWord, true, false);
 				return currentWord;
 				//MAYBE RETURN CURRENTWORD?
 			}
@@ -1560,7 +1561,7 @@ wordStr* return_value(wordStr* currentWord) {
 	<return_value>
 	*/
 	if(strcmp(currentWord->type, "identifier") == 0) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 		//1. case -> EOL
 		if(strcmp(currentWord->type, "newline") == 0) {
 			return currentWord;
@@ -1577,7 +1578,7 @@ wordStr* return_value(wordStr* currentWord) {
 		}
 		//3. case -> !
 		else if(strcmp(currentWord->content, "!") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 			return currentWord;
 		}
 		else ExitProgram(2, "Missing sign or newline in expression in return_value\n");
@@ -1620,7 +1621,7 @@ wordStr* expression(wordStr* currentWord) {
 
 	//<sign>
 	if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 	}
 	// for example "let a" can be expression too
 	else {
@@ -1651,7 +1652,7 @@ wordStr* expression_more(wordStr* currentWord) {
 
 	//<sign>
 	if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		//<term> SKIPFALSE
 		currentWord = term(currentWord);
@@ -1681,26 +1682,26 @@ wordStr* term(wordStr* currentWord) {
 	printf("###################IN_TERM#####################:%s\n", currentWord->type);
 	//"STRINGLIT" || INTLIT || DOUBLELIT || ID
 	if(strcmp(currentWord->type, "string") == 0) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "integer") == 0) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "float") == 0) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 		return currentWord;
 	}
 	else if(strcmp(currentWord->type, "identifier") == 0) {
-		currentWord = GetToken(currentWord, false);
+		currentWord = GetToken(currentWord, false, true);
 		return currentWord;
 	}
 	else if((strcmp(currentWord->content, "let") == 0) || (strcmp(currentWord->content, "var") == 0)) {
-		currentWord = GetToken(currentWord, true);
+		currentWord = GetToken(currentWord, true, false);
 
 		if(strcmp(currentWord->type, "identifier") == 0) {
-			currentWord = GetToken(currentWord, false);
+			currentWord = GetToken(currentWord, false, true);
 			return currentWord;
 		}
 		else ExitProgram(2, "Missing ID after let or var in term section\n");
@@ -1762,18 +1763,19 @@ void BindNode(node* parent, node* child, char* direction) {
 
 
 
-wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines) {
-	printf("predpadom:\n");
+wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved) {
 	currentWord = currentWord->next;
-	printf("popade:\n");
 	if(ignoreNewLines == true) {
 			while (currentWord != NULL && strcmp(currentWord->content, "newline") == 0) { //Skip all newlines before first valid token
 				currentWord = currentWord->next;
 			}
 	}
-	if (currentWord == NULL) {
+	if ((currentWord == NULL) && (end_approved == true)) {
 		printf("som nil\n");
 		return NULL;//EOF
+	}
+	else if ((currentWord == NULL) && (end_approved == false)) {
+		ExitProgram(2, "Unexpected EOF\n");
 	}
 	return currentWord;
 }
