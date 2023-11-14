@@ -7,6 +7,7 @@
 #define maxCommandTokenCount 255
 
 wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved);
+wordStr* GetFirstToken(wordListStr* wrdList, bool ignoreNewLines, bool end_approved);
 
 wordStr* prog(wordStr* currentWord);
 wordStr* prog_con(wordStr* currentWord);
@@ -31,7 +32,14 @@ wordStr* term(wordStr* currentWord);
 //node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList) {
-	wordStr* currentWord = wrdList->first; //GET HEADER
+	wordStr* currentWord = GetFirstToken(wrdList, true, true); //GET HEADER
+
+	//EOF Prevention
+	if (currentWord == NULL) {
+		printf("END of file\n");
+		return;
+	}
+
 	printf("%s\n", currentWord->content);
 	// *********************TUTORIAL********************
 	//node* cNode;
@@ -310,7 +318,7 @@ wordStr* statement(wordStr* currentWord) {
 	70. <statement> -> eps
 	*/
 	else if(strcmp(currentWord->content, "}") == 0) {
-		printf("skoncil som skoro\n");
+		printf("END OF ACTUAL STATEMENT -> Returning to prog_con\n");
 		return currentWord;
 	}
 
@@ -351,11 +359,18 @@ wordStr* prog_con(wordStr* currentWord) {
 			currentWord = GetToken(currentWord, true, false);
 		}
 		else ExitProgram(2, "Missing ) in function definition\n");
-		
 
 		//<types> SKIPFALSE
 		currentWord = types(currentWord);
 		//if((result = types(currentWord))) return result;
+
+		//EOF prevention
+		if (currentWord == NULL) {
+			printf("END of file\n");
+			return currentWord;
+		}
+
+		printf("tokenFUNC:%s\n", currentWord->content);
 
 		//EOL
 		if(strcmp(currentWord->type, "newline") == 0) {
@@ -373,25 +388,31 @@ wordStr* prog_con(wordStr* currentWord) {
 	*/
 	// let || var
 	else if ((strcmp(currentWord->content, "let") == 0) || (strcmp(currentWord->content, "var") == 0)) {
+		currentWord = GetToken(currentWord, true, false);
+
+		//ID
+		if(strcmp(currentWord->type, "identifier") == 0) {
+			currentWord = GetToken(currentWord, false, false);
+		}
+		else ExitProgram(2, "Missing identifier in variable definition\n");
+
+		//<option> SKIPFALSE
+		currentWord = option(currentWord); //returns newline
+
+		//EOF Prevention
+		if (currentWord == NULL) {
+			printf("END of file\n");
+			return currentWord;
+		}
+
+		//EOL
+		if(strcmp(currentWord->type, "newline") == 0) {
 			currentWord = GetToken(currentWord, true, false);
+		}
+		else ExitProgram(2, "Missing EOL after variable definition in prog_con section\n");
 
-			//ID
-			if(strcmp(currentWord->type, "identifier") == 0) {
-				currentWord = GetToken(currentWord, false, false);
-			}
-			else ExitProgram(2, "Missing identifier in variable definition\n");
-
-			//<option> SKIPFALSE
-			currentWord = option(currentWord); //returns newline
-
-			//EOL
-			if(strcmp(currentWord->type, "newline") == 0) {
-				currentWord = GetToken(currentWord, true, false);
-			}
-			else ExitProgram(2, "Missing EOL after variable definition in prog_con section\n");
-
-			//<prog_con> continuing recursively
-			return prog_con(currentWord);
+		//<prog_con> continuing recursively
+		return prog_con(currentWord);
 	}
 
 	//########################################
@@ -428,6 +449,12 @@ wordStr* prog_con(wordStr* currentWord) {
 				}
 				else ExitProgram(2, "Missing ) in write function calling\n");
 
+				//EOF Prevention
+				if (currentWord == NULL) {
+					printf("END of file\n");
+					return currentWord;
+				}
+
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
 					currentWord = GetToken(currentWord, true, false);
@@ -443,6 +470,12 @@ wordStr* prog_con(wordStr* currentWord) {
 			else{
 				//<builtin> SKIPFALSE
 				currentWord = builtin(currentWord);
+
+				//EOF Prevention
+				if (currentWord == NULL) {
+					printf("END of file\n");
+					return currentWord;
+				}
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
@@ -468,6 +501,12 @@ wordStr* prog_con(wordStr* currentWord) {
 			//<opt> SKIPFALSE
 			currentWord = opt(currentWord);
 			//if((result = opt(currentWord))) return result;
+
+			//EOF Prevention
+			if (currentWord == NULL) {
+				printf("END of file\n");
+				return currentWord;
+			}
 
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
@@ -541,10 +580,11 @@ wordStr* prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 
-		/*if (currentWord == NULL) {
+		//EOF Prevention
+		if (currentWord == NULL) {
 			printf("END of file\n");
 			return currentWord;
-		}*/
+		}
 		
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
@@ -595,6 +635,12 @@ wordStr* prog_con(wordStr* currentWord) {
 		}
 		else ExitProgram(2, "Missing } after while statement to border new command\n");
 
+		//EOF Prevention
+		if (currentWord == NULL) {
+			printf("END of file\n");
+			return currentWord;
+		}
+
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
 			currentWord = GetToken(currentWord, true, false);
@@ -620,7 +666,6 @@ wordStr* prog_con(wordStr* currentWord) {
 }
 
 wordStr* opt(wordStr* currentWord) {
-	//int result;
 	printf("###################IN_OPT#####################\n");
 	//########################################
 	/*
@@ -1090,7 +1135,7 @@ wordStr* types(wordStr* currentWord) {
 
 		//}
 		if (strcmp(currentWord->content, "}") == 0) {
-			currentWord = GetToken(currentWord, true, true);
+			currentWord = GetToken(currentWord, false, true);
 		}
 		else ExitProgram(2, "Missing } in function definition\n");
 
@@ -1361,7 +1406,7 @@ wordStr* option(wordStr* currentWord) {
 
 		//<type_spec> SKIPFALSE bc after typespec can be EOL
 		currentWord = type_spec(currentWord);
-
+		
 		//<assigns>
 		//24. <assigns> -> =
 		//=
@@ -1434,6 +1479,12 @@ wordStr* option(wordStr* currentWord) {
 		//<expression>??
 		else if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "float") == 0)) {
 			currentWord = GetToken(currentWord, false, true);
+			
+			//EOF Prevention
+			if (currentWord == NULL) {
+				printf("END of file\n");
+				return currentWord;
+			}
 
 			//<EOL>
 			if(strcmp(currentWord->type, "newline") == 0) {
@@ -1608,7 +1659,7 @@ wordStr* return_value(wordStr* currentWord) {
 */
 wordStr* expression(wordStr* currentWord) {
 	//int result;
-	printf("###################IN_EXPRESSION#####################:%s\n", currentWord->content);
+	printf("###################IN_EXPRESSION#####################\n");
 	/*
 	81. <expression> -> <term> <sign> <term> <expression_more>
 	*/
@@ -1642,7 +1693,7 @@ wordStr* expression(wordStr* currentWord) {
 */
 wordStr* expression_more(wordStr* currentWord) {
 	//int result;
-	printf("###################IN_EXPRESSION_MORE#####################:%s\n", currentWord->content);
+	printf("###################IN_EXPRESSION_MORE#####################\n");
 	/*
 	81. <expression_more> -> <sign> <term> <expression_more> EOL
 	*/
@@ -1676,7 +1727,7 @@ wordStr* expression_more(wordStr* currentWord) {
 */
 wordStr* term(wordStr* currentWord) {
 	
-	printf("###################IN_TERM#####################:%s\n", currentWord->type);
+	printf("###################IN_TERM#####################\n");
 	//"STRINGLIT" || INTLIT || DOUBLELIT || ID
 	if(strcmp(currentWord->type, "string") == 0) {
 		currentWord = GetToken(currentWord, false, true);
@@ -1711,6 +1762,23 @@ wordStr* term(wordStr* currentWord) {
 
 wordStr* GetToken(wordStr* currentWord, bool ignoreNewLines, bool end_approved) {
 	currentWord = currentWord->next;
+	if(ignoreNewLines == true) {
+			while (currentWord != NULL && strcmp(currentWord->content, "newline") == 0) { //Skip all newlines before first valid token
+				currentWord = currentWord->next;
+			}
+	}
+	if ((currentWord == NULL) && (end_approved == true)) {
+		printf("som nil\n");
+		return NULL;//EOF
+	}
+	else if ((currentWord == NULL) && (end_approved == false)) {
+		ExitProgram(2, "Unexpected EOF\n");
+	}
+	return currentWord;
+}
+
+wordStr* GetFirstToken(wordListStr* wrdList, bool ignoreNewLines, bool end_approved) {
+	wordStr* currentWord = wrdList->first;
 	if(ignoreNewLines == true) {
 			while (currentWord != NULL && strcmp(currentWord->content, "newline") == 0) { //Skip all newlines before first valid token
 				currentWord = currentWord->next;
