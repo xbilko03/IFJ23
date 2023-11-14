@@ -296,7 +296,7 @@ void Tokenizer(wordStr *LastToken)
         }
         else if (nextState == Comment_one_line)
         {
-            while (input != '\n')
+            while (input != '\n' && input != EOF)
             {
                 input = getchar();
             }

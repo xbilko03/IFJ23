@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     free(flag);
 	//END DEMO AST
 
-	Node* AST = NULL;
+	//Node* AST = NULL;
 
 	PrintWordList(wordList->first);
 
