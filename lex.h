@@ -37,7 +37,7 @@ typedef enum MachineStates
     Compare2,
     Identifier,
     Identifier_type,
-    Identifier_start,
+    Identifier_name,
     Integer,
     Double_start,
     Double,
