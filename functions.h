@@ -10,6 +10,8 @@
 
 typedef struct TRPitem {
 	char* content;
+	char* key;
+	struct wordStr* type;
 	struct TRPitem* next;
 } TRPitem;
 
@@ -37,6 +39,7 @@ typedef struct {
 
 typedef struct TRP{
 	TRPitem* items[hashTableSize];
+	struct TRP* next;
 }TRP;
 
 //------Lex.c------
@@ -46,7 +49,7 @@ void PerformLex(wordListStr* wrdList);
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST);
 //-----------------
 //------Sem.c------
-void PerformSemantics();
+void PerformSemantics(Node** AST, TRP* global);
 //-----------------
 //------TRP.c------
 //-----------------
