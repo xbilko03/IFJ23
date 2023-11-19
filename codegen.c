@@ -3,5 +3,6 @@
 
 void PerformCodeGen()
 {
+	printf("testpush\n");
 	return;
 }
