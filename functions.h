@@ -9,7 +9,6 @@
 //---functions.c---
 
 typedef struct TRPitem {
-	char* content;
 	char* key;
 	struct wordStr* type;
 	struct TRPitem* next;
@@ -62,6 +61,10 @@ void ExitProgram(int returnCode, char* message);
 //-----functions.c-----
 void DeleteWordList(wordListStr* wordList);
 long HashFunction(char* key);
+void TableInit(TRP* table);
+TRPitem* TableFindItem(TRP* table, char *key);
+void TableAddItem(TRP* table, char* key, wordStr* type);
+void TableRemoveTable(TRP* table);
 Node* Node_insert(Node** AST, char* content, TRPitem* TRP, char* type);
 int Node_merge(Node* children, Node** parent);
 void* checked_malloc(size_t size);

@@ -19,6 +19,7 @@ long HashFunction(char* key)
 void TableInit(TRP* table){
 	for (int i = 0; i < hashTableSize; i++){
     	table->items[i] = NULL;
+		table->items[i]->type = NULL;
   	}
 }
 
@@ -36,50 +37,93 @@ TRPitem* TableFindItem(TRP* table, char *key)
 	return NULL;
 }
 
-void TableAddItem(TRP* table, char* key, wordStr* type, char* content)
+void TableAddItem(TRP* table, char* key, wordStr* type)
 {
 	int hash = get_hash(key);
   	TRPitem *item = ht_search(table, key);
 
-	if (item != NULL){
-		item->type = type;
+	if (item != NULL){ //already in table
+		if (type != NULL){
+			if (item->type == NULL){ // insert first
+
+				item->type = malloc(sizeof(wordStr));
+				if(item->type == NULL){return;}
+
+				item->type = type;
+				item->type->next = NULL;
+			} else { // insert after
+				while (item->type != NULL){
+					if (item->type == type){
+						//error code cant use same param in the function
+					}
+					if (item->type->next == NULL){
+						wordStr* current = malloc(sizeof(wordStr));
+						if (current == NULL){return;}
+
+						current = type;
+						item->type->next = current;
+
+						return;
+					}
+					item->type = item->type->next;
+				}
+			}
+		}
 		return;
-	} else {
-	
+	} else { //not in the table
+		
 		TRPitem *new_item = malloc(sizeof(TRPitem));
 		if (new_item == NULL){return;}
 
-		new_item->content = content;
-		new_item->key = key; 
-		new_item->type = type;
-		new_item->next = NULL;
+		new_item->key = key;
 
-    if (table->items[hash] == NULL){ 
-      table->items[hash] = new_item;
-      return;
-    } else {
-      TRPitem *last_item = table->items[hash];
+		if (type != NULL){
+			new_item->type = malloc(sizeof(wordStr));
+			if (new_item->type == NULL){return;}
 
-      while (last_item != NULL){ 
-        if (last_item->next != NULL){
-          last_item = last_item->next;
-        } else {
-          last_item->next = new_item;
-          return;
-        }
-      }
-    }
-  }
+			new_item->type = type;
+			new_item->type->next = NULL;
+			new_item->next = NULL;
+		}
+
+		if (table->items[hash] == NULL){ 
+		table->items[hash] = new_item;
+		return;
+		} else {
+			TRPitem *last_item = table->items[hash];
+
+			while (last_item != NULL){ 
+				if (last_item->next != NULL){
+				last_item = last_item->next;
+				} else {
+				last_item->next = new_item;
+				return;
+				}
+			}
+		}
+  	}
 }
-void TableRemoveTable(TRP* table, wordStr* item)
+void TableRemoveTypes (wordStr* type){
+	wordStr* current = type;
+	wordStr* next;
+
+	while (current != NULL){
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	type = NULL;
+}
+void TableRemoveTable(TRP* table)
 {
 	for (int i = 0; i < hashTableSize; i++){
 		TRPitem *current = table->items[i];
 		
 		while (current != NULL){
-		TRPitem *next = current->next;
-		free(current);
-		current = next;
+			TableRemoveTypes(current);
+			TRPitem *next = current->next;
+			free(current);
+			current = next;
 		}
 		table->items[i] = NULL;
 	}

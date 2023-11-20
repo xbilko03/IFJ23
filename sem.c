@@ -9,7 +9,7 @@ void PerformSemantics(Node** AST, TRP* global)
 {
 	Node* tree = *AST;
 	global = NULL;
-	global = malloc(sizeof(TRP));
+	TableInit(global);
 	if (global == NULL){return;}
 	Go_through(tree, global);
 	return;
@@ -17,13 +17,12 @@ void PerformSemantics(Node** AST, TRP* global)
 
 void Go_through(struct Node* root, struct TRP* table)
 {
-	//type_of_node();
 	if (root != NULL){
+		//type_of_node();
 		if (strcmp(root->content, "body") == 0){
 
 			TRP* local = NULL;
-			local = malloc (sizeof(TRP));
-			if (local == NULL){return;}
+			TableInit(local);
 
 			Go_through (root->children[0], local);
 		} else {
@@ -32,16 +31,16 @@ void Go_through(struct Node* root, struct TRP* table)
 				printf("%s %s\n", root->children[i]->content, root->children[i]->type);
 				Go_through(root->children[i], table);
 			}
-		TRP* current = table;
+			TRP* current = table;
 
-		while (current != NULL) {
-			if (current->next != NULL){
-				current = current->next;
-			} else {
-				free(current);
-				return;
+			while (current != NULL) {
+				if (current->next != NULL){
+					current = current->next;
+				} else {
+					TableRemoveTable(current);
+					return;
+				}
 			}
-		}
 		}
 	}
 }
