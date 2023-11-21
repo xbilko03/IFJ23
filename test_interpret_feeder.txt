@@ -1,0 +1,7 @@
+.IFJcode23
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@value
+MOVE LF@value string@Hi\032
+WRITE LF@value
+POPFRAME
