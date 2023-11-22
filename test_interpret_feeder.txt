@@ -1,7 +1,14 @@
 .IFJcode23
-CREATEFRAME
-PUSHFRAME
-DEFVAR LF@value
-MOVE LF@value string@Hi\032
-WRITE LF@value
-POPFRAME
+DEFVAR GF@writeValue
+MOVE GF@writeValue string@Zadejte\032cislo\032pro\032vypocet\032faktorialu\010
+WRITE GF@writeValue
+MOVE GF@writeValue string@Faktorial\032nelze\032spocitat\010
+WRITE GF@writeValue
+MOVE GF@writeValue string@Vysledek\032je:\032
+WRITE GF@writeValue
+MOVE GF@writeValue string@vysl
+WRITE GF@writeValue
+MOVE GF@writeValue string@\010
+WRITE GF@writeValue
+MOVE GF@writeValue string@Chyba\032pri\032nacitani\032celeho\032cisla!\010
+WRITE GF@writeValue

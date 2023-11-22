@@ -8,6 +8,7 @@ void INBUILT_WRITE(Node* c_node);
 
 void PerformCodeGen(Node* tree)
 {
+
 	/* Cycle through AST */
 	ProcessNode(tree);
 
@@ -22,7 +23,11 @@ void ProcessNode(Node* c_node)
 	/* Proccess Node here */
 
 	if (strcmp(c_node->content, "root") == 0)
+	{
+		/* Mandatory Commands */
 		PrintCode(".IFJcode23");
+		PrintCode("DEFVAR GF@writeValue");
+	}
 	else if (strcmp(c_node->content, "write") == 0)
 	{
 		/* Process children nodes (args) here and end the branch */
@@ -43,7 +48,6 @@ void ProcessNode(Node* c_node)
 	return;
 }
 
-
 /* Print CODE */
 void PrintCode(char* code)
 {
@@ -51,19 +55,28 @@ void PrintCode(char* code)
 	return;
 }
 
-/* Destroy CODE */
+/* Might not need everything, but its ready if needs be */
 
 /*
 * MOVE ?var? ?symb?
 * Prirazeni hodnoty do promenne zkopiruje hodnotu ?symb? do ?var?.
 * Napr.MOVE LF@par GF@var provede zkopirovani hodnoty promenne var v globálním rámci do promenne par v lokalnim ramci.
 */
+void MOVE(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * CREATEFRAME
 * Vytvor novy docasny ramec
 * Vytvori novy docasny ramec a zahodi pripadny obsah puvodniho docasneho ramce.
 */
+void CREATEFRAME()
+{
+	PrintCode("CREATEFRAME");
+	return;
+}
 
 /*
 * PUSHFRAME
@@ -72,6 +85,11 @@ void PrintCode(char* code)
 * ramce na zasobniku ramcu.TF bude po provedeni instrukce nedefinovan a je treba jej
 * pred dalsim pouzitim vytvorit pomoci CREATEFRAME. Pokus o pristup k nedefinovanemu ramci vede na chybu 55.
 */
+void PUSHFRAME()
+{
+	PrintCode("PUSHFRAME");
+	return;
+}
 
 /*
 * POPFRAME
@@ -79,13 +97,23 @@ void PrintCode(char* code)
 * Presun vrcholovy ramec LF ze zasobniku ramcu do TF. 
 * Pokud zadny ramec v LF neni k dispozici, dojde k chybe 55.
 */
+void POPFRAME()
+{
+	PrintCode("POPFRAME");
+	return;
+}
 
 /*
-* DEFVAR
-* ?var? Definuj novou prom?nnou v ramci
+* DEFVAR ?var?
+* Definuj novou prom?nnou v ramci
 * Definuje promennou v urcenem ramci dle ?var?. Tato promenná je zatim neinicializovana 
 * a bez urceni typu, ktery bude urcen az prirazenim nejake hodnoty.
 */
+void DEFVAR(Node* c_var)
+{
+	/* symtable required */
+	return;
+}
 
 /*
 * CALL ?label?
@@ -93,6 +121,10 @@ void PrintCode(char* code)
 * Ulozi inkrementovanou aktualni pozici z interniho citace instrukci do zasobniku volani
 * a provede skok na zadané navestí(pripadnou pripravu ramce musi zajistit jine instrukce).
 */
+void CALL(Node* c_label)
+{
+	return;
+}
 
 /*
 * RETURN 
@@ -101,18 +133,30 @@ void PrintCode(char* code)
 * instrukci(uklid lokalnich ramcu musi zajistit jine instrukce).Provedeni instrukce pri
 * prazdnem zasobniku volani vede na chybu 56.
 */
+void RETURN()
+{
+	return;
+}
 
 /*
 * PUSHS ?symb?
 * Vlou hodnotu na vrchol datoveho zasobniku
 * Ulozi hodnotu ?symb? na datovy zasobnik.
 */
+void PUSHS(Node* c_symb)
+{
+	return;
+}
 
 /* POPS ?var?
 * Vyjmi hodnotu z vrcholu datoveho zasobniku
 * Neni-li zásobnik prazdny, vyjme z nej hodnotu a ulozi ji do promenne?var?,
 * jinak dojde k chybe 56.
 */
+void POPS(Node* c_var)
+{
+	return;
+}
 
 /*
 * CLEARS
@@ -120,6 +164,10 @@ void PrintCode(char* code)
 * Pomocna instrukce, ktera smaze cely obsah datového zasobniku,
 * aby neobsahoval zapomenute hodnoty z predchozich vypoctu.
 */
+void CLEARS()
+{
+	return;
+}
 
 /*
 * ADD ?var? ?symb1? ?symb2? 
@@ -127,6 +175,10 @@ void PrintCode(char* code)
 * (musí být stejného ?íselného typu int nebo float) a výslednou
 * hodnotu tehoz typu ulozi do promenne ?var?.
 */
+void ADD(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * SUB ?var? ?symb1? ?symb2?
@@ -134,12 +186,20 @@ void PrintCode(char* code)
 * (musi byt stejneho ciselneho typu int nebo float)
 * a vyslednou hodnotu tehoz typu ulozi do promenne ?var?.
 */
+void SUB(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /* MUL ?var? ?symb1? ?symb2?
 * Nasobeni dvou ciselných hodnot Vynásobí ?symb1? a ?symb2?
 * (musí být stejného ?íselného typu int nebo float)
 * a výslednou hodnotu téhož typu uloží do promenné ?var?.
 */
+void MUL(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * DIV ?var? ?symb1? ?symb2?
@@ -148,6 +208,10 @@ void PrintCode(char* code)
 * a výsledek priradí do promenné ?var? (též typu float).
 * Delení nulou zpusobí chybu 57.
 */
+void DIV(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * IDIV ?var? ?symb1? ?symb2?
@@ -156,11 +220,16 @@ void PrintCode(char* code)
 * (musí být oba typu int) a výsledek priradí do promenné ?var? typu int.
 * Delení nulou zpusobí chybu 57.
 */
+void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * ADDS / SUBS / MULS / DIVS / IDIVS
 * Zásobníkové verze instrukcí ADD, SUB, MUL, DIV a IDIV
 */
+/* might not need */
 
 /*
 * LT / GT / EQ ?var? ?symb1? ?symb2? 
@@ -174,11 +243,16 @@ void PrintCode(char* code)
 * S operandem typu nil(druhý operand je libovolného typu)
 * lze porovnávat pouze instrukcí EQ, jinak chyba 53.
 */
+void COMPARE(char* c_option, Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * LTS / GTS / EQS
 * Zasobniková verze instrukci LT / GT / EQ
 */
+/* might not need */
 
 /*
 * AND / OR / NOT ?var? ?symb1? ?symb2?
@@ -188,18 +262,26 @@ void PrintCode(char* code)
 * nebo negaci na ?symb1? (NOT má pouze 2 operandy)
 * a výsledek typu bool zapíše do ?var?.
 */
+void LOGIC(char* c_option,Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * ANDS / ORS / NOTS
 * Zásobníková verze instrukcí AND, OR a NOT
 */
+/* might not need */
 
 /* 
-* INT2FLOAT
-* ?var? ?symb? Prevod celocíselné hodnoty na desetinnou
+* INT2FLOAT ?var? ?symb? Prevod celocíselné hodnoty na desetinnou
 * Prevede celocíselnou hodnotu ?symb? na desetinné císlo
 * a uloží je do ?var?.
 */
+void INT2FLOAT(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * FLOAT2INT ?var? ?symb?
@@ -207,6 +289,10 @@ void PrintCode(char* code)
 * Prevede desetinnou hodnotu ?symb?
 * na celocíselnou oseknutím desetinné cásti a uloží	ji do ?var?.
 */
+void FLOAT2INT(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * INT2CHAR ?var? ?symb?
@@ -215,6 +301,10 @@ void PrintCode(char* code)
 * jednoznakový retezec prirazený do ?var?.
 * Je-li ?symb? mimo interval[0; 255], dojde k chyb? 58.
 */
+void INT2CHAR(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * STRI2INT ?var? ?symb1? ?symb2?
@@ -223,11 +313,16 @@ void PrintCode(char* code)
 * v retezci ?symb1? na pozici ?symb2? (indexováno od nuly).
 * Indexace mimo daný ?et?zec vede na chybu 58.
 */
+void STRI2INT(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * INT2FLOATS / FLOAT2INTS /	INT2CHARS / STRI2INTS
 * Zásobníkové verze konverzních instrukcí
 */
+/* might not need */
 
 /*
 * CONCAT ?var? ?symb1? ?symb2?
@@ -236,6 +331,10 @@ void PrintCode(char* code)
 * konkatenací dvou retezcových operandu	?symb1? a ?symb2?
 * (jiné typy nejsou povoleny).
 */
+void CONCAT(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * STRLEN ?var? ?symb?
@@ -243,6 +342,10 @@ void PrintCode(char* code)
 * Zjistí délku retezce v ?symb? a délka je uložena jako
 * celé císlo do ?var?.
 */
+void STRLEN(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * GETCHAR ?var? ?symb1? ?symb2?
@@ -251,6 +354,10 @@ void PrintCode(char* code)
 * na pozici ?symb2? (indexováno	celým ?íslem od nuly).
 * Indexace mimo daný ?et?zec vede na chybu 58.
 */
+void GETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * SETCHAR ?var? ?symb1? ?symb2?
@@ -263,6 +370,10 @@ void PrintCode(char* code)
 * Pri indexaci mimo retezec ?var?
 * nebo v prípade prázdného retezce v ?symb2? dojde k chyb? 58.
 */
+void SETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * TYPE ?var? ?symb?
@@ -273,6 +384,10 @@ void PrintCode(char* code)
 * Je-li ?symb? neinicializovaná promenná, oznací její typ
 * prázdným retezcem.
 */
+void TYPE(Node* c_var, Node* c_symb)
+{
+	return;
+}
 
 /*
 * LABEL ?label?
@@ -281,12 +396,20 @@ void PrintCode(char* code)
 * duležitou pozici v kódu jako potenciální cíl libovolné skokové instrukce.
 * Pokus o redefinici existujícího náveští je chybou 52.
 */
+void LABEL(Node* c_label)
+{
+	return;
+}
 
 /*
 * JUMP ?label? 
 * Nepodmínený skok na náveští.
 * Provede nepodmínený skok na zadané náveští ?label?.
 */
+void JUMP(Node* c_label)
+{
+	return;
+}
 
 /*
 * JUMPIFEQ ?label? ?symb1? ?symb2?
@@ -296,6 +419,10 @@ void PrintCode(char* code)
 * a zároven se jejich hodnoty rovnají, tak provede skok 
 * na náveští ?label?.
 */
+void JUMPIFEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * JUMPIFNEQ ?label? ?symb1? ?symb2?
@@ -304,6 +431,10 @@ void PrintCode(char* code)
 * nebo je n?který operand nil(jinak chyba 53),
 * ale ruzné hodnoty, tak provede skok na náveští ?label?.
 */
+void JUMPIFNEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
+{
+	return;
+}
 
 /*
 * JUMPIFEQS / JUMPIFNEQS ?label?
@@ -312,6 +443,7 @@ void PrintCode(char* code)
 * mají i jeden operand mimo datový zásobník, a to náveští ?label?,
 * na které se prípadne provede skok.
 */
+/* might not need */
 
 /*
 * EXIT ?symb?
@@ -321,6 +453,10 @@ void PrintCode(char* code)
 * v intervalu 0 až 49 (vcetne).
 * Nevalidní celocíselná hodnota ?symb? vede na chybu 57.
 */
+void EXIT(Node* c_symb)
+{
+	return;
+}
 
 /*
 * BREAK
@@ -331,6 +467,10 @@ void PrintCode(char* code)
 * aktuálního lokálního a do?asného rámce a poctu již
 * vykonaných instrukcí.
 */
+void BREAK()
+{
+	return;
+}
 
 /*
 * DPRINT ?symb?
@@ -338,39 +478,68 @@ void PrintCode(char* code)
 * Vypíše zadanou hodnotu ?symb? na standardní chybový výstup(stderr).
 * Výpisy touto instrukcí bude možné vypnout pomocí volby interpretu.
 */
+void DPRINT(Node* c_symb)
+{
+	return;
+}
 
 /* func readString() -> String? */
 /* func readInt() -> Int? */
 /* func write(term1 , term2 , ..., termx) */
-char* ConvertString(char* input)
+void PrintFormattedStringCode(char* input,char* code)
 {
-	char* result = NULL;	
-	for (int i = 0;i < strlen(input);i++)
-	{
-		if (result[i] == '\n')
-		{
+	if (input == NULL)
+		return;
+	
+	fprintf(stdout, "%s", code);
 
+	for (int i = 0;i < strlen(input); i++)
+	{
+		if (input[i] == '\n')
+		{
+			fprintf(stdout, "\\010");
+		}
+		else if (input[i] == ' ')
+		{
+			fprintf(stdout, "\\032");
+		}
+		else if (input[i] == '\\')
+		{
+			fprintf(stdout, "\\092");
+		}
+		else if (input[i] == '#')
+		{
+			fprintf(stdout, "\\035");
+		}
+		else
+		{
+			fprintf(stdout, "%c", input[i]);
 		}
 	}
-
-
-	return input;
+	fprintf(stdout, "\n");
+	return;
+}
+bool IsConstant(char* type)
+{
+	if (strcmp(type, "string") ||
+		strcmp(type, "integer") ||
+		strcmp(type, "float") ||
+		strcmp(type, "nil"))
+		return true;
+	else
+		return false;
 }
 void INBUILT_WRITE(Node* c_node)
 {
-	PrintCode("CREATEFRAME");
-	PrintCode("PUSHFRAME");
-	PrintCode("DEFVAR LF@%value");
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
-		PrintCode("MOVE LF@value string@"); //add string strcat(c_outputBuff, c_node->children[i]->content)
-
-		PrintCode("WRITE LF@value");
+		if (IsConstant(c_node->children[i]->type))
+		{
+			PrintFormattedStringCode(c_node->children[i]->content, "MOVE GF@writeValue string@");
+		}
+		PrintCode("WRITE GF@writeValue");
 	}
-	
-	PrintCode("POPFRAME");
 }
-
 /* func Int2Double(_ term : Int) -> Double */
 /* func Double2Int(_ term : Double) */
 /* func length(_ s : String) -> Int */

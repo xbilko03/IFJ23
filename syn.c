@@ -27,7 +27,6 @@ wordStr* expression(wordStr* currentWord, Node* parent);
 wordStr* expression_more(wordStr* currentWord, Node* parent);
 wordStr* term(wordStr* currentWord, Node* parent);
 
-
 //node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
