@@ -124,6 +124,11 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         (*Tokens)->type = "newline";
         (*Tokens)->content = "newline";
     }
+    else if (state == Identifier_name)
+    {
+        (*Tokens)->type = "identifier(name)";
+        (*Tokens)->content = word;
+    }
 }
 
 void PrintWordList(wordStr *wordList)
@@ -296,7 +301,7 @@ void Tokenizer(wordStr *LastToken)
         }
         else if (nextState == Comment_one_line)
         {
-            while (input != '\n')
+            while (input != '\n' && input != EOF)
             {
                 input = getchar();
             }
@@ -360,7 +365,7 @@ MachineStates StateMachine(char input, MachineStates currentState)
         if (isalpha(input))
             return Identifier;
         if (input == '_')
-            return Identifier_start;
+            return Identifier_name;
         if (isdigit(input))
             return Integer;
         if (input == '-')
@@ -442,10 +447,10 @@ MachineStates StateMachine(char input, MachineStates currentState)
         if (input == '?')
             return Identifier_type;
         return End;
-    case Identifier_start:
+    case Identifier_name:
         if (isdigit(input) || isalpha(input) || input == '_')
             return Identifier;
-        return Error;
+        return End;
     case Identifier_type:
         return End;
     case Integer:

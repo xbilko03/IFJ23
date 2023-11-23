@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("\nBegin\n");
+	//printf("\nBegin\n");
 	
 	//Create Word List
 	wordListStr* wordList;
@@ -18,11 +18,33 @@ int main(int argc, char **argv)
 	//Fill Word List and Check for Lex Rules
 	Tokenizer(LastToken);
 
-	PrintWordList(wordList->first);
+	//DEMO AST
+	// Node* DemoAST = NULL;
+	// Node* test1 = Node_insert(&DemoAST, "test1", NULL, "test");
+	// Node* test2 = Node_insert(&test1, "test2", NULL, "test");
+	// Node_insert(&test1, "test22", NULL, "test");
+	// Node_insert(&test1, "test23", NULL, "test");
+	// Node* test3 = Node_insert(&test2, "test3", NULL, "test");
+	// Node_insert(&test2, "test3", NULL, "test");
+	// Node_insert(&test3, "test41", NULL, "test");
+	// Node_insert(&test3, "test42", NULL, "test");
+	// Node_insert(&test3, "test43", NULL, "test");
+	// bool* flag = malloc(500 * sizeof(bool));
+    // print_AST(DemoAST, flag, 0, false);
+    // free(flag);
+	//END DEMO AST
 
-	printf("--------------------------------\n\n");
+	Node* AST = NULL;
+	Node* root = Node_insert(&AST, "root", NULL, "root");
 
-	PerformSyntax(wordList);
+	//PrintWordList(wordList->first);
+
+	//printf("--------------------------------\n\n");
+
+	PerformSyntax(wordList, &(*root));
+	bool* flag = malloc(500 * sizeof(bool));
+    //print_AST(AST, flag, 0, false);
+    free(flag);
 
 	PerformSemantics();
 
@@ -30,6 +52,6 @@ int main(int argc, char **argv)
 
 	//DeleteWordList(wordList);
 
-	printf("\nEnd\n");
+	//printf("\nEnd\n");
 	return 0;
 }
