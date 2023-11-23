@@ -5,6 +5,8 @@
 void ProcessNode(Node* c_node);
 void PrintCode(char* code);
 void INBUILT_WRITE(Node* c_node);
+void DEFVAR(Node* c_var);
+void MOVE(Node* c_var, Node* c_symb);
 
 void PerformCodeGen(Node* tree)
 {
@@ -19,26 +21,60 @@ void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
-	
+
 	/* Proccess Node here */
 
 	if (strcmp(c_node->content, "root") == 0)
 	{
 		/* Mandatory Commands */
-		PrintCode(".IFJcode23");
-		PrintCode("DEFVAR GF@writeValue");
+		PrintCode(".IFJcode23\n");
+		PrintCode("DEFVAR GF@writeValue\n");
 	}
-	else if (strcmp(c_node->content, "write") == 0)
+	else if (strcmp(c_node->content, "let") == 0 && strcmp(c_node->type, "keyword") == 0)
 	{
 		/* Process children nodes (args) here and end the branch */
-		INBUILT_WRITE(c_node);
+		/* let x */
+		DEFVAR(c_node->children[0]);
+		/* Can not proccess functions or expressions, just simple values */
+		if (c_node->children == NULL)
+			return;
+		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
+			/* let x : Int = 5 */
+			MOVE(c_node->children[0], c_node->children[2]);
+		else
+			/* let x = 5 */
+			MOVE(c_node->children[0], c_node->children[1]);
+		return;
+	}
+	else if (strcmp(c_node->content, "var") == 0 && strcmp(c_node->type, "keyword") == 0)
+	{
+		/* Process children nodes (args) here and end the branch */
+		/* var x */
 
+		DEFVAR(c_node->children[0]);
+		/* Can not proccess functions or expressions, just simple values */
+		if (c_node->children == NULL)
+			return;
+		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
+			/* var x : Int = 5 */
+			MOVE(c_node->children[0], c_node->children[2]);
+		else
+			/* var x = 5 */
+			MOVE(c_node->children[0], c_node->children[1]);
+		return;
+	}
+	else if (strcmp(c_node->content, "write") == 0 && strcmp(c_node->type, "identifier") == 0)
+	{
+		INBUILT_WRITE(c_node);
 		return;
 	}
 
+	
+	
+	
 	/* Proccess Node here */
 
-	//printf("node = %s\n", c_node->content);
+	//printf("node = %s of type %s\n", c_node->content, c_node->type);
 
 	/* Go to the next node */
 	for (int i = 0; i < c_node->numChildren; i++)
@@ -51,7 +87,7 @@ void ProcessNode(Node* c_node)
 /* Print CODE */
 void PrintCode(char* code)
 {
-	fprintf(stdout, "%s\n", code);
+	fprintf(stdout, "%s", code);
 	return;
 }
 
@@ -64,6 +100,13 @@ void PrintCode(char* code)
 */
 void MOVE(Node* c_var, Node* c_symb)
 {
+	if (c_var == NULL || c_symb == NULL)
+		return;
+	PrintCode("MOVE GF@");
+	PrintCode(c_var->content);
+	PrintCode(" ");
+	PrintCode(c_symb->content);
+	PrintCode("\n");
 	return;
 }
 
@@ -74,7 +117,7 @@ void MOVE(Node* c_var, Node* c_symb)
 */
 void CREATEFRAME()
 {
-	PrintCode("CREATEFRAME");
+	PrintCode("CREATEFRAME\n");
 	return;
 }
 
@@ -87,7 +130,7 @@ void CREATEFRAME()
 */
 void PUSHFRAME()
 {
-	PrintCode("PUSHFRAME");
+	PrintCode("PUSHFRAME\n");
 	return;
 }
 
@@ -99,7 +142,7 @@ void PUSHFRAME()
 */
 void POPFRAME()
 {
-	PrintCode("POPFRAME");
+	PrintCode("POPFRAME\n");
 	return;
 }
 
@@ -112,6 +155,9 @@ void POPFRAME()
 void DEFVAR(Node* c_var)
 {
 	/* symtable required */
+	PrintCode("DEFVAR GF@");
+	PrintCode(c_var->content);
+	PrintCode("\n");
 	return;
 }
 
@@ -491,7 +537,7 @@ void PrintFormattedStringCode(char* input,char* code)
 	if (input == NULL)
 		return;
 	
-	fprintf(stdout, "%s", code);
+	PrintCode(code);
 
 	for (int i = 0;i < strlen(input); i++)
 	{
@@ -516,28 +562,22 @@ void PrintFormattedStringCode(char* input,char* code)
 			fprintf(stdout, "%c", input[i]);
 		}
 	}
-	fprintf(stdout, "\n");
+	PrintCode("\n");
 	return;
-}
-bool IsConstant(char* type)
-{
-	if (strcmp(type, "string") ||
-		strcmp(type, "integer") ||
-		strcmp(type, "float") ||
-		strcmp(type, "nil"))
-		return true;
-	else
-		return false;
 }
 void INBUILT_WRITE(Node* c_node)
 {
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
-		if (IsConstant(c_node->children[i]->type))
+		if (strcmp(c_node->children[i]->type, "string") == 0)
 		{
 			PrintFormattedStringCode(c_node->children[i]->content, "MOVE GF@writeValue string@");
 		}
-		PrintCode("WRITE GF@writeValue");
+		else if (strcmp(c_node->children[i]->type, "int") == 0)
+		{
+			
+		}
+		PrintCode("WRITE GF@writeValue\n");
 	}
 }
 /* func Int2Double(_ term : Int) -> Double */
