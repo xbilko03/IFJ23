@@ -17,9 +17,10 @@ long HashFunction(char* key)
 }
 
 void TableInit(TRP* table){
+	table = malloc(sizeof(TRP));
+	if (table == NULL){return;}
 	for (int i = 0; i < hashTableSize; i++){
-    	table->items[i] = NULL;
-		table->items[i]->type = NULL;
+    		table->items[i] = NULL;
   	}
 }
 
