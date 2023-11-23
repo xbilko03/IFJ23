@@ -43,7 +43,7 @@ typedef struct TRP{
 void PerformLex(wordListStr* wrdList);
 //-----------------
 //------Syn.c------
-void PerformSyntax();
+void PerformSyntax(wordListStr* wrdList, Node* DemoAST);
 //-----------------
 //------Sem.c------
 void PerformSemantics();
