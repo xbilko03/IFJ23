@@ -29,8 +29,8 @@ TRPitem* TableFindItem(TRP* table, char *key)
 	TRPitem* current = table->items[hash];
 
 	while (current != NULL) {
-		if (current->type == key){
-		return current;
+		if (current->type->content == key){
+			return current;
 		}
 		current = current->next;
 	}
@@ -39,8 +39,8 @@ TRPitem* TableFindItem(TRP* table, char *key)
 
 void TableAddItem(TRP* table, char* key, wordStr* type)
 {
-	int hash = get_hash(key);
-  	TRPitem *item = ht_search(table, key);
+	int hash = HashFunction(key);
+  	TRPitem *item = TableFindItem(table, key);
 
 	if (item != NULL){ //already in table
 		if (type != NULL){
@@ -120,7 +120,7 @@ void TableRemoveTable(TRP* table)
 		TRPitem *current = table->items[i];
 		
 		while (current != NULL){
-			TableRemoveTypes(current);
+			TableRemoveTypes(current->type);
 			TRPitem *next = current->next;
 			free(current);
 			current = next;
