@@ -2,34 +2,40 @@
 #include "functions.h"
 #include <string.h>
 
-void Go_through(struct Node* root, struct TRP* table);
-void type_of_node (struct Node* root, TRP* table);
+void Go_through(struct Node* root, struct TRP* table, struct TRP* global);
+void Type_of_node (struct Node* root, TRP* table, struct TRP* global);
 
 void PerformSemantics(Node** AST, TRP* global)
 {
 	Node* tree = *AST;
-	global = NULL;
-	TableInit(global);
-	if (global == NULL){return;}
-	Go_through(tree, global);
+	global = TableInit(global);
+	Go_through(tree, global, global);
 	return;
 }
 
-void Go_through(struct Node* root, struct TRP* table)
+void Go_through(struct Node* root, struct TRP* table, struct TRP* global)
 {
 	if (root != NULL){
-		//type_of_node();
+		
 		if (strcmp(root->content, "body") == 0){
 
 			TRP* local = NULL;
-			TableInit(local);
-
-			Go_through (root->children[0], local);
+			local = TableInit(local);
+			
+			if(local == NULL){
+				printf("heloooooooooooooo");
+			}
+			table->next = local;
+			printf("--- zakladam lokalnu tabulku ---\n");
+			if (root->children[0] != NULL){
+				Go_through (root->children[0], local, global);
+			}
+			return;
 		} else {
 			for (int i = 0; i < root->numChildren; i++){
 				printf("%d: ", i);
-				printf("%s %s\n", root->children[i]->content, root->children[i]->type);
-				Go_through(root->children[i], table);
+				Type_of_node(root->children[i], table, global);
+				Go_through(root->children[i], table, global);
 			}
 			TRP* current = table;
 
@@ -37,7 +43,7 @@ void Go_through(struct Node* root, struct TRP* table)
 				if (current->next != NULL){
 					current = current->next;
 				} else {
-					TableRemoveTable(current);
+					//TableRemoveTable(current);
 					return;
 				}
 			}
@@ -45,7 +51,7 @@ void Go_through(struct Node* root, struct TRP* table)
 	}
 }
 
-void type_of_node (struct Node* root, TRP* table)
+void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 {
-
+	printf("%s %s\n", root->content, root->type);
 }
