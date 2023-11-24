@@ -48,6 +48,13 @@ typedef enum MachineStates
     Error,
     Endoffile,
     End,
+    String_multi,
+    String_multi_escape,
+    String_multi_end1,
+    String_multi_end2,
+    String_multi_end3,
+    String_content,
+    String_end_multi
 } MachineStates;
 
 
@@ -55,7 +62,7 @@ typedef enum MachineStates
 MachineStates StateMachine (char input, MachineStates currentState);
 void Tokenizer(wordStr *wordList);
 void AddToken(MachineStates state, wordStr **wordList, char* word);
-char* EscapeSequence(char* word);
+char* EscapeSequence(char *word, bool multi);
 char HexEscape(char* word, int *i, int *lenght);
 bool Keyword(char* word);
 bool Type(char* word);

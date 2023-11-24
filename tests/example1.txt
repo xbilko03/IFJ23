@@ -1,1 +1,1 @@
-let x : Int?motorkar
+let x : String? = nil
