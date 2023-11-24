@@ -468,6 +468,8 @@ MachineStates StateMachine(char input, MachineStates currentState)
     case Double:
         if (input == 'E' || input == 'e')
             return Double_exp;
+        if (isdigit(input))
+            return Double;
         return End;
     case Double_exp:
         if (input == '+' || input == '-')
