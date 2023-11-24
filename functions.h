@@ -61,7 +61,7 @@ void ExitProgram(int returnCode, char* message);
 //-----functions.c-----
 void DeleteWordList(wordListStr* wordList);
 long HashFunction(char* key);
-void TableInit(TRP* table);
+TRP* TableInit(TRP* table);
 TRPitem* TableFindItem(TRP* table, char *key);
 void TableAddItem(TRP* table, char* key, wordStr* type);
 void TableRemoveTable(TRP* table);

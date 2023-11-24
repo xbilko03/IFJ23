@@ -173,7 +173,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 
 			if(strcmp(currentWord->content, "=") == 0) {
 				Node* assign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-				Node_insert(&assign1, tmp_content, NULL, tmp_type);
+				Node_insert(&assign1, tmp_content, NULL, tmp_type); // left side of =
 				currentWord = opt(currentWord, &(*assign1));
 			}
 			else {
@@ -807,6 +807,8 @@ wordStr* opt(wordStr* currentWord, Node* parent) { //NOT CHECKED
 		}
 
 		else if(strcmp(currentWord->type, "identifier") == 0) {
+			char* tmp_type = currentWord->type;
+			char* tmp_content = currentWord->content;
 			currentWord = GetToken(currentWord, false, true);
 			/*
 			49. <opt> -> = ID EOL
@@ -814,6 +816,7 @@ wordStr* opt(wordStr* currentWord, Node* parent) { //NOT CHECKED
 			// EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
 				//OK
+				Node_insert(&parent, currentWord->content, NULL, currentWord->type);
 				return currentWord;
 			}
 			/*
@@ -838,7 +841,9 @@ wordStr* opt(wordStr* currentWord, Node* parent) { //NOT CHECKED
 			// <sign> after ID
 			else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
 				//SKIPFALSE
-				currentWord = expression_more(currentWord, &(*parent)); //have to return token after EOL if correct
+				Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
+				Node_insert(&sign1, tmp_content, NULL, tmp_type);
+				currentWord = expression_more(currentWord, &(*sign1)); //have to return token after EOL if correct
 
 				//EOL already checked in exp_more
 				//OK
@@ -1806,9 +1811,10 @@ wordStr* expression(wordStr* currentWord, Node* parent) {
 	81. <expression> -> <term> <sign> <term> <expression_more> NOT CHECKED
 	*/
 	if(strcmp(currentWord->content, "let") == 0) { //in case of let a
-		printf("somtutuk\n");
+		Node* let1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
 		currentWord = GetToken(currentWord, true, false);
 		if(strcmp(currentWord->type,"identifier") == 0) {
+			Node_insert(&let1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 			return currentWord;
 		}
@@ -1818,19 +1824,20 @@ wordStr* expression(wordStr* currentWord, Node* parent) {
 	char* tmp_type = currentWord->type; // FOR CORRECT TREE STRUCTURE OF EXPRESSION, SIGN-PARENT, TERM(S) LEAFS
 	char* tmp_content = currentWord->content;	
 	//<term> SKIPFALSE bc idtype
-	currentWord = term(currentWord, &(*parent));
+	currentWord = GetToken(currentWord, true, false);
 
 	
 
 	//<sign>
 	if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
 		Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		Node_insert(&sign1, tmp_content, NULL, tmp_type);
+		Node_insert(&sign1, tmp_content, NULL, tmp_type); //FIRST operand
 		currentWord = GetToken(currentWord, true, false);
 		//<term> SKIPFALSE
-		currentWord = term(currentWord, &(*sign1)); //SECOND OPERAND
+		currentWord = term(currentWord, &(*sign1)); //SECOND operand
 		//if((result = term(currentWord))) return result;
 		//<expression_more>
+		printf("idem do expmore\n");
 		currentWord = expression_more(currentWord, &(*sign1));
 		//if((result = expression_more(currentWord))) return result; //getting token after EOL from expression_more
 	}

@@ -16,11 +16,14 @@ long HashFunction(char* key)
 	return result % hashTableSize;
 }
 
-void TableInit(TRP* table){
+TRP* TableInit(TRP* table){
+	table = malloc(sizeof(TRP));
+	if (table == NULL){return NULL;}
 	for (int i = 0; i < hashTableSize; i++){
     	table->items[i] = NULL;
-		table->items[i]->type = NULL;
   	}
+	table->next = NULL;
+	return table;
 }
 
 TRPitem* TableFindItem(TRP* table, char *key)
