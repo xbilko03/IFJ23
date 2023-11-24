@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     print_AST(AST, flag, 0, false);
     free(flag);
 
-	PerformSemantics(&root, global);
+	PerformSemantics(&root, &global);
 
 	PerformCodeGen();
 
