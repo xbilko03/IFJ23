@@ -400,10 +400,14 @@ MachineStates StateMachine(char input, MachineStates currentState)
     case Comment_multi_line_start:
         if (input == '*')
             return Comment_multi_line_end1;
+        if (input == EOF)
+            return Error;
         return Comment_multi_line_start;
     case Comment_multi_line_end1:
         if (input == '/')
             return Comment_multi_line_end2;
+        if (input == EOF)
+            return Error;
         return Comment_multi_line_start;
     case Comment_multi_line_end2:
         return End;
