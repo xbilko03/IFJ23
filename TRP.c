@@ -30,9 +30,9 @@ TRPitem* TableFindItem(TRP* table, char *key)
 {
 	int hash = HashFunction(key);
 	TRPitem* current = table->items[hash];
-
+	
 	while (current != NULL) {
-		if (current->type->content == key){
+		if (strcmp(current->key, key) == 0){
 			return current;
 		}
 		current = current->next;
@@ -40,12 +40,16 @@ TRPitem* TableFindItem(TRP* table, char *key)
 	return NULL;
 }
 
-void TableAddItem(TRP* table, char* key, wordStr* type)
+void TableAddItem(TRP* table, char* key, wordStr* type, char* content)
 {
 	int hash = HashFunction(key);
   	TRPitem *item = TableFindItem(table, key);
-
 	if (item != NULL){ //already in table
+
+		if (item->content == NULL){
+			item->content = content;
+		}
+				
 		if (type != NULL){
 			if (item->type == NULL){ // insert first
 
@@ -74,24 +78,20 @@ void TableAddItem(TRP* table, char* key, wordStr* type)
 		}
 		return;
 	} else { //not in the table
-		
 		TRPitem *new_item = malloc(sizeof(TRPitem));
 		if (new_item == NULL){return;}
-
 		new_item->key = key;
 
 		if (type != NULL){
 			new_item->type = malloc(sizeof(wordStr));
 			if (new_item->type == NULL){return;}
-
 			new_item->type = type;
 			new_item->type->next = NULL;
 			new_item->next = NULL;
 		}
-
 		if (table->items[hash] == NULL){ 
-		table->items[hash] = new_item;
-		return;
+			table->items[hash] = new_item;
+			return;
 		} else {
 			TRPitem *last_item = table->items[hash];
 
