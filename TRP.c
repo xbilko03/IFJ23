@@ -48,6 +48,12 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 
 		if (item->content == false){
 			item->content = content;
+		} else {
+			if (strcmp(type->content, "let declaration") == 0){
+				if (content != NULL){
+					printf ("ERROOR PRIRADZOVANIE DO LET ZNOVU\n");
+				}
+			}
 		}
 				
 		if (type != NULL){

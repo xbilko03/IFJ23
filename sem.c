@@ -65,7 +65,7 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 		if (root->children[0] != NULL){
 			root->children[0]->type = "var declaration";
 		}
-	} else if (strcmp(root->type, "let declaration") == 0){
+	} else if (strcmp(root->type, "let declaration") == 0 || strcmp(root->type, "var declaration") == 0){
 
 		if (TableFindItem(table, root->content) == NULL){
 
@@ -77,6 +77,11 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 				if (i == 1){
 					type_of_variable = malloc(sizeof(wordStr));
 					type_of_variable->type = root->parent->children[i]->content;
+					if (strcmp(root->type, "let declaration") == 0){
+						type_of_variable->content = "let declaration";
+					}else {
+						type_of_variable->content = "var declaration";
+					}
 
 				} else {
 					if (strcmp(root->parent->children[i]->content, "readInt") == 0){
@@ -94,12 +99,19 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 							printf("EROOOR nie je kompatibilne\n");
 							return;
 						} else {*content_in_variable = true;}
+					} else if (strcmp(root->parent->children[i]->type, "string") != 0){
+						printf("EROOOR nie je kompatibilne\n");
+					} else if (strcmp(root->parent->children[i]->type, "double") != 0){
+						printf("EROOOR nie je kompatibilne\n");
+					} else if (strcmp(root->parent->children[i]->type, "integer") != 0){
+						printf("EROOOR nie je kompatibilne\n");
 					}
 				}
 			}
 			TableAddItem(&(*table), root->content, type_of_variable, content_in_variable);
 		} else {
 			if (root->parent->parent != NULL){
+
 				if (strcmp(root->parent->parent->content, "if") == 0){
 					printf("VSETKO V PORAAAAAAAAAAAAAADKU\n");
 				} else {printf("EROOOOOR redeklaracia\n");}
