@@ -40,13 +40,13 @@ TRPitem* TableFindItem(TRP* table, char *key)
 	return NULL;
 }
 
-void TableAddItem(TRP* table, char* key, wordStr* type, char* content)
+void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 {
 	int hash = HashFunction(key);
   	TRPitem *item = TableFindItem(table, key);
 	if (item != NULL){ //already in table
 
-		if (item->content == NULL){
+		if (item->content == false){
 			item->content = content;
 		}
 				

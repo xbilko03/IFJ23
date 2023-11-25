@@ -10,7 +10,7 @@
 
 typedef struct TRPitem {
 	char* key;
-	char* content;
+	bool* content;
 	struct wordStr* type;
 	struct TRPitem* next;
 } TRPitem;
@@ -64,7 +64,7 @@ void DeleteWordList(wordListStr* wordList);
 long HashFunction(char* key);
 TRP* TableInit(TRP* table);
 TRPitem* TableFindItem(TRP* table, char *key);
-void TableAddItem(TRP* table, char* key, wordStr* type, char* content);
+void TableAddItem(TRP* table, char* key, wordStr* type, bool* content);
 void TableRemoveTable(TRP* table);
 Node* Node_insert(Node** AST, char* content, TRPitem* TRP, char* type);
 int Node_merge(Node* children, Node** parent);
