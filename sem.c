@@ -53,10 +53,7 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 {
 
 	if (strcmp(root->content, "write") == 0){
-		if (strcmp(root->children[0]->type, "string") != 0){
-			printf("EROOOOOOOOOOOR\n");
-			//error
-		}
+		return;
 	} else if (strcmp(root->content, "let") == 0){
 		if (root->children[0] != NULL){
 			root->children[0]->type = "let declaration";
@@ -117,6 +114,39 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 				} else {printf("EROOOOOR redeklaracia\n");}
 			}
 		}
+	} else if (strcmp(root->content, "Int2Double") == 0){
+		// zatial nefunguje v AST
+	} else if (strcmp(root->content, "Double2Int") == 0){
+		// zatial nefunguje v AST
+	} else if (strcmp(root->content, "length") == 0){
+		if (root->children[0] != NULL){
+			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii length");
+			}
+		}
+	} else if (strcmp(root->content, "substring") == 0){
+		for (int i = 0; i < root->numChildren; i++){
+			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii substring");
+			} else if (strcmp(root->children[1]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii substring");
+			} else if (strcmp(root->children[2]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii substring");
+			}
+		}
+	} else if (strcmp(root->content, "ord") == 0){
+		if (root->children[0] != NULL){
+			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii ord");
+			}
+		}
+	} else if (strcmp(root->content, "chr") == 0){
+		if (root->children[0] != NULL){
+			if (strcmp(root->children[0]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
+				printf("EROOOOOOOR vo funkcii ord");
+			}
+		}
 	}
+
 	printf("%s %s\n", root->content, root->type);
 }
