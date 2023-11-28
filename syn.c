@@ -27,7 +27,6 @@ wordStr* expression(wordStr* currentWord, Node* parent);
 wordStr* expression_more(wordStr* currentWord, Node* parent);
 wordStr* term(wordStr* currentWord, Node* parent);
 
-
 //node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
@@ -45,7 +44,7 @@ void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
 	// *********************TUTORIAL********************
 	//node* cNode;
 	//cNode = CreateNode(cToken->content, "testType");
-	//printf("Node = %s of type %s\n", cNode->content, cNode->type);	
+	// 	
 
 	currentWord = prog_con(currentWord, &(*DemoAST)); //START OF SYNTAX
 	bool* flag = malloc(5000 * sizeof(bool));
@@ -98,6 +97,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 	66. <statement> -> <id_type> EOL <statement>
 	*/
 	else if ((strcmp(currentWord->content, "write") == 0) || (strcmp(currentWord->content, "readString") == 0) || (strcmp(currentWord->content, "readInt") == 0) || (strcmp(currentWord->content, "readDouble") == 0) || (strcmp(currentWord->content, "Int2Double") == 0) || (strcmp(currentWord->content, "Double2Int") == 0) || (strcmp(currentWord->content, "length") == 0) || (strcmp(currentWord->content, "substring") == 0) || (strcmp(currentWord->content, "ord") == 0) || (strcmp(currentWord->content, "chr") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
+
 		//printf("###################IN_STATEMENT_IDTYPE#####################\n");
 		/*
 		29. <id_type> -> <builtin_extra> //Including write NOT CHECHED
@@ -118,6 +118,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 				else ExitProgram(2, "Missing ( in write function calling\n");
 				//<write_params>
 				//printf("%s", currentWord->content);
+
 				
 				//SKIPTRUE
 				currentWord = write_params(currentWord, &(*write1)); //should return ) if success
@@ -183,6 +184,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 			}
 			//<opt> SKIPFALSE
 			//if((result = opt(currentWord))) return result;
+
 			//printf("IDOPT\n");
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
@@ -213,6 +215,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord, &(*if2));
+
 		//printf("curcont:%s\n", currentWord->content);
 		//if((result = expression(currentWord))) return result;
 		// )
@@ -399,6 +402,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 		//EOF prevention
 		if (currentWord == NULL) {
+
 			//printf("END of file\n");
 			return currentWord;
 		}
@@ -442,6 +446,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 		//EOF Prevention
 		if (currentWord == NULL) {
+
 			//printf("END of file\n");
 			return currentWord;
 		}
@@ -454,7 +459,9 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 		//EOF prevention
 		if (currentWord == NULL) {
+
 			//printf("END of file\n");
+
 			return currentWord;
 		}
 
@@ -486,6 +493,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 				else ExitProgram(2, "Missing ( in write function calling\n");
 
 				//<write_params> SKIPTRUE
+
 				//printf("%s", currentWord->content);
 				currentWord = write_params(currentWord, &(*write1));	// NODE WRITE_PARAMS
 				
@@ -512,6 +520,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 				//EOF prevention
 				if (currentWord == NULL) {
 					//printf("END of file\n");
+
 					return currentWord;
 				}
 
@@ -588,6 +597,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 			//EOF prevention
 			if (currentWord == NULL) {
 				//printf("END of file\n");
+
 				return currentWord;
 			}
 
@@ -712,11 +722,10 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 		//EOF Prevention
 		if (currentWord == NULL) {
+
 			//printf("END of file\n");
 			return currentWord;
 		}
-
-		
 		
 		//<prog_con>
 		return prog_con(currentWord, &(*DemoAST));
@@ -1864,7 +1873,6 @@ wordStr* expression_more(wordStr* currentWord, Node* parent) {
 	else if ((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, ")") == 0)  || (strcmp(currentWord->content, "{") == 0)) {
 		//OK
 		//printf("tusom:%s\n", currentWord->content);
-
 		return currentWord;
 	}
 	else ExitProgram(2, "Missing newline or sign in expression (expression_more)\n");

@@ -139,7 +139,7 @@ void PrintWordList(wordStr *wordList)
 {
     while (wordList != NULL)
     {
-        printf("%s %s\n", wordList->type, wordList->content);
+        //printf("%s %s\n", wordList->type, wordList->content);
         wordList = wordList->next;
     }
 }
