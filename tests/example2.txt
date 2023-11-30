@@ -7,7 +7,7 @@ func decrement(of n: Int, by m: Int) -> Int {
 return n - m
 }
 // Definice funkce pro vypocet hodnoty faktorialu
-func factorial(_ n : Int) -> Int {
+func factorial(a n : Int) -> Int {
 var result : Int?
 if (n < 2) {
 result = 1
@@ -15,8 +15,7 @@ result = 1
 let decremented_n = decrement(of: n, by: 1)
 let temp_result = factorial(decremented_n)
 result = n * temp_result
-}
-return result!
+} return result
 }
 // pokracovani hlavniho tela programu
 if let inp {
