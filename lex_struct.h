@@ -1,0 +1,12 @@
+#ifndef LEX_STRUCT_H
+#define LEX_STRUCT_H
+typedef struct wordStr{
+	char* content;
+	char* type;
+	struct	wordStr* next;
+} wordStr;
+typedef struct wordListStr{
+	struct wordStr* first;
+	struct wordStr* last;
+} wordListStr;
+#endif
