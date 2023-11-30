@@ -1,0 +1,5 @@
+func gg(with param : String, buchac : Int ) -> String {
+let r : String = "gaming"
+return r
+}
+gg(with: "ahoj", buchac: 69)
