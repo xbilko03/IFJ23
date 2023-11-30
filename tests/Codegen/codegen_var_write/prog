@@ -1,0 +1,10 @@
+var a : Int = 6
+write(a)
+var b : String = "ABC"
+write(b)
+var c : Double = 5.5
+write(c)
+
+write(6)
+write("ABC")
+write(5.5)

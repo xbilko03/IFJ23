@@ -1,0 +1,5 @@
+func a()->Int()
+{
+return 5;
+}
+Write(a())

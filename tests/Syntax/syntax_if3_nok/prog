@@ -1,0 +1,7 @@
+var a : Int = 4
+if if if if 
+{}
+else (a > 4)
+{
+a = 5
+}

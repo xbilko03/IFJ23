@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("\nBegin\n");
+	//printf("\nBegin\n");
 	
 	//Create Word List
 	wordListStr* wordList;
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
 	PerformSemantics(&root, &global);
 
-	PerformCodeGen();
+	PerformCodeGen(&(*root));
 
 	//DeleteWordList(wordList);
 

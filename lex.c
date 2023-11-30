@@ -8,10 +8,15 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         (*Tokens) = (*Tokens)->next;
         (*Tokens)->next = NULL;
     }
-    if(state == String_end)
+    if(state == String_end || state == String_end_multi)
     {
         (*Tokens)->type = "string";
-        (*Tokens)->content = EscapeSequence(word);
+        (*Tokens)->content = EscapeSequence(word, false);
+    }
+    else if(state == String_multi_end3)
+    {
+        (*Tokens)->type = "string";
+        (*Tokens)->content = EscapeSequence(word, true);
     }
     else if(state == Compare_end || state == Operator || state == Operator3 || state == Operator4 )
     {
@@ -90,8 +95,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         }
         else
         {
-            exit(1);
-            //TODO: Print error unknown type
+            ExitProgram(1, "Error: unknown type\n");
         }
     }
     else if (state == Integer)
@@ -99,7 +103,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         long int i = strtol(word, NULL, 10);
         if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
         {
-            exit(1);
+            ExitProgram(1, "Error: integer overflow\n");
         }
         (*Tokens)->type = "integer";
         (*Tokens)->content = word;
@@ -109,7 +113,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         strtod(word, NULL);
         if(errno == ERANGE)
         {
-            exit(1);
+            ExitProgram(1, "Error: double overflow\n");
         }
         (*Tokens)->type = "double";
         (*Tokens)->content = word;
@@ -135,7 +139,7 @@ void PrintWordList(wordStr *wordList)
 {
     while (wordList != NULL)
     {
-        printf("%s %s\n", wordList->type, wordList->content);
+        //printf("%s %s\n", wordList->type, wordList->content);
         wordList = wordList->next;
     }
 }
@@ -157,12 +161,12 @@ bool Type(char* word)
     return false;
 }
 
-char* EscapeSequence(char *word)
+char* EscapeSequence(char *word, bool multi)
 {
     int lenght = strlen(word);
     char *tmp = malloc(sizeof(char) * lenght);
     int tmpIndex = 0;
-    for (int i = 1; i < lenght-1; i++)
+    for (int i = multi ? 3 : 1; i < lenght-(multi ? 3 : 1); i++)
     {
         if (word[i] == '\\')
         {
@@ -194,8 +198,7 @@ char* EscapeSequence(char *word)
             }
             else
             {
-                // TODO: Print error
-                exit(1);
+                ExitProgram(1, "Error: unknown escape sequence\n");
             }
         }
         else
@@ -222,8 +225,7 @@ char HexEscape(char *word, int *i, int *lenght)
             {
                 if (hexIndex == 7)
                 {
-                    // TODO: print error escape sequence
-                    exit(1);
+                    ExitProgram(1, "Error: unknown escape sequence\n");
                 }
                 hex[hexIndex] = word[*i];
                 hexIndex += 1;
@@ -232,16 +234,14 @@ char HexEscape(char *word, int *i, int *lenght)
             {
                 if (hexIndex == 0)
                 {
-                    // TODO: print error escape sequence
-                    exit(1);
+                    ExitProgram(1, "Error: unknown escape sequence\n");
                 }
                 hex[hexIndex] = '\0';
                 break;
             }
             else
             {
-                // TODO: print error escape sequence
-                    exit(1);
+                ExitProgram(1, "Error: unknown escape sequence\n");
             }
         }
         int tmp = strtol(hex, NULL, 16);
@@ -253,15 +253,15 @@ char HexEscape(char *word, int *i, int *lenght)
         }
         else
         {
-            //TODO: print error escape sequence
-            exit(1);
+            ExitProgram(1, "Error: unknown escape sequence\n");
         }
+        ExitProgram(1, "Error: unknown escape sequence\n");
     }
     else
     {
-        // TODO: print error escape sequence
-        exit(1);
+        ExitProgram(1, "Error: unknown escape sequence\n");
     }
+    ExitProgram(1, "Error: unknown escape sequence\n");
     exit(1);
 }
 
@@ -284,8 +284,7 @@ void Tokenizer(wordStr *LastToken)
         }
         if (nextState == Error)
         {
-            // TODO: Print lex error
-            exit(1);
+            ExitProgram(1, "Error: unknown lexeme\n");
         }
         else if (nextState == End)
         {
@@ -318,8 +317,7 @@ void Tokenizer(wordStr *LastToken)
                 char *temp = realloc(buffer, bufferSize * 2);
                 if (temp == NULL)
                 {
-                    // TODO: Print memory error
-                    exit(99);
+                    ExitProgram(99, "Error: memory error\n");
                 }
                 bufferSize *= 2;
                 buffer = temp;
@@ -379,15 +377,47 @@ MachineStates StateMachine(char input, MachineStates currentState)
         return Error;
     case String_start:
         if (input > 31 && input != '"' && input != '\\')
-            return String_start;
+            return String_content;
+        if (input == '\\')
+            return String_escape;
+        if (input == '"')
+            return String_end_multi;
+        return Error;
+    case String_content:
+        if (input > 31 && input != '"' && input != '\\')
+            return String_content;
         if (input == '\\')
             return String_escape;
         if (input == '"')
             return String_end;
         return Error;
     case String_escape:
-        return String_start;
+        return String_content;
     case String_end:
+        return End;
+    case String_end_multi:
+        if (input == '"')
+            return String_multi;
+        return End;
+    case String_multi:
+        if (input == '"')
+            return String_multi_end1;
+        if ((input > 31 && input != '"') || input == '\n')
+            return String_multi;
+        if (input == '\\')
+            return String_multi_escape;
+        return Error;
+    case String_multi_escape:
+        return String_multi;
+    case String_multi_end1:
+        if (input == '"')
+            return String_multi_end2;
+        return Error;
+    case String_multi_end2:
+        if (input == '"')
+            return String_multi_end3;
+        return Error;
+    case String_multi_end3:
         return End;
     case Operator3:
         if (input == '/')
@@ -400,10 +430,14 @@ MachineStates StateMachine(char input, MachineStates currentState)
     case Comment_multi_line_start:
         if (input == '*')
             return Comment_multi_line_end1;
+        if (input == EOF)
+            return Error;
         return Comment_multi_line_start;
     case Comment_multi_line_end1:
         if (input == '/')
             return Comment_multi_line_end2;
+        if (input == EOF)
+            return Error;
         return Comment_multi_line_start;
     case Comment_multi_line_end2:
         return End;
@@ -468,6 +502,8 @@ MachineStates StateMachine(char input, MachineStates currentState)
     case Double:
         if (input == 'E' || input == 'e')
             return Double_exp;
+        if (isdigit(input))
+            return Double;
         return End;
     case Double_exp:
         if (input == '+' || input == '-')

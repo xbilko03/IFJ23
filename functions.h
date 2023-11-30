@@ -54,7 +54,7 @@ void PerformSemantics(Node** AST, TRP** global);
 //------TRP.c------
 //-----------------
 //----Codegen.c----
-void PerformCodeGen();
+void PerformCodeGen(Node* DemoAST);
 //-----------------
 //-----error.c-----
 void ExitProgram(int returnCode, char* message);
