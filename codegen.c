@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include "functions.h"
-#include <string.h>
-
-void ProcessNode(Node* c_node);
-void PrintCode(char* code);
-void INBUILT_WRITE(Node* c_node);
-void DEFVAR(Node* c_var);
-void MOVE(Node* c_var, Node* c_symb);
+#include "codegen.h"
 
 void PerformCodeGen(Node* tree)
 {
@@ -96,7 +88,7 @@ void PrintCode(char* code)
 /*
 * MOVE ?var? ?symb?
 * Prirazeni hodnoty do promenne zkopiruje hodnotu ?symb? do ?var?.
-* Napr.MOVE LF@par GF@var provede zkopirovani hodnoty promenne var v globálním rámci do promenne par v lokalnim ramci.
+* Napr.MOVE LF@par GF@var provede zkopirovani hodnoty promenne var v globï¿½lnï¿½m rï¿½mci do promenne par v lokalnim ramci.
 */
 void MOVE(Node* c_var, Node* c_symb)
 {
@@ -136,7 +128,7 @@ void PUSHFRAME()
 
 /*
 * POPFRAME
-* P?esun aktuálního rámce do do?asného
+* P?esun aktuï¿½lnï¿½ho rï¿½mce do do?asnï¿½ho
 * Presun vrcholovy ramec LF ze zasobniku ramcu do TF. 
 * Pokud zadny ramec v LF neni k dispozici, dojde k chybe 55.
 */
@@ -149,7 +141,7 @@ void POPFRAME()
 /*
 * DEFVAR ?var?
 * Definuj novou prom?nnou v ramci
-* Definuje promennou v urcenem ramci dle ?var?. Tato promenná je zatim neinicializovana 
+* Definuje promennou v urcenem ramci dle ?var?. Tato promennï¿½ je zatim neinicializovana 
 * a bez urceni typu, ktery bude urcen az prirazenim nejake hodnoty.
 */
 void DEFVAR(Node* c_var)
@@ -165,7 +157,7 @@ void DEFVAR(Node* c_var)
 * CALL ?label?
 * Skok na navesti s podporou navratu
 * Ulozi inkrementovanou aktualni pozici z interniho citace instrukci do zasobniku volani
-* a provede skok na zadané navestí(pripadnou pripravu ramce musi zajistit jine instrukce).
+* a provede skok na zadanï¿½ navestï¿½(pripadnou pripravu ramce musi zajistit jine instrukce).
 */
 void CALL(Node* c_label)
 {
@@ -175,7 +167,7 @@ void CALL(Node* c_label)
 /*
 * RETURN 
 * Navrat na pozici ulozenou instrukci CALL
-* Vyjme pozici ze zasobniku volani a skoci na tuto pozici nastavenim interního citace
+* Vyjme pozici ze zasobniku volani a skoci na tuto pozici nastavenim internï¿½ho citace
 * instrukci(uklid lokalnich ramcu musi zajistit jine instrukce).Provedeni instrukce pri
 * prazdnem zasobniku volani vede na chybu 56.
 */
@@ -196,7 +188,7 @@ void PUSHS(Node* c_symb)
 
 /* POPS ?var?
 * Vyjmi hodnotu z vrcholu datoveho zasobniku
-* Neni-li zásobnik prazdny, vyjme z nej hodnotu a ulozi ji do promenne?var?,
+* Neni-li zï¿½sobnik prazdny, vyjme z nej hodnotu a ulozi ji do promenne?var?,
 * jinak dojde k chybe 56.
 */
 void POPS(Node* c_var)
@@ -206,8 +198,8 @@ void POPS(Node* c_var)
 
 /*
 * CLEARS
-* Vymazani obsahu celeho datového zasobniku
-* Pomocna instrukce, ktera smaze cely obsah datového zasobniku,
+* Vymazani obsahu celeho datovï¿½ho zasobniku
+* Pomocna instrukce, ktera smaze cely obsah datovï¿½ho zasobniku,
 * aby neobsahoval zapomenute hodnoty z predchozich vypoctu.
 */
 void CLEARS()
@@ -218,7 +210,7 @@ void CLEARS()
 /*
 * ADD ?var? ?symb1? ?symb2? 
 * Soucet dvou ciselnych hodnot. Secte ?symb1? a ?symb2?
-* (musí být stejného ?íselného typu int nebo float) a výslednou
+* (musï¿½ bï¿½t stejnï¿½ho ?ï¿½selnï¿½ho typu int nebo float) a vï¿½slednou
 * hodnotu tehoz typu ulozi do promenne ?var?.
 */
 void ADD(Node* c_var, Node* c_symb1, Node* c_symb2)
@@ -238,9 +230,9 @@ void SUB(Node* c_var, Node* c_symb1, Node* c_symb2)
 }
 
 /* MUL ?var? ?symb1? ?symb2?
-* Nasobeni dvou ciselných hodnot Vynásobí ?symb1? a ?symb2?
-* (musí být stejného ?íselného typu int nebo float)
-* a výslednou hodnotu téhož typu uloží do promenné ?var?.
+* Nasobeni dvou ciselnï¿½ch hodnot Vynï¿½sobï¿½ ?symb1? a ?symb2?
+* (musï¿½ bï¿½t stejnï¿½ho ?ï¿½selnï¿½ho typu int nebo float)
+* a vï¿½slednou hodnotu tï¿½hoï¿½ typu uloï¿½ï¿½ do promennï¿½ ?var?.
 */
 void MUL(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -249,10 +241,10 @@ void MUL(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * DIV ?var? ?symb1? ?symb2?
-* Delení dvou desetinných hodnot. Podelí hodnotu ze ?symb1?
-* druhou hodnotou ze ?symb2? (oba musí být typu float)
-* a výsledek priradí do promenné ?var? (též typu float).
-* Delení nulou zpusobí chybu 57.
+* Delenï¿½ dvou desetinnï¿½ch hodnot. Podelï¿½ hodnotu ze ?symb1?
+* druhou hodnotou ze ?symb2? (oba musï¿½ bï¿½t typu float)
+* a vï¿½sledek priradï¿½ do promennï¿½ ?var? (tï¿½ typu float).
+* Delenï¿½ nulou zpusobï¿½ chybu 57.
 */
 void DIV(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -261,10 +253,10 @@ void DIV(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * IDIV ?var? ?symb1? ?symb2?
-* Delení dvou celocíselných hodnot
-* Celocíselne podelí hodnotu ze ?symb1? druhou hodnotou ze ?symb2?
-* (musí být oba typu int) a výsledek priradí do promenné ?var? typu int.
-* Delení nulou zpusobí chybu 57.
+* Delenï¿½ dvou celocï¿½selnï¿½ch hodnot
+* Celocï¿½selne podelï¿½ hodnotu ze ?symb1? druhou hodnotou ze ?symb2?
+* (musï¿½ bï¿½t oba typu int) a vï¿½sledek priradï¿½ do promennï¿½ ?var? typu int.
+* Delenï¿½ nulou zpusobï¿½ chybu 57.
 */
 void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -273,21 +265,21 @@ void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * ADDS / SUBS / MULS / DIVS / IDIVS
-* Zásobníkové verze instrukcí ADD, SUB, MUL, DIV a IDIV
+* Zï¿½sobnï¿½kovï¿½ verze instrukcï¿½ ADD, SUB, MUL, DIV a IDIV
 */
 /* might not need */
 
 /*
 * LT / GT / EQ ?var? ?symb1? ?symb2? 
-* Relacní operátory menší, vetší, rovno
-* Instrukce vyhodnotí rela?ní operátor mezi ?symb1? a ?symb2?
-* (stejného typu; int, bool, float nebo string)
-* a do booleovské promenné ?var? zapíše false pri neplatnosti 
-* nebo true v prípade platnosti odpovídající relace.
-* retezce jsou porovnávány lexikograficky a false je menší než true.
-* Pro výpocet neostrých nerovností lze použít AND / OR / NOT.
-* S operandem typu nil(druhý operand je libovolného typu)
-* lze porovnávat pouze instrukcí EQ, jinak chyba 53.
+* Relacnï¿½ operï¿½tory menï¿½ï¿½, vetï¿½ï¿½, rovno
+* Instrukce vyhodnotï¿½ rela?nï¿½ operï¿½tor mezi ?symb1? a ?symb2?
+* (stejnï¿½ho typu; int, bool, float nebo string)
+* a do booleovskï¿½ promennï¿½ ?var? zapï¿½e false pri neplatnosti 
+* nebo true v prï¿½pade platnosti odpovï¿½dajï¿½cï¿½ relace.
+* retezce jsou porovnï¿½vï¿½ny lexikograficky a false je menï¿½ï¿½ neï¿½ true.
+* Pro vï¿½pocet neostrï¿½ch nerovnostï¿½ lze pouï¿½ï¿½t AND / OR / NOT.
+* S operandem typu nil(druhï¿½ operand je libovolnï¿½ho typu)
+* lze porovnï¿½vat pouze instrukcï¿½ EQ, jinak chyba 53.
 */
 void COMPARE(char* c_option, Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -296,17 +288,17 @@ void COMPARE(char* c_option, Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * LTS / GTS / EQS
-* Zasobniková verze instrukci LT / GT / EQ
+* Zasobnikovï¿½ verze instrukci LT / GT / EQ
 */
 /* might not need */
 
 /*
 * AND / OR / NOT ?var? ?symb1? ?symb2?
-* Základní booleovské operátory
-* Aplikuje konjunkci(logické A) / disjunkci(logické NEBO) 
+* Zï¿½kladnï¿½ booleovskï¿½ operï¿½tory
+* Aplikuje konjunkci(logickï¿½ A) / disjunkci(logickï¿½ NEBO) 
 * na operandy typu bool ?symb1? a ?symb2?
-* nebo negaci na ?symb1? (NOT má pouze 2 operandy)
-* a výsledek typu bool zapíše do ?var?.
+* nebo negaci na ?symb1? (NOT mï¿½ pouze 2 operandy)
+* a vï¿½sledek typu bool zapï¿½e do ?var?.
 */
 void LOGIC(char* c_option,Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -315,14 +307,14 @@ void LOGIC(char* c_option,Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * ANDS / ORS / NOTS
-* Zásobníková verze instrukcí AND, OR a NOT
+* Zï¿½sobnï¿½kovï¿½ verze instrukcï¿½ AND, OR a NOT
 */
 /* might not need */
 
 /* 
-* INT2FLOAT ?var? ?symb? Prevod celocíselné hodnoty na desetinnou
-* Prevede celocíselnou hodnotu ?symb? na desetinné císlo
-* a uloží je do ?var?.
+* INT2FLOAT ?var? ?symb? Prevod celocï¿½selnï¿½ hodnoty na desetinnou
+* Prevede celocï¿½selnou hodnotu ?symb? na desetinnï¿½ cï¿½slo
+* a uloï¿½ï¿½ je do ?var?.
 */
 void INT2FLOAT(Node* c_var, Node* c_symb)
 {
@@ -331,9 +323,9 @@ void INT2FLOAT(Node* c_var, Node* c_symb)
 
 /*
 * FLOAT2INT ?var? ?symb?
-* Prevod desetinné hodnoty na celocíselnou(oseknutí)
+* Prevod desetinnï¿½ hodnoty na celocï¿½selnou(oseknutï¿½)
 * Prevede desetinnou hodnotu ?symb?
-* na celocíselnou oseknutím desetinné cásti a uloží	ji do ?var?.
+* na celocï¿½selnou oseknutï¿½m desetinnï¿½ cï¿½sti a uloï¿½ï¿½	ji do ?var?.
 */
 void FLOAT2INT(Node* c_var, Node* c_symb)
 {
@@ -342,9 +334,9 @@ void FLOAT2INT(Node* c_var, Node* c_symb)
 
 /*
 * INT2CHAR ?var? ?symb?
-* Prevod celého císla na znak
-* císelná hodnota ?symb? je dle ASCII prevedena na znak, který tvorí 
-* jednoznakový retezec prirazený do ?var?.
+* Prevod celï¿½ho cï¿½sla na znak
+* cï¿½selnï¿½ hodnota ?symb? je dle ASCII prevedena na znak, kterï¿½ tvorï¿½ 
+* jednoznakovï¿½ retezec prirazenï¿½ do ?var?.
 * Je-li ?symb? mimo interval[0; 255], dojde k chyb? 58.
 */
 void INT2CHAR(Node* c_var, Node* c_symb)
@@ -354,10 +346,10 @@ void INT2CHAR(Node* c_var, Node* c_symb)
 
 /*
 * STRI2INT ?var? ?symb1? ?symb2?
-* Ordinální hodnota znaku.
-* Do ?var? uloží ordinální hodnotu znaku(dle ASCII)
-* v retezci ?symb1? na pozici ?symb2? (indexováno od nuly).
-* Indexace mimo daný ?et?zec vede na chybu 58.
+* Ordinï¿½lnï¿½ hodnota znaku.
+* Do ?var? uloï¿½ï¿½ ordinï¿½lnï¿½ hodnotu znaku(dle ASCII)
+* v retezci ?symb1? na pozici ?symb2? (indexovï¿½no od nuly).
+* Indexace mimo danï¿½ ?et?zec vede na chybu 58.
 */
 void STRI2INT(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -366,16 +358,16 @@ void STRI2INT(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * INT2FLOATS / FLOAT2INTS /	INT2CHARS / STRI2INTS
-* Zásobníkové verze konverzních instrukcí
+* Zï¿½sobnï¿½kovï¿½ verze konverznï¿½ch instrukcï¿½
 */
 /* might not need */
 
 /*
 * CONCAT ?var? ?symb1? ?symb2?
 * Konkatenace dvou retezcu.
-* Do promenné ?var? uloží retezec vzniklý
-* konkatenací dvou retezcových operandu	?symb1? a ?symb2?
-* (jiné typy nejsou povoleny).
+* Do promennï¿½ ?var? uloï¿½ï¿½ retezec vzniklï¿½
+* konkatenacï¿½ dvou retezcovï¿½ch operandu	?symb1? a ?symb2?
+* (jinï¿½ typy nejsou povoleny).
 */
 void CONCAT(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -384,9 +376,9 @@ void CONCAT(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * STRLEN ?var? ?symb?
-* Zjisti délku retezce.
-* Zjistí délku retezce v ?symb? a délka je uložena jako
-* celé císlo do ?var?.
+* Zjisti dï¿½lku retezce.
+* Zjistï¿½ dï¿½lku retezce v ?symb? a dï¿½lka je uloï¿½ena jako
+* celï¿½ cï¿½slo do ?var?.
 */
 void STRLEN(Node* c_var, Node* c_symb)
 {
@@ -396,9 +388,9 @@ void STRLEN(Node* c_var, Node* c_symb)
 /*
 * GETCHAR ?var? ?symb1? ?symb2?
 * Vrat znak retezce.
-* Do ?var? uloží retezec z jednoho znaku v retezci ?symb1?
-* na pozici ?symb2? (indexováno	celým ?íslem od nuly).
-* Indexace mimo daný ?et?zec vede na chybu 58.
+* Do ?var? uloï¿½ï¿½ retezec z jednoho znaku v retezci ?symb1?
+* na pozici ?symb2? (indexovï¿½no	celï¿½m ?ï¿½slem od nuly).
+* Indexace mimo danï¿½ ?et?zec vede na chybu 58.
 */
 void GETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -408,13 +400,13 @@ void GETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
 /*
 * SETCHAR ?var? ?symb1? ?symb2?
 * Zmen znak retezce.
-* Zmodifikuje znak retezce uloženého v promenné ?var?
-* na pozici ?symb1? (indexováno	celocíselne od nuly)
+* Zmodifikuje znak retezce uloï¿½enï¿½ho v promennï¿½ ?var?
+* na pozici ?symb1? (indexovï¿½no	celocï¿½selne od nuly)
 * na znak v retezci ?symb2?
-* (první znak, pokud obsahuje ?symb2? více znaku).
-* Výsledný retezec je opet uložen do ?var?. 
+* (prvnï¿½ znak, pokud obsahuje ?symb2? vï¿½ce znaku).
+* Vï¿½slednï¿½ retezec je opet uloï¿½en do ?var?. 
 * Pri indexaci mimo retezec ?var?
-* nebo v prípade prázdného retezce v ?symb2? dojde k chyb? 58.
+* nebo v prï¿½pade prï¿½zdnï¿½ho retezce v ?symb2? dojde k chyb? 58.
 */
 void SETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
 {
@@ -423,12 +415,12 @@ void SETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
 
 /*
 * TYPE ?var? ?symb?
-* Zjisti typ daného symbolu.
-* Dynamicky zjistí typ symbolu ?symb? a do ?var?
-* zapíše retezec znacící tento typ
+* Zjisti typ danï¿½ho symbolu.
+* Dynamicky zjistï¿½ typ symbolu ?symb? a do ?var?
+* zapï¿½e retezec znacï¿½cï¿½ tento typ
 * (int, bool, float, string nebo nil).
-* Je-li ?symb? neinicializovaná promenná, oznací její typ
-* prázdným retezcem.
+* Je-li ?symb? neinicializovanï¿½ promennï¿½, oznacï¿½ jejï¿½ typ
+* prï¿½zdnï¿½m retezcem.
 */
 void TYPE(Node* c_var, Node* c_symb)
 {
@@ -437,10 +429,10 @@ void TYPE(Node* c_var, Node* c_symb)
 
 /*
 * LABEL ?label?
-* Definice náveští.
-* Speciální instrukce oznacující pomocí náveští ?label?
-* duležitou pozici v kódu jako potenciální cíl libovolné skokové instrukce.
-* Pokus o redefinici existujícího náveští je chybou 52.
+* Definice nï¿½veï¿½tï¿½.
+* Speciï¿½lnï¿½ instrukce oznacujï¿½cï¿½ pomocï¿½ nï¿½veï¿½tï¿½ ?label?
+* duleï¿½itou pozici v kï¿½du jako potenciï¿½lnï¿½ cï¿½l libovolnï¿½ skokovï¿½ instrukce.
+* Pokus o redefinici existujï¿½cï¿½ho nï¿½veï¿½tï¿½ je chybou 52.
 */
 void LABEL(Node* c_label)
 {
@@ -449,8 +441,8 @@ void LABEL(Node* c_label)
 
 /*
 * JUMP ?label? 
-* Nepodmínený skok na náveští.
-* Provede nepodmínený skok na zadané náveští ?label?.
+* Nepodmï¿½nenï¿½ skok na nï¿½veï¿½tï¿½.
+* Provede nepodmï¿½nenï¿½ skok na zadanï¿½ nï¿½veï¿½tï¿½ ?label?.
 */
 void JUMP(Node* c_label)
 {
@@ -459,11 +451,11 @@ void JUMP(Node* c_label)
 
 /*
 * JUMPIFEQ ?label? ?symb1? ?symb2?
-* Podmínený skok na náveští pri rovnosti
-* Pokud jsou ?symb1? a ?symb2? stejného typu nebo 
-* je nekterý operand nil(jinak chyba 53)
-* a zároven se jejich hodnoty rovnají, tak provede skok 
-* na náveští ?label?.
+* Podmï¿½nenï¿½ skok na nï¿½veï¿½tï¿½ pri rovnosti
+* Pokud jsou ?symb1? a ?symb2? stejnï¿½ho typu nebo 
+* je nekterï¿½ operand nil(jinak chyba 53)
+* a zï¿½roven se jejich hodnoty rovnajï¿½, tak provede skok 
+* na nï¿½veï¿½tï¿½ ?label?.
 */
 void JUMPIFEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
 {
@@ -472,10 +464,10 @@ void JUMPIFEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
 
 /*
 * JUMPIFNEQ ?label? ?symb1? ?symb2?
-* Podmínený skok na náveští pri nerovnosti.
-* Jsou-li ?symb1? a ?symb2? stejného typu
-* nebo je n?který operand nil(jinak chyba 53),
-* ale ruzné hodnoty, tak provede skok na náveští ?label?.
+* Podmï¿½nenï¿½ skok na nï¿½veï¿½tï¿½ pri nerovnosti.
+* Jsou-li ?symb1? a ?symb2? stejnï¿½ho typu
+* nebo je n?kterï¿½ operand nil(jinak chyba 53),
+* ale ruznï¿½ hodnoty, tak provede skok na nï¿½veï¿½tï¿½ ?label?.
 */
 void JUMPIFNEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
 {
@@ -484,20 +476,20 @@ void JUMPIFNEQ(Node* c_label, Node* c_symb1, Node* c_symb2)
 
 /*
 * JUMPIFEQS / JUMPIFNEQS ?label?
-* Zásobníková verze JUMPIFEQ, JUMPIFNEQ
-* Zásobníkové skokové instrukce
-* mají i jeden operand mimo datový zásobník, a to náveští ?label?,
-* na které se prípadne provede skok.
+* Zï¿½sobnï¿½kovï¿½ verze JUMPIFEQ, JUMPIFNEQ
+* Zï¿½sobnï¿½kovï¿½ skokovï¿½ instrukce
+* majï¿½ i jeden operand mimo datovï¿½ zï¿½sobnï¿½k, a to nï¿½veï¿½tï¿½ ?label?,
+* na kterï¿½ se prï¿½padne provede skok.
 */
 /* might not need */
 
 /*
 * EXIT ?symb?
-* Ukoncení interpretace s návratovým kódem
-* Ukoncí vykonávání programu a ukoncí interpret
-* s návratovým kódem ?symb?, kde ?symb? je celé císlo
-* v intervalu 0 až 49 (vcetne).
-* Nevalidní celocíselná hodnota ?symb? vede na chybu 57.
+* Ukoncenï¿½ interpretace s nï¿½vratovï¿½m kï¿½dem
+* Ukoncï¿½ vykonï¿½vï¿½nï¿½ programu a ukoncï¿½ interpret
+* s nï¿½vratovï¿½m kï¿½dem ?symb?, kde ?symb? je celï¿½ cï¿½slo
+* v intervalu 0 aï¿½ 49 (vcetne).
+* Nevalidnï¿½ celocï¿½selnï¿½ hodnota ?symb? vede na chybu 57.
 */
 void EXIT(Node* c_symb)
 {
@@ -506,12 +498,12 @@ void EXIT(Node* c_symb)
 
 /*
 * BREAK
-* Výpis stavu interpretu na stderr.
-* Na standardní chybový výstup(stderr) vypíše stav interpretu
-* v danou chvíli(tj.behem vykonávání této instrukce). 
-* Stav se mimo jiné skládá z pozice v kódu, výpisu globálního,
-* aktuálního lokálního a do?asného rámce a poctu již
-* vykonaných instrukcí.
+* Vï¿½pis stavu interpretu na stderr.
+* Na standardnï¿½ chybovï¿½ vï¿½stup(stderr) vypï¿½e stav interpretu
+* v danou chvï¿½li(tj.behem vykonï¿½vï¿½nï¿½ tï¿½to instrukce). 
+* Stav se mimo jinï¿½ sklï¿½dï¿½ z pozice v kï¿½du, vï¿½pisu globï¿½lnï¿½ho,
+* aktuï¿½lnï¿½ho lokï¿½lnï¿½ho a do?asnï¿½ho rï¿½mce a poctu jiï¿½
+* vykonanï¿½ch instrukcï¿½.
 */
 void BREAK()
 {
@@ -520,9 +512,9 @@ void BREAK()
 
 /*
 * DPRINT ?symb?
-* Výpis hodnoty na stderr.
-* Vypíše zadanou hodnotu ?symb? na standardní chybový výstup(stderr).
-* Výpisy touto instrukcí bude možné vypnout pomocí volby interpretu.
+* Vï¿½pis hodnoty na stderr.
+* Vypï¿½e zadanou hodnotu ?symb? na standardnï¿½ chybovï¿½ vï¿½stup(stderr).
+* Vï¿½pisy touto instrukcï¿½ bude moï¿½nï¿½ vypnout pomocï¿½ volby interpretu.
 */
 void DPRINT(Node* c_symb)
 {

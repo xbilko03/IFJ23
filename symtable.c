@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include "functions.h"
-#include <string.h>
-#include <stdlib.h>
+#include "symtable.h"
 
 long HashFunction(char* key)
 {
