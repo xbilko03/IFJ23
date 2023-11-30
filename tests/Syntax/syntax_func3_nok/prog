@@ -1,0 +1,6 @@
+func gg(abc : String ) -> String {
+let r : String = "gaming"
+return r
+}
+
+gg("ahoj")

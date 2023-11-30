@@ -1,0 +1,4 @@
+func bar(with param : String) -> String 
+let r : String = "gg"
+return r
+}

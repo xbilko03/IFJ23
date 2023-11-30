@@ -1,0 +1,18 @@
+let a : Int = 4
+var a : Int = 4
+if (a > 4)
+{
+a = 5
+}
+else
+{
+a = 1
+}
+if a>4
+{
+    a = 5
+}
+else if(a<4)
+{
+    
+}

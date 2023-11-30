@@ -1,0 +1,5 @@
+func concat(x : String) -> String 
+{ 
+let x = x 
+}
+concat(“abc”)
