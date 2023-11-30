@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "AST.h"
 
 void DeleteWordList(wordListStr* wordList)
 {

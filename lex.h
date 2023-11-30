@@ -7,7 +7,8 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
-#include "functions.h"
+#include "error.h"
+#include "lex_struct.h"
 
 typedef enum MachineStates
 {
@@ -56,8 +57,6 @@ typedef enum MachineStates
     String_content,
     String_end_multi
 } MachineStates;
-
-
 
 MachineStates StateMachine (char input, MachineStates currentState);
 void Tokenizer(wordStr *wordList);
