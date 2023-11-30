@@ -46,10 +46,9 @@ int main(int argc, char **argv)
     print_AST(AST, flag, 0, false);
     free(flag);
 
-	PerformSemantics();
+	PerformSemantics(&(*root));
 
-	printf(".IFJcode23\n");
-	PerformCodeGen();
+	PerformCodeGen(&(*root));
 
 	//DeleteWordList(wordList);
 

@@ -1,0 +1,12 @@
+let x: Double = 21.25
+var a: Int = 21
+
+if (a > 4) {}
+else{print("abc")
+}
+var c : Int? = nil
+
+return
+var n : String? = nil
+var f : String = "buchaci"
+while (a>100) { write("lets go")}

@@ -46,12 +46,12 @@ void PerformLex(wordListStr* wrdList);
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST);
 //-----------------
 //------Sem.c------
-void PerformSemantics();
+void PerformSemantics(Node* DemoAST);
 //-----------------
 //------TRP.c------
 //-----------------
 //----Codegen.c----
-void PerformCodeGen();
+void PerformCodeGen(Node* DemoAST);
 //-----------------
 //-----error.c-----
 void ExitProgram(int returnCode, char* message);

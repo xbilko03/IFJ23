@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "functions.h"
 
-void PerformSemantics()
+void PerformSemantics(Node* DemoAST)
 {
 	return;
 }
