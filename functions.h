@@ -9,7 +9,9 @@
 //---functions.c---
 
 typedef struct TRPitem {
-	char* content;
+	char* key;
+	bool* content;
+	struct wordStr* type;
 	struct TRPitem* next;
 } TRPitem;
 
@@ -37,6 +39,7 @@ typedef struct {
 
 typedef struct TRP{
 	TRPitem* items[hashTableSize];
+	struct TRP* next;
 }TRP;
 
 //------Lex.c------
@@ -46,7 +49,7 @@ void PerformLex(wordListStr* wrdList);
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST);
 //-----------------
 //------Sem.c------
-void PerformSemantics(Node* DemoAST);
+void PerformSemantics(Node** AST, TRP** global);
 //-----------------
 //------TRP.c------
 //-----------------
@@ -59,6 +62,10 @@ void ExitProgram(int returnCode, char* message);
 //-----functions.c-----
 void DeleteWordList(wordListStr* wordList);
 long HashFunction(char* key);
+TRP* TableInit(TRP* table);
+TRPitem* TableFindItem(TRP* table, char *key);
+void TableAddItem(TRP* table, char* key, wordStr* type, bool* content);
+void TableRemoveTable(TRP* table);
 Node* Node_insert(Node** AST, char* content, TRPitem* TRP, char* type);
 int Node_merge(Node* children, Node** parent);
 void* checked_malloc(size_t size);

@@ -35,6 +35,7 @@ int main(int argc, char **argv)
 	//END DEMO AST
 
 	Node* AST = NULL;
+	TRP* global = NULL;
 	Node* root = Node_insert(&AST, "root", NULL, "root");
 
 	PrintWordList(wordList->first);
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
     print_AST(AST, flag, 0, false);
     free(flag);
 
-	PerformSemantics(&(*root));
+	PerformSemantics(&root, &global);
 
 	PerformCodeGen(&(*root));
 
