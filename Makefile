@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS= -Wall 
-DEPS = main.c lex.c syn.c sem.c TRP.c codegen.c functions.h functions.c error.c
+DEPS = main.c lex.c syn.c sem.c symtable.c codegen.c AST.c error.c
 PROGNAME = GIGACHAD
 
 $(PROGNAME): $(DEPS)
@@ -19,3 +19,5 @@ debug: $(DEPS)
 
 clean:
 	rm $(PROGNAME)
+
+.PHONY: $(PROGNAME) run run2 debug

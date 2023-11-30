@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include "functions.h"
-#include <string.h>
-
-void Go_through(struct Node* root, struct TRP* table, struct TRP* global);
-void Type_of_node (struct Node* root, TRP* table, struct TRP* global);
+#include "sem.h"
 
 void PerformSemantics(Node** AST, TRP** global)
 {

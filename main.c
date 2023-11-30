@@ -1,7 +1,12 @@
 #include <stdio.h>
-#include "functions.h"
+#include "AST.h"
 #include <stdlib.h>
 #include "lex.h"
+#include "syn.h"
+#include "sem.h"
+#include "codegen.h"
+#include "lex_struct.h"
+#include "symtable.h"
 
 int main(int argc, char **argv)
 {

@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "functions.h"
+#include "error.h"
 
 void ExitProgram(int returnCode, char* message)
 {
