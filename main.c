@@ -35,23 +35,24 @@ int main(int argc, char **argv)
 	//END DEMO AST
 
 	Node* AST = NULL;
+	TRP* global = NULL;
 	Node* root = Node_insert(&AST, "root", NULL, "root");
 
-	//PrintWordList(wordList->first);
+	PrintWordList(wordList->first);
 
-	//printf("--------------------------------\n\n");
+	printf("--------------------------------\n\n");
 
 	PerformSyntax(wordList, &(*root));
 	bool* flag = malloc(500 * sizeof(bool));
-    //print_AST(AST, flag, 0, false);
+    print_AST(AST, flag, 0, false);
     free(flag);
 
-	PerformSemantics(&(*root));
+	PerformSemantics(&root, &global);
 
 	PerformCodeGen(&(*root));
 
 	//DeleteWordList(wordList);
 
-	//printf("\nEnd\n");
+	printf("\nEnd\n");
 	return 0;
 }
