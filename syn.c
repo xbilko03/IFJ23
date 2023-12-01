@@ -1,4 +1,7 @@
+
 #include "syn.h"
+
+#define maxCommandTokenCount 255
 
 //node* CreateNode(char* content, char* type);
 
@@ -41,6 +44,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 
 		//<option> SKIPFALSE
 		currentWord = option(currentWord, &(*let_or_var2));
+		
+		//possible }
+		if (strcmp(currentWord->content, "}") == 0) {
+			return currentWord;
+		}
 
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
@@ -91,6 +99,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 				}
 				else ExitProgram(2, "Missing ) in write function calling\n");
 
+				// possible }
+				if (strcmp(currentWord->content, "}") == 0) {
+					return currentWord;
+				}
+
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
 					currentWord = GetToken(currentWord, true, false);
@@ -106,6 +119,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 			else{
 				//<builtin> SKIPFALSE
 				currentWord = builtin(currentWord, &(*parent));
+
+				// possible }
+				if (strcmp(currentWord->content, "}") == 0) {
+					return currentWord;
+				}
 
 				//EOL
 				if(strcmp(currentWord->type, "newline") == 0) {
@@ -147,6 +165,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 
 			printf("IDOPT\n");
 
+			// possible }
+			if (strcmp(currentWord->content, "}") == 0) {
+				return currentWord;
+			}
+
 			//EOL
 			if(strcmp(currentWord->type, "newline") == 0) {
 					currentWord = GetToken(currentWord, true, false);
@@ -176,6 +199,10 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord, &(*if2));
+		//possible EOL
+		if (strcmp(currentWord->type, "newline") == 0) {
+			currentWord = GetToken(currentWord, true, false);
+		}
 
 		printf("curcont:%s\n", currentWord->content);
 		//if((result = expression(currentWord))) return result;
@@ -214,7 +241,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 		if (strcmp(currentWord->content, "{") == 0) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing { in if before else statement\n");
+		else ExitProgram(2, "Missing { in elseif before else statement\n");
 
 		//<statement> SKIPTRUE
 		Node* elsebody2 = Node_insert(&else2, "body", NULL, "body"); //NODE ELSE BODY
@@ -248,6 +275,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord, &(*while2));
+
+		if (strcmp(currentWord->type, "newline") == 0) {
+			currentWord = GetToken(currentWord, true, false);
+		}
+
 		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
@@ -282,6 +314,11 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 
 		//<return_value> SKIPFALSE
 		currentWord = return_value(currentWord, &(*parent)); // return EOL if success
+
+		//possible }
+		if (strcmp(currentWord->content, "}") == 0) {
+			return currentWord;
+		}
 
 		//EOL
 		if (strcmp(currentWord->type, "newline") == 0) {
@@ -583,6 +620,10 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord, &(*if1));
+
+		if (strcmp(currentWord->type, "newline") == 0) {
+			currentWord = GetToken(currentWord, true, false);
+		}
 		//if((result = expression(currentWord))) return result;
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
@@ -616,7 +657,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 		if (strcmp(currentWord->content, "{") == 0) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing { in if before else statement\n");
+		else ExitProgram(2, "Missing { in elseif before else statement\n");
 
 		//<statement> SKIPTRUE
 		Node* elsebody1 = Node_insert(&else1, "body", NULL, "body"); //NODE ELSE BODY 
@@ -658,6 +699,10 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 		}
 		// <expression> SKIPTRUE
 		currentWord = expression(currentWord, &(*while1));
+
+		if (strcmp(currentWord->type, "newline") == 0) {
+			currentWord = GetToken(currentWord, true, false);
+		}
 		
 		// )
 		if (strcmp(currentWord->content, ")") == 0) {
@@ -1136,7 +1181,7 @@ wordStr* arg(wordStr* currentWord, Node* parent) {
 	*9. <arg> -> eps
 	*/
 	// eps
-	else if(strcmp(currentWord->content, ")")) {
+	else if(strcmp(currentWord->content, ")") == 0) {
 		return currentWord;
 	}
 	else ExitProgram(2, "Missing param_name or ) in arg\n");
@@ -1395,27 +1440,27 @@ wordStr* type_spec(wordStr* currentWord, Node* parent) {
 	//14.-19. <type_spec>
 	if (strcmp(currentWord->content, "Double")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	else if(strcmp(currentWord->content, "Int")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	else if(strcmp(currentWord->content, "String")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	else if(strcmp(currentWord->content, "Double?")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	else if(strcmp(currentWord->content, "Int?")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	else if(strcmp(currentWord->content, "String?")) {
 		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-		currentWord = GetToken(currentWord, false, true);
+		currentWord = GetToken(currentWord, true, true);
 	}
 	//missing TYPE_SPEC
 	else ExitProgram(2, "Missing type_spec\n");
@@ -1592,6 +1637,12 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					//OK
 					return currentWord;
 				}
+
+				//possible }
+				else if (strcmp(currentWord->content, "}") == 0) {
+					return currentWord;
+				}
+
 				// EOL
 				else if(strcmp(currentWord->type, "newline") == 0) {
 					//OK
@@ -1615,6 +1666,11 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					return currentWord;
 				}
 
+				//EOL
+				if (strcmp(currentWord->content, "}") == 0) {
+					return currentWord;
+				}
+
 				//<EOL>
 				if(strcmp(currentWord->type, "newline") == 0) {
 					//currentWord = GetToken(currentWord, true, true);
@@ -1632,9 +1688,16 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					//<expression_more> SKIPFALSE
 					currentWord = expression_more(currentWord, &(*parent)); // return newline if success
 					
+					//possible }
+					if (strcmp(currentWord->content, "}") == 0) {
+						return currentWord;
+					}
+
 					//EOL
 					if(strcmp(currentWord->type, "newline") == 0) {
-						currentWord = GetToken(currentWord, true, false);
+						printf("here\n");
+						return currentWord;
+						//currentWord = GetToken(currentWord, true, false);
 					}
 					else ExitProgram(2, "Missing newline in option part expression, statement");
 
@@ -1912,7 +1975,7 @@ wordStr* expression_more(wordStr* currentWord, Node* parent) {
 		return expression_more(currentWord, &(*parent));
 	}
 	//EOL
-	else if ((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, ")") == 0)  || (strcmp(currentWord->content, "{") == 0)) {
+	else if ((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, ")") == 0)  || (strcmp(currentWord->content, "{") == 0)  || (strcmp(currentWord->content, "}") == 0)) {
 		//OK
 
 		printf("GOING OUT FROM EXP MORE WITH:%s\n", currentWord->content);
