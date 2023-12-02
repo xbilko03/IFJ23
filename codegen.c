@@ -14,6 +14,8 @@ void ProcessNode(Node* c_node)
 	if (c_node == NULL)
 		return;
 
+	return;
+
 	/* Proccess Node here */
 
 	if (strcmp(c_node->content, "root") == 0)

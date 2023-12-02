@@ -54,6 +54,8 @@ int main(int argc, char **argv)
 
 	PerformSemantics(&root, &global);
 
+	printf("%p\n", root->TRP);
+
 	PerformCodeGen(&(*root));
 
 	//DeleteWordList(wordList);
