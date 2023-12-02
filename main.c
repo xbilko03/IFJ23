@@ -49,12 +49,10 @@ int main(int argc, char **argv)
 
 	PerformSyntax(wordList, &(*root));
 	bool* flag = malloc(500 * sizeof(bool));
-    print_AST(AST, flag, 0, false);
+    //print_AST(AST, flag, 0, false);
     free(flag);
 
 	PerformSemantics(&root, &global);
-
-	printf("%p\n", root->TRP);
 
 	PerformCodeGen(&(*root));
 

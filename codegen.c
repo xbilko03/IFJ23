@@ -2,82 +2,103 @@
 
 void PerformCodeGen(Node* tree)
 {
-
 	/* Cycle through AST */
 	ProcessNode(tree);
 
 	return;
 }
+typedef struct
+{
+	TRP* symTable;
+	unsigned int ID;
+}symStr;
+
+symStr symTables[256];
+unsigned int symIndex = 0;
+unsigned int symID = 0;
+
+void ADD(Node* c_var, Node* c_symb1, Node* c_symb2);
+void SUB(Node* c_var, Node* c_symb1, Node* c_symb2);
+void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2);
+void MUL(Node* c_var, Node* c_symb1, Node* c_symb2);
+void PrintFormattedStringCode(char* input, char* code);
 
 void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
 
-	return;
-
 	/* Proccess Node here */
-
 	if (strcmp(c_node->content, "root") == 0)
 	{
 		/* Mandatory Commands */
 		PrintCode(".IFJcode23\n");
 		PrintCode("DEFVAR GF@writeValue\n");
+		symTables[symIndex].symTable = c_node->TRP;
+		symTables[symIndex++].ID = symID++;
 	}
-	else if (strcmp(c_node->content, "let") == 0 && strcmp(c_node->type, "keyword") == 0)
+	else if (strcmp(c_node->type, "keyword") == 0)
 	{
-		/* Process children nodes (args) here and end the branch */
-		/* let x */
-		DEFVAR(c_node->children[0]);
-		/* Can not proccess functions or expressions, just simple values */
-		if (c_node->children == NULL)
+		if (strcmp(c_node->content, "let") == 0 || strcmp(c_node->content, "var") == 0)
+		{
+			DEFVAR(c_node->children[0]);
 			return;
-		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
-			/* let x : Int = 5 */
-			MOVE(c_node->children[0], c_node->children[2]);
-		else
-			/* let x = 5 */
-			MOVE(c_node->children[0], c_node->children[1]);
-		return;
+		}
 	}
-	else if (strcmp(c_node->content, "var") == 0 && strcmp(c_node->type, "keyword") == 0)
+	else if (strcmp(c_node->type, "body") == 0)
 	{
-		/* Process children nodes (args) here and end the branch */
-		/* var x */
-
-		DEFVAR(c_node->children[0]);
-		/* Can not proccess functions or expressions, just simple values */
-		if (c_node->children == NULL)
+		if (c_node->TRP == NULL)
 			return;
-		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
-			/* var x : Int = 5 */
-			MOVE(c_node->children[0], c_node->children[2]);
-		else
-			/* var x = 5 */
-			MOVE(c_node->children[0], c_node->children[1]);
-		return;
+		symTables[symIndex].symTable = c_node->TRP;
+		symTables[symIndex++].ID = symID++;
 	}
-	else if (strcmp(c_node->content, "write") == 0 && strcmp(c_node->type, "identifier") == 0)
+	else if (strcmp(c_node->type, "function") == 0 && strcmp(c_node->content, "write") == 0)
 	{
 		INBUILT_WRITE(c_node);
-		return;
 	}
-
-	
-	
+	else if (strcmp(c_node->type, "assign") == 0)
+	{
+		if (strcmp(c_node->children[1]->type, "operator") == 0)
+		{
+			MOVE(c_node->children[0], c_node->children[1]->children[0]);
+		}
+		else
+		{
+			for (int i = 1; i < c_node->numChildren; i++)
+			{
+				MOVE(c_node->children[0], c_node->children[i]);
+			}
+		}
+	}
 	
 	/* Proccess Node here */
 
-	//printf("node = %s of type %s\n", c_node->content, c_node->type);
 
 	/* Go to the next node */
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
-		ProcessNode(c_node->children[i]);
+		ProcessNode(c_node->children[i]);		
+	}
+
+	/* if the body ends, destroy local table */
+	if (strcmp(c_node->type, "body") == 0)
+	{
+		if (c_node->TRP == NULL)
+			return;
+		symIndex--;
 	}
 	return;
 }
 
+unsigned int FindTableIndex(char* symbol)
+{
+	for (int i = symIndex - 1; i > -1; i--)
+	{
+		if (TableFindItem(symTables[i].symTable, symbol) != NULL)
+			return symTables[i].ID;
+	}
+	return 404;
+}
 /* Print CODE */
 void PrintCode(char* code)
 {
@@ -92,14 +113,50 @@ void PrintCode(char* code)
 * Prirazeni hodnoty do promenne zkopiruje hodnotu ?symb? do ?var?.
 * Napr.MOVE LF@par GF@var provede zkopirovani hodnoty promenne var v glob�ln�m r�mci do promenne par v lokalnim ramci.
 */
+void PrintType(Node* c_symb)
+{
+	if (strcmp(c_symb->type, "integer") == 0)
+		PrintCode("int");
+	else if (strcmp(c_symb->type, "string") == 0)
+		PrintCode("string");
+	else if (strcmp(c_symb->type, "double") == 0)
+		PrintCode("double");
+	return;
+}
 void MOVE(Node* c_var, Node* c_symb)
 {
 	if (c_var == NULL || c_symb == NULL)
 		return;
 	PrintCode("MOVE GF@");
 	PrintCode(c_var->content);
+	unsigned int index = FindTableIndex(c_var->content);
+	if (index != 404)
+	{
+		fprintf(stdout, "%d", index);
+	}
 	PrintCode(" ");
-	PrintCode(c_symb->content);
+	/* if not var */
+	if (strcmp(c_symb->type, "string") == 0)
+	{
+		PrintFormattedStringCode(c_symb->content, "string@");
+		return;
+	}
+	else if (strcmp(c_symb->type, "identifier"))
+	{
+		PrintType(c_symb);
+		PrintCode("@");
+		PrintCode(c_symb->content);
+	}
+	if (strcmp(c_symb->type, "identifier") == 0)
+	{
+		PrintCode("GF@");
+		PrintCode(c_symb->content);
+		unsigned int index = FindTableIndex(c_symb->content);
+		if (index != 404)
+		{
+			fprintf(stdout, "%d", index);
+		}
+	}
 	PrintCode("\n");
 	return;
 }
@@ -148,10 +205,56 @@ void POPFRAME()
 */
 void DEFVAR(Node* c_var)
 {
-	/* symtable required */
+	if (c_var == NULL)
+		return;
+
 	PrintCode("DEFVAR GF@");
 	PrintCode(c_var->content);
+	unsigned int index = FindTableIndex(c_var->content);
+	if (index != 404)
+	{
+		fprintf(stdout, "%d", index);
+	}
 	PrintCode("\n");
+
+	/* skip first child, MOVE others to this variable */
+	if (c_var->parent->numChildren > 1)
+	{
+		/* not a sign +-* */
+		if (strcmp(c_var->parent->children[1]->type, "operator") == 0)
+		{
+			MOVE(c_var, c_var->parent->children[1]->children[0]);
+			MOVE(c_var, c_var->parent->children[1]->children[1]);
+			return;
+		}
+		else
+			MOVE(c_var, c_var->parent->children[1]);
+
+		/* temporary way to handle expressions */
+		for (int i = 1; i < c_var->parent->numChildren; i++)
+		{
+			if (strcmp(c_var->parent->children[i]->content, "+") == 0)
+			{
+				ADD(c_var, c_var, c_var->parent->children[i + 1]);
+				i++;
+			}
+			else if (strcmp(c_var->parent->children[i]->content, "-") == 0)
+			{
+				SUB(c_var, c_var, c_var->parent->children[i + 1]);
+				i++;
+			}
+			else if (strcmp(c_var->parent->children[i]->content, "/") == 0)
+			{
+				IDIV(c_var, c_var, c_var->parent->children[i + 1]);
+				i++;
+			}
+			else if (strcmp(c_var->parent->children[i]->content, "*") == 0)
+			{
+				MUL(c_var, c_var, c_var->parent->children[i + 1]);
+				i++;
+			}
+		}
+	}
 	return;
 }
 
@@ -563,13 +666,27 @@ void INBUILT_WRITE(Node* c_node)
 {
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
+		PrintCode("MOVE GF@writeValue ");
 		if (strcmp(c_node->children[i]->type, "string") == 0)
 		{
-			PrintFormattedStringCode(c_node->children[i]->content, "MOVE GF@writeValue string@");
+			PrintFormattedStringCode(c_node->children[i]->content, "string@");
 		}
-		else if (strcmp(c_node->children[i]->type, "int") == 0)
+		else if (strcmp(c_node->children[i]->type, "integer") == 0)
 		{
-			
+			PrintCode("int@");
+			PrintCode(c_node->children[i]->content);
+			PrintCode("\n");
+		}
+		else if (strcmp(c_node->children[i]->type, "identifier") == 0)
+		{
+			PrintCode("GF@");
+			PrintCode(c_node->children[i]->content);
+			unsigned int index = FindTableIndex(c_node->children[i]->content);
+			if (index != 404)
+			{
+				fprintf(stdout, "%d", index);
+			}
+			PrintCode("\n");
 		}
 		PrintCode("WRITE GF@writeValue\n");
 	}

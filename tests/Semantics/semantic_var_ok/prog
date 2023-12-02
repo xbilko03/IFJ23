@@ -1,2 +1,2 @@
-Var abc : Int = 4
+var abc : Int = 4
 Int2Double(abc)

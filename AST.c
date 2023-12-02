@@ -16,7 +16,7 @@ void DeleteWordList(wordListStr* wordList)
 	free(wordList);
 }
 
-Node* Node_insert(Node** parentAST, char* content, TRPitem* TRP, char* type)
+Node* Node_insert(Node** parentAST, char* content, TRP* TRP, char* type)
 {
 	Node* childrenAST = (Node*)checked_malloc(sizeof(Node));
 	childrenAST->type = type;

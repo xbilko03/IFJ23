@@ -11,15 +11,15 @@ void PerformSemantics(Node** AST, TRP** global)
 
 void Go_through(struct Node* root, struct TRP* table, struct TRP* global)
 {
-	//printf("Address of var: %p %p\n", &(*table), &(*global));
+	////printf("Address of var: %p %p\n", &(*table), &(*global));
 	if (root != NULL){
 		if (strcmp(root->content, "body") == 0){
 
 			TRP* local = NULL;
 			local = TableInit(local);
-			//root->TRP = local;
+			root->TRP = local;
 			table->next = local;
-			printf("--- zakladam lokalnu tabulku ---\n");
+			//printf("--- zakladam lokalnu tabulku ---\n");
 			if (root->children[0] != NULL){
 				Type_of_node(root->children[0], local, global);
 				Go_through (root->children[0], local, global);
@@ -27,7 +27,7 @@ void Go_through(struct Node* root, struct TRP* table, struct TRP* global)
 			return;
 		} else {
 			for (int i = 0; i < root->numChildren; i++){
-				printf("%d: ", i);
+				//printf("%d: ", i);
 				Type_of_node(root->children[i], table, global);
 				Go_through(root->children[i], table, global);
 			}
@@ -79,25 +79,25 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 				} else {
 					if (strcmp(root->parent->children[i]->content, "readInt") == 0){
 						if (strcmp(root->parent->children[1]->content, "Int?") != 0){
-							printf("EROOOR nie je kompatibilne\n");
+							//printf("EROOOR nie je kompatibilne\n");
 							return;
 						} else {*content_in_variable = true;}
 					} else if (strcmp(root->parent->children[i]->content, "readDouble") == 0){
 						if (strcmp(root->parent->children[1]->content, "Double") != 0){
-							printf("EROOOR nie je kompatibilne\n");
+							//printf("EROOOR nie je kompatibilne\n");
 							return;
 						} else {*content_in_variable = true;}
 					} else if (strcmp(root->parent->children[i]->content, "readString") == 0){
 						if (strcmp(root->parent->children[1]->content, "String") != 0){
-							printf("EROOOR nie je kompatibilne\n");
+							//printf("EROOOR nie je kompatibilne\n");
 							return;
 						} else {*content_in_variable = true;}
 					} else if (strcmp(root->parent->children[i]->type, "string") != 0){
-						printf("EROOOR nie je kompatibilne\n");
+						//printf("EROOOR nie je kompatibilne\n");
 					} else if (strcmp(root->parent->children[i]->type, "double") != 0){
-						printf("EROOOR nie je kompatibilne\n");
+						//printf("EROOOR nie je kompatibilne\n");
 					} else if (strcmp(root->parent->children[i]->type, "integer") != 0){
-						printf("EROOOR nie je kompatibilne\n");
+						//printf("EROOOR nie je kompatibilne\n");
 					}
 				}
 			}
@@ -106,8 +106,9 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 			if (root->parent->parent != NULL){
 
 				if (strcmp(root->parent->parent->content, "if") == 0){
-					printf("VSETKO V PORAAAAAAAAAAAAAADKU\n");
-				} else {printf("EROOOOOR redeklaracia\n");}
+					//printf("VSETKO V PORAAAAAAAAAAAAAADKU\n");
+				} else {//printf("EROOOOOR redeklaracia\n");
+				}
 			}
 		}
 	} else if (strcmp(root->content, "Int2Double") == 0){
@@ -117,32 +118,32 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global)
 	} else if (strcmp(root->content, "length") == 0){
 		if (root->children[0] != NULL){
 			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii length");
+				//printf("EROOOOOOOR vo funkcii length");
 			}
 		}
 	} else if (strcmp(root->content, "substring") == 0){
 		for (int i = 0; i < root->numChildren; i++){
 			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii substring");
+				//printf("EROOOOOOOR vo funkcii substring");
 			} else if (strcmp(root->children[1]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii substring");
+				//printf("EROOOOOOOR vo funkcii substring");
 			} else if (strcmp(root->children[2]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii substring");
+				//printf("EROOOOOOOR vo funkcii substring");
 			}
 		}
 	} else if (strcmp(root->content, "ord") == 0){
 		if (root->children[0] != NULL){
 			if (strcmp(root->children[0]->type, "string") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii ord");
+				//printf("EROOOOOOOR vo funkcii ord");
 			}
 		}
 	} else if (strcmp(root->content, "chr") == 0){
 		if (root->children[0] != NULL){
 			if (strcmp(root->children[0]->type, "integer") != 0 && strcmp(root->children[0]->type, "identifier") != 0){
-				printf("EROOOOOOOR vo funkcii ord");
+				//printf("EROOOOOOOR vo funkcii ord");
 			}
 		}
 	}
 
-	printf("%s %s\n", root->content, root->type);
+	//printf("%s %s\n", root->content, root->type);
 }
