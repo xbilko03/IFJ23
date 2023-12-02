@@ -44,7 +44,7 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 
 		//<option> SKIPFALSE
 		currentWord = option(currentWord, &(*let_or_var2));
-		printf("vratene:%s\n", currentWord->content);
+		//printf("vratene:%s\n", currentWord->content);
 
 		//possible }
 		if (strcmp(currentWord->content, "}") == 0) {
@@ -230,7 +230,6 @@ wordStr* statement(wordStr* currentWord, Node* parent) {
 		}
 		else ExitProgram(2, "Missing } in if after statement\n");
 
-
 		Node* else2 = Node_insert(&if2, currentWord->content, NULL, currentWord->type); //NODE ELSE
 		// else
 		if (strcmp(currentWord->content, "else") == 0) {
@@ -402,7 +401,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 		//<types> SKIPFALSE
 		currentWord = types(currentWord, &(*func1));
 		//if((result = types(currentWord))) return result;
-		printf("afterfunctypes:%s\n", currentWord->content);
+		//printf("afterfunctypes:%s\n", currentWord->content);
 
 		//EOF prevention
 		if (currentWord == NULL) {
@@ -555,7 +554,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 				//EOF prevention
 				if (currentWord == NULL) {
 					
-					printf("END of file\n");
+					//printf("END of file\n");
 					return currentWord;
 				}
 				
@@ -591,7 +590,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 			//EOF Prevention
 			if (currentWord == NULL) {
-				printf("END of file\n");
+				//printf("END of file\n");
 				return currentWord;
 			}
 
@@ -763,6 +762,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 }
 
 wordStr* opt(wordStr* currentWord, Node* parent) { //NOT CHECKED
+	//printf("sko:%s\n", currentWord->content);
 
 	////printf("###################IN_OPT#####################\n");
 	//########################################
@@ -859,8 +859,15 @@ wordStr* opt(wordStr* currentWord, Node* parent) { //NOT CHECKED
 			//printf("inopt\n");
 			char* tmp_content1 = currentWord->content;
 			char* tmp_type1 = currentWord->type;
-			currentWord = GetToken(currentWord, false, false);
-			//printf("currentT:%s", currentWord->content);
+			currentWord = GetToken(currentWord, false, true); // change possib of EOF, prog_con OR statement
+			
+			//EOF Prevention
+			if (currentWord == NULL) {
+				//printf("sfdf\n");
+				return currentWord;
+			}
+			//printf("currentT:\n");
+
 			
 			
 			if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
@@ -1596,7 +1603,7 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 			//possible }
 			else if(strcmp(currentWord->content, "}") == 0) {
 				//OK
-				printf("tokenik:%s\n", currentWord->content);
+				//printf("tokenik:%s\n", currentWord->content);
 				return currentWord;
 			}
 
@@ -1611,6 +1618,10 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 
 				//into <builtin> SKIPFALSE
 				currentWord = builtin(currentWord, &(*parent)); //return token after )
+				if (currentWord == NULL) {
+					//printf("END of file\n");
+					return currentWord;
+				}
 				//if((result = builtin(currentWord))) return result;
 
 				//OK
@@ -1661,6 +1672,8 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					return currentWord;
 				}
 
+				//possible EOF
+
 				//possible }
 				else if (strcmp(currentWord->content, "}") == 0) {
 					return currentWord;
@@ -1707,10 +1720,22 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 
 					//<term> SKIPTRUE
 					currentWord = term(currentWord, &(*parent));
+					
+					//EOF Prevention
+					if (currentWord == NULL) {
+						//printf("END of files\n");
+						return currentWord;
+					}
 
 					//<expression_more> SKIPFALSE
 					currentWord = expression_more(currentWord, &(*parent)); // return newline if success
-					
+					//printf("after\n");
+					//EOF Prevention
+					if (currentWord == NULL) {
+						//printf("END of files\n");
+						return currentWord;
+					}
+
 					//possible }
 					if (strcmp(currentWord->content, "}") == 0) {
 						return currentWord;
@@ -1718,7 +1743,7 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 
 					//EOL
 					if(strcmp(currentWord->type, "newline") == 0) {
-						printf("here\n");
+						//printf("here\n");
 						return currentWord;
 						//currentWord = GetToken(currentWord, true, false);
 					}
@@ -1751,6 +1776,12 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 
 				//into <builtin> SKIPFALSE
 				currentWord = builtin(currentWord, &(*parent));
+
+				//EOF Prevention
+				if (currentWord == NULL) {
+					//printf("END of files\n");
+					return currentWord;
+				}
 				//if((result = builtin(currentWord))) return result;
 
 				//OK
@@ -1760,6 +1791,12 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 			else if(strcmp(currentWord->type, "identifier") == 0) {
 				//printf("tok:%s\n", currentWord->content);
 				currentWord = GetToken(currentWord, false, true);
+
+				//EOF Prevention
+				if (currentWord == NULL) {
+					//printf("END of files\n");
+					return currentWord;
+				}
 				/*
 				46. <preopt> -> (<params>)
 				*/
@@ -1775,6 +1812,7 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 						currentWord = GetToken(currentWord, false, true);
 					}
 					else ExitProgram(2, "Missing ) in variable definition near called function params\n");
+
 					//OK
 					return currentWord;
 				}
@@ -1786,8 +1824,16 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					//<term> SKIPTRUE
 					currentWord = term(currentWord, &(*parent));
 
+					//EOF Prevention
+					if (currentWord == NULL) {
+						//printf("END of files\n");
+						return currentWord;
+					}
+
 					//<expression_more>
 					currentWord = expression_more(currentWord, &(*parent));
+
+					
 
 					//OK
 					return currentWord;
@@ -1831,8 +1877,20 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					//<term> SKIPTRUE
 					currentWord = term(currentWord, &(*parent));
 
+					//EOF Prevention
+					if (currentWord == NULL) {
+						//printf("END of files\n");
+						return currentWord;
+					}
+
 					//<expression_more> SKIPFALSE
 					currentWord = expression_more(currentWord, &(*parent)); // return newline if success
+
+					//EOF Prevention
+					if (currentWord == NULL) {
+						//printf("END of files\n");
+						return currentWord;
+					}
 					
 					//EOL
 					if(strcmp(currentWord->type, "newline") == 0) {
@@ -1980,7 +2038,7 @@ wordStr* expression(wordStr* currentWord, Node* parent) {
 */
 wordStr* expression_more(wordStr* currentWord, Node* parent) {
 	//int result;
-	//printf("###################IN_EXPRESSION_MORE#####################:%s\n", currentWord->content);
+	//printf("###################IN_EXPRESSION_MORE#####################:\n");
 	/*
 	81. <expression_more> -> <sign> <term> <expression_more> EOL
 	*/
@@ -1992,10 +2050,20 @@ wordStr* expression_more(wordStr* currentWord, Node* parent) {
 			Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 			currentWord = term(currentWord, &(*sign1));
+			//printf("after\n");
+			//EOF Prevention
+			if (currentWord == NULL) {
+				//printf("END of files\n");
+				return currentWord;
+			}
 		}
 		else {
 			currentWord = GetToken(currentWord, true, false);
 			currentWord = term(currentWord, &(*parent));
+			if (currentWord == NULL) {
+				//printf("END of file\n");
+				return currentWord;
+			}
 		}
 
 		//<term> SKIPFALSE
@@ -2004,6 +2072,7 @@ wordStr* expression_more(wordStr* currentWord, Node* parent) {
 		//<expression_more> continuing recursively
 		return expression_more(currentWord, &(*parent));
 	}
+	
 	//EOL
 	else if ((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, ")") == 0)  || (strcmp(currentWord->content, "{") == 0)  || (strcmp(currentWord->content, "}") == 0)) {
 		//OK
@@ -2057,6 +2126,11 @@ wordStr* term(wordStr* currentWord, Node* parent) {
 		}
 		else ExitProgram(2, "Missing ID after let or var in term section\n");
 
+	}
+	else if(strcmp(currentWord->content, "nil") == 0) {
+		Node_insert(&parent, currentWord->content, NULL, currentWord->type);
+		currentWord = GetToken(currentWord, false, true);
+		return currentWord;
 	}
 	else ExitProgram(2, "Wrong term\n");
 
