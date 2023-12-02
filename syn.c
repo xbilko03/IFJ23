@@ -7,6 +7,9 @@
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
 	//printf("begin\n");
+	if(wrdList->first->content == NULL) {
+		return;
+	}
 	wordStr* currentWord = GetFirstToken(wrdList, true, true); //GET HEADER
 
 	//Node* DemoAST = NULL;
@@ -1633,6 +1636,12 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				char* tmp_content = currentWord->content;
 				char* tmp_type = currentWord->type;
 				currentWord = GetToken(currentWord, false, true);
+
+				if (currentWord == NULL) {
+					//printf("END of file\n");
+					Node_insert(&id1, tmp_content, NULL, tmp_type);
+					return currentWord;
+				}
 
 				//(
 				if(strcmp(currentWord->content, "(") == 0) {
