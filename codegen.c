@@ -1,5 +1,8 @@
 #include "codegen.h"
 
+TRP* trpList[256];
+unsigned int trpIndex = 0;
+
 void PerformCodeGen(Node* tree)
 {
 
@@ -13,8 +16,9 @@ void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
-
 	/* Proccess Node here */
+	printf("ProcessNode =%s of type %s\n", c_node->content, c_node->type);
+	printf("trp = %s\n", c_node->TRP);
 
 	if (strcmp(c_node->content, "root") == 0)
 	{
@@ -22,37 +26,22 @@ void ProcessNode(Node* c_node)
 		PrintCode(".IFJcode23\n");
 		PrintCode("DEFVAR GF@writeValue\n");
 	}
-	else if (strcmp(c_node->content, "let") == 0 && strcmp(c_node->type, "keyword") == 0)
+	else if (strcmp(c_node->type, "keyword") == 0)
 	{
 		/* Process children nodes (args) here and end the branch */
-		/* let x */
-		DEFVAR(c_node->children[0]);
-		/* Can not proccess functions or expressions, just simple values */
-		if (c_node->children == NULL)
-			return;
-		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
-			/* let x : Int = 5 */
-			MOVE(c_node->children[0], c_node->children[2]);
-		else
-			/* let x = 5 */
-			MOVE(c_node->children[0], c_node->children[1]);
-		return;
-	}
-	else if (strcmp(c_node->content, "var") == 0 && strcmp(c_node->type, "keyword") == 0)
-	{
-		/* Process children nodes (args) here and end the branch */
-		/* var x */
-
-		DEFVAR(c_node->children[0]);
-		/* Can not proccess functions or expressions, just simple values */
-		if (c_node->children == NULL)
-			return;
-		if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
-			/* var x : Int = 5 */
-			MOVE(c_node->children[0], c_node->children[2]);
-		else
-			/* var x = 5 */
-			MOVE(c_node->children[0], c_node->children[1]);
+		if (strcmp(c_node->content, "let") == 0 || strcmp(c_node->content, "var") == 0)
+		{
+			DEFVAR(c_node->children[0]);
+			/* Can not proccess functions or expressions, just simple values */
+			if (c_node->children == NULL)
+				return;
+			if (strcmp(c_node->children[1]->type, "identifier(type)") == 0)
+				/* let x : Int = 5 */
+				MOVE(c_node->children[0], c_node->children[2]);
+			else
+				/* let x = 5 */
+				MOVE(c_node->children[0], c_node->children[1]);
+		}
 		return;
 	}
 	else if (strcmp(c_node->content, "write") == 0 && strcmp(c_node->type, "identifier") == 0)

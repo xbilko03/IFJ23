@@ -4,38 +4,37 @@ void PerformSemantics(Node** AST, TRP** global)
 {
 	Node* tree = *AST;
 	*global = TableInit(*global);
-	Go_through(tree, *global, *global, NULL);
+	Go_through(&tree, *global, *global);
 	return;
 }
 
-void Go_through(struct Node* root, struct TRP* table, struct TRP* global, TRPitem* function)
+void Go_through(struct Node** root, struct TRP* table, struct TRP* global)
 {
 	//printf("Address of var: %p %p\n", &(*table), &(*global));
-	if (root != NULL){
-		if (strcmp(root->content, "body") == 0){
+	if ((*root) != NULL){
+		if (strcmp((*root)->content, "body") == 0){
 
 			TRP* local = NULL;
 			local = TableInit(local);
-			root->TRP = local; 
+			(*root)->TRP = local;
 			table->next = local;
 			if (strcmp(root->parent->content, "func") == 0){
 				function = TableFindItem (global, root->parent->children[0]->content);
 			}
 			printf("--- zakladam lokalnu tabulku ---\n");
-			for (int i = 0; i < root->numChildren; i++){
-				printf("%d: ", i);
-				Type_of_node(root->children[i], local, global, function);
-				Go_through (root->children[i], local, global, function);
+			if ((*root)->children[0] != NULL){
+				Type_of_node((*root)->children[0], local, global);
+				Go_through (&((*root)->children[0]), local, global);
 			}
 			function = NULL;
 			table->next = NULL;
 			printf("--- koniec lokalnej tabulky ---\n");
 			return;
 		} else {
-			for (int i = 0; i < root->numChildren; i++){
+			for (int i = 0; i < (*root)->numChildren; i++){
 				printf("%d: ", i);
-				Type_of_node(root->children[i], table, global, function);
-				Go_through(root->children[i], table, global, function);
+				Type_of_node((*root)->children[i], table, global);
+				Go_through(&((*root)->children[i]), table, global);
 			}
 			// TRP* current = table;
 
