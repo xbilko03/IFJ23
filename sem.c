@@ -4,6 +4,7 @@ void PerformSemantics(Node** AST, TRP** global)
 {
 	Node* tree = *AST;
 	*global = TableInit(*global);
+	(*AST)->TRP = *global;
 	Go_through(tree, *global, *global, NULL);
 	return;
 }
@@ -16,6 +17,7 @@ void Go_through(struct Node* root, struct TRP* table, struct TRP* global, TRPite
 			TRP* local = NULL;
 			local = TableInit(local);
 			root->TRP = local; 
+			printf("---------- %p ---------", root->TRP);
 			table->next = local;
 			if (strcmp(root->parent->content, "func") == 0){
 				function = TableFindItem (global, root->parent->children[0]->content);
