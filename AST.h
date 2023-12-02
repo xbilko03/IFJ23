@@ -14,12 +14,12 @@ typedef struct Node{
 	struct Node *parent;
 	int numChildren;
 	char* content;
-	TRPitem *TRP;
+	TRP *TRP;
 	char* type;
 } Node;
 
 void DeleteWordList(wordListStr* wordList);
-Node* Node_insert(Node** AST, char* content, TRPitem* TRP, char* type);
+Node* Node_insert(Node** AST, char* content, TRP* TRP, char* type);
 void* checked_malloc(size_t size);
 void* checked_realloc(void* ptr, size_t size);
 void print_AST(Node* tree, bool* flag, int depth, bool isLast);

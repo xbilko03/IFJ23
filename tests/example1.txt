@@ -1,8 +1,21 @@
-func concat(_ x : String, with y : String) -> String 
-{ 
-let x = x + y 
-return x + " " + y 
-} 
-let a = "ahoj " 
-var ct : String 
-ct = concat(a, with: "svete")
+// Program 1: Vypocet faktorialu (iterativne)
+/* Hlavni telo programu */
+write("Zadejte cislo pro vypocet faktorialu\n")
+let a : Int? = 10
+let b : Int? = 11
+var c : Int? = 12
+let d : Int? = 13
+let e : Int? = 14
+var f : Int? = 15
+
+
+if a > b {
+var a : Int = 1
+write(a)
+}
+else
+{
+var a : Int = 2
+write(a)
+}
+write(a)
