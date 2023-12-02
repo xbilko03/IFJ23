@@ -1,14 +1,26 @@
 .IFJcode23
 DEFVAR GF@writeValue
-MOVE GF@writeValue string@Zadejte\032cislo\032pro\032vypocet\032faktorialu\010
+DEFVAR GF@a0
+MOVE GF@a0 int@10
+DEFVAR GF@b0
+MOVE GF@b0 int@15
+DEFVAR GF@c0
+MOVE GF@c0 int@20
+DEFVAR GF@d0
+MOVE GF@d0 int@25
+DEFVAR GF@n0
+MOVE GF@n0 GF@a0
+DEFVAR GF@e0
+MOVE GF@e0 string@rip\032bozo
+DEFVAR GF@a1
+MOVE GF@a1 int@45
+MOVE GF@writeValue GF@a1
 WRITE GF@writeValue
-MOVE GF@writeValue string@Faktorial\032nelze\032spocitat\010
+MOVE GF@writeValue GF@b0
 WRITE GF@writeValue
-MOVE GF@writeValue string@Vysledek\032je:\032
+MOVE GF@writeValue string@gg
 WRITE GF@writeValue
-MOVE GF@writeValue string@vysl
-WRITE GF@writeValue
-MOVE GF@writeValue string@\010
-WRITE GF@writeValue
-MOVE GF@writeValue string@Chyba\032pri\032nacitani\032celeho\032cisla!\010
+DEFVAR GF@a2
+MOVE GF@a2 int@55
+MOVE GF@writeValue GF@b0
 WRITE GF@writeValue

@@ -1,0 +1,16 @@
+let a = 1 + 2
+let b = 4 * 3
+let c = 20 - 1
+
+write(a, "\n", b, "\n", c, "\n")
+
+let da = 25.0 / 5.0
+let db = 25 / 6
+
+write(da, "\n", db, "\n")
+
+// concat
+let str = "Hello "
+let str2 = str + "world\n"
+
+write(str2)

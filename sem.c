@@ -6,6 +6,7 @@ void PerformSemantics(Node** AST, TRP** global)
 	*global = TableInit(*global);
 	(*AST)->TRP = *global;
 	Go_through(tree, *global, *global, NULL);
+
 	return;
 }
 
