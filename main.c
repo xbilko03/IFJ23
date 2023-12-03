@@ -27,9 +27,9 @@ int main(int argc, char **argv)
 	TRP* global = NULL;
 	Node* root = Node_insert(&AST, "root", NULL, "root");
 
-	PrintWordList(wordList->first);
+	//PrintWordList(wordList->first);
 
-	printf("--------------------------------\n\n");
+	//printf("--------------------------------\n\n");
 
 	PerformSyntax(wordList, &(*root));
 	bool* flag = malloc(500 * sizeof(bool));
@@ -42,6 +42,6 @@ int main(int argc, char **argv)
 
 	//DeleteWordList(wordList);
 
-	printf("\nEnd\n");
+	//printf("\nEnd\n");
 	return 0;
 }
