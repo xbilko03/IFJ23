@@ -1,5 +1,5 @@
-func a()->Int()
+func a()->Int
 {
-return 5;
+return 5
 }
-Write(a())
+write(a)

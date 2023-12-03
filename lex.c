@@ -13,7 +13,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
         (*Tokens)->type = "string";
         (*Tokens)->content = EscapeSequence(word, false);
     }
-    else if(state == String_multi_end3)
+    else if(state == String_multi_end4)
     {
         (*Tokens)->type = "string";
         (*Tokens)->content = EscapeSequence(word, true);
@@ -166,7 +166,7 @@ char* EscapeSequence(char *word, bool multi)
     int lenght = strlen(word);
     char *tmp = malloc(sizeof(char) * lenght);
     int tmpIndex = 0;
-    for (int i = multi ? 3 : 1; i < lenght-(multi ? 3 : 1); i++)
+    for (int i = multi ? 4 : 1; i < lenght-(multi ? 4 : 1); i++)
     {
         if (word[i] == '\\')
         {
@@ -208,6 +208,11 @@ char* EscapeSequence(char *word, bool multi)
         }
     }
     free(word);
+    if(tmpIndex == 0)
+    {
+        tmp[tmpIndex] = '\0';
+        return tmp;
+    }
     tmp = realloc(tmp, sizeof(char) * tmpIndex);
     return tmp;
 }
@@ -400,24 +405,33 @@ MachineStates StateMachine(char input, MachineStates currentState)
             return String_multi;
         return End;
     case String_multi:
-        if (input == '"')
+        if (input == '\n')
+            return String_multi_start;
+        return Error;
+    case String_multi_start:
+        if (input == '\n')
             return String_multi_end1;
         if ((input > 31 && input != '"') || input == '\n')
-            return String_multi;
+            return String_multi_start;
         if (input == '\\')
             return String_multi_escape;
-        return Error;
     case String_multi_escape:
         return String_multi;
     case String_multi_end1:
         if (input == '"')
             return String_multi_end2;
-        return Error;
+        if (input == '\n')
+            return String_multi_end1;
+        return String_multi_start;
     case String_multi_end2:
         if (input == '"')
             return String_multi_end3;
         return Error;
     case String_multi_end3:
+        if (input == '"')
+            return String_multi_end4;
+        return Error;
+    case String_multi_end4:
         return End;
     case Operator3:
         if (input == '/')

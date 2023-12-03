@@ -7,16 +7,18 @@
 #include "lex_struct.h"
 #define hashTableSize 255
 
+typedef struct TRPitem TRPitem;
 typedef struct TRPitem {
 	char* key;
 	bool* content;
 	struct wordStr* type;
-	struct TRPitem* next;
+	TRPitem* next;
 } TRPitem;
 
+typedef struct TRP TRP;
 typedef struct TRP{
 	TRPitem* items[hashTableSize];
-	struct TRP* next;
+	TRP* next;
 }TRP;
 
 long HashFunction(char* key);

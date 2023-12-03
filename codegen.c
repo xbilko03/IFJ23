@@ -1,5 +1,8 @@
 #include "codegen.h"
 
+TRP* trpList[256];
+unsigned int trpIndex = 0;
+
 void PerformCodeGen(Node* tree)
 {
 	/* Cycle through AST */
@@ -27,7 +30,6 @@ void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
-
 	/* Proccess Node here */
 	if (strcmp(c_node->content, "root") == 0)
 	{
