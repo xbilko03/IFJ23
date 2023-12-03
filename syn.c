@@ -7,6 +7,9 @@
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
 	//printf("begin\n");
+	if(wrdList->first->content == NULL) {
+		return;
+	}
 	wordStr* currentWord = GetFirstToken(wrdList, true, true); //GET HEADER
 
 	//Node* DemoAST = NULL;
@@ -1634,6 +1637,12 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				char* tmp_type = currentWord->type;
 				currentWord = GetToken(currentWord, false, true);
 
+				if (currentWord == NULL) {
+					//printf("END of file\n");
+					Node_insert(&id1, tmp_content, NULL, tmp_type);
+					return currentWord;
+				}
+
 				//(
 				if(strcmp(currentWord->content, "(") == 0) {
 					//now assigning function ID 
@@ -1843,7 +1852,7 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				*/
 				//EOL
 				else if(strcmp(currentWord->type, "newline") == 0) {
-					currentWord = GetToken(currentWord, true, false);
+					//currentWord = GetToken(currentWord, true, false);
 					return currentWord;
 					//MAYBE RETURN CURRENTWORD?
 				}
@@ -1894,7 +1903,7 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					
 					//EOL
 					if(strcmp(currentWord->type, "newline") == 0) {
-						currentWord = GetToken(currentWord, true, false);
+						//currentWord = GetToken(currentWord, true, false);
 					}
 					else ExitProgram(2, "Missing newline in option part expression, statement");
 
@@ -1938,10 +1947,16 @@ wordStr* return_value(wordStr* currentWord, Node* parent) {
 		char* tmp_type = currentWord->type; 
 		currentWord = GetToken(currentWord, false, false);
 		//1. case -> EOL or } possible
-		if((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, "}") == 0)) {
-			Node_insert(&parent, tmp_content, NULL, tmp_type);
-			return currentWord;
-		}
+        if (strcmp(currentWord->type, "newline") == 0) {
+            currentWord = GetToken(currentWord, true, false);
+            Node_insert(&parent, tmp_content, NULL, tmp_type);
+            return currentWord;
+        }
+        else if (strcmp(currentWord->content, "}") == 0) {
+            //printf("here\n");
+            Node_insert(&parent, tmp_content, NULL, tmp_type);
+            return currentWord;
+        }
 
 		//2. case -> <sign>
 		else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {

@@ -1,2 +1,2 @@
-let : Int a = 4
-let String: a = “abc”
+let a: Int  = 4
+let a: String = "abc"

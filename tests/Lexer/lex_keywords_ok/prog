@@ -6,7 +6,6 @@ else{print("abc")
 }
 var c : Int? = nil
 
-return
 var n : String? = nil
 var f : String = "buchaci"
 while (a>100) { write("lets go")}
