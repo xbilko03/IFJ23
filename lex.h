@@ -50,10 +50,12 @@ typedef enum MachineStates
     Endoffile,
     End,
     String_multi,
+    String_multi_start,
     String_multi_escape,
     String_multi_end1,
     String_multi_end2,
     String_multi_end3,
+    String_multi_end4,
     String_content,
     String_end_multi
 } MachineStates;

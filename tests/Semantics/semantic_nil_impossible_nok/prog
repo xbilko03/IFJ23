@@ -1,4 +1,0 @@
-var a : Int? = nil
-if a
-{
-}

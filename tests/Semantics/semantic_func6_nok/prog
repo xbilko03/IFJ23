@@ -1,4 +1,4 @@
-func gg(with param : String, buchac : Int ) -> String {
+func gg(with param : String, buchac a: Int ) -> String {
 let r : String = "gaming"
 return r
 }

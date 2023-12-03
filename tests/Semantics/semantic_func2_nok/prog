@@ -1,5 +1,0 @@
-gg(with: "ahoj")
-func gg(with param : String) -> String {
-let r : String = "gaming"
-return r
-}

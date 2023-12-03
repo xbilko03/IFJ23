@@ -1,5 +1,5 @@
-func concat(x : String) -> String 
+func concat(_ x : String) -> String 
 { 
 let x = x 
 }
-concat(“abc”)
+concat("abc")
