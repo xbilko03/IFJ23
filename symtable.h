@@ -1,10 +1,12 @@
 #ifndef SYMTABLE_H
 #define SYMTABLE_H
+#include "lex_struct.h"
+#include "AST.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lex_struct.h"
+
 #define hashTableSize 255
 
 typedef struct TRPitem TRPitem;
@@ -26,5 +28,6 @@ TRP* TableInit(TRP* table);
 TRPitem* TableFindItem(TRP* table, char *key);
 void TableAddItem(TRP* table, char* key, wordStr* type, bool* content);
 void TableRemoveTable(TRP* table);
+void Print_tables(Node* root);
 
 #endif
