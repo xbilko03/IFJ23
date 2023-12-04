@@ -1,5 +1,4 @@
 #include "symtable.h"
-#include "AST.h"
 
 long HashFunction(char* key)
 {

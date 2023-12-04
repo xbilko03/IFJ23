@@ -9,6 +9,7 @@
 #include "lex_struct.h"
 #define hashTableSize 255
 
+typedef struct TRP TRP;
 typedef struct Node{
 	struct Node **children;
 	struct Node *parent;

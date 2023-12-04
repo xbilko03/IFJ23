@@ -9,6 +9,7 @@
 
 #define hashTableSize 255
 
+typedef struct Node Node;
 typedef struct TRPitem TRPitem;
 typedef struct TRPitem {
 	char* key;
