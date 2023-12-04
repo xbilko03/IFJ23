@@ -1740,22 +1740,8 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				//<sign>
 				if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
 					Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type); //adding sign to root
-				
-
 					Node_insert(&sign1, tmp_content, NULL, tmp_type);
 					
-					//Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type);
-					//Node_insert(&sign1, tmp_content, NULL, tmp_type);
-					//currentWord = GetToken(currentWord, true, true);
-
-					//<term> SKIPTRUE
-					
-					
-					//EOF Prevention
-					if (currentWord == NULL) {
-						printf("END of files\n");
-						return currentWord;
-					}
 
 					//<expression_more> SKIPFALSE
 					currentWord = expression_more(currentWord, &(*sign1)); // return newline if success
@@ -1772,10 +1758,8 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 					}
 
 					//EOL
-					if(strcmp(currentWord->type, "newline") == 0) {
-						printf("here\n");
+					if(strcmp(currentWord->type, "newline") == 0) {					
 						return currentWord;
-						//currentWord = GetToken(currentWord, true, false);
 					}
 					else ExitProgram(2, "Missing newline in option part expression, statement");
 
@@ -1820,10 +1804,13 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 			//ID
 			else if(strcmp(currentWord->type, "identifier") == 0) {
 				//printf("tok:%s\n", currentWord->content);
+				char* tmp_content = currentWord->content;
+				char* tmp_type = currentWord->type;
 				currentWord = GetToken(currentWord, false, true);
 
 				//EOF Prevention
 				if (currentWord == NULL) {
+					Node_insert(&parent, tmp_content, NULL, tmp_type);
 					printf("END of files\n");
 					return currentWord;
 				}
@@ -1832,10 +1819,11 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				*/
 				//(
 				if(strcmp(currentWord->content, "(") == 0) {
+					Node* fid = Node_insert(&parent, tmp_content, NULL, tmp_type);
 					currentWord = GetToken(currentWord, true, false);
 
 					//<params> SKIPTRUE
-					currentWord = params(currentWord, &(*parent));
+					currentWord = params(currentWord, &(*fid));
 					//printf("after params:%s\n", currentWord->content);
 					//)
 					if (strcmp(currentWord->content, ")") == 0) {
@@ -1849,21 +1837,29 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				//ID in the beginning of expression <expression>
 				//<sign>
 				else if((strcmp(currentWord->content, "+") == 0) || (strcmp(currentWord->content, "-") == 0) || (strcmp(currentWord->content, "*") == 0) || (strcmp(currentWord->content, "/") == 0) || (strcmp(currentWord->content, "==") == 0) || (strcmp(currentWord->content, "!=") == 0) || (strcmp(currentWord->content, "<") == 0) || (strcmp(currentWord->content, ">") == 0) || (strcmp(currentWord->content, "<=") == 0) || (strcmp(currentWord->content, ">=") == 0) || (strcmp(currentWord->content, "??") == 0)) {
-					currentWord = GetToken(currentWord, true, false);
+					Node* sign1 = Node_insert(&parent, currentWord->content, NULL, currentWord->type); //adding sign to root
+					Node_insert(&sign1, tmp_content, NULL, tmp_type);
+					
 
-					//<term> SKIPTRUE
-					currentWord = term(currentWord, &(*parent));
-
+					//<expression_more> SKIPFALSE
+					currentWord = expression_more(currentWord, &(*sign1)); // return newline if success
+					//printf("after\n");
 					//EOF Prevention
 					if (currentWord == NULL) {
 						printf("END of files\n");
 						return currentWord;
 					}
 
-					//<expression_more>
-					currentWord = expression_more(currentWord, &(*parent));
+					//possible }
+					if (strcmp(currentWord->content, "}") == 0) {
+						return currentWord;
+					}
 
-					
+					//EOL
+					if(strcmp(currentWord->type, "newline") == 0) {					
+						return currentWord;
+					}
+					else ExitProgram(2, "Missing newline in option part expression, statement");
 
 					//OK
 					return currentWord;
@@ -1872,8 +1868,9 @@ wordStr* option(wordStr* currentWord, Node* parent) {
 				47. <preopt> -> eps EOL
 				*/
 				//EOL
-				else if(strcmp(currentWord->type, "newline") == 0) {
+				else if((strcmp(currentWord->type, "newline") == 0) || (strcmp(currentWord->content, "}") == 0)) {
 					//currentWord = GetToken(currentWord, true, false);
+					Node_insert(&parent, tmp_content, NULL, tmp_type);
 					return currentWord;
 					//MAYBE RETURN CURRENTWORD?
 				}
