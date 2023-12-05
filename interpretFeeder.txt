@@ -1,0 +1,8 @@
+DEFVAR GF@writeValue
+DEFVAR GF@expressionSum
+DEFVAR GF@a0
+DEFVAR GF@a0
+MOVE GF@writeValue string@not\032nil!
+WRITE GF@writeValue
+MOVE GF@writeValue string@nil!
+WRITE GF@writeValue

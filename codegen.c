@@ -85,8 +85,9 @@ void PrintSymbol(Node* c_symb)
 	}
 	else if (strcmp(c_symb->type, "double") == 0)
 	{
-		PrintCode("DOUBLE@");
+		PrintCode("FLOAT@0x");
 		PrintCode(c_symb->content);
+		PrintCode("p+0");
 	}
 	else if (strcmp(c_symb->type, "identifier") == 0
 		|| strcmp(c_symb->type, "let declaration") == 0
@@ -190,7 +191,13 @@ void ProcessNode(Node* c_node)
 	{
 		if (strcmp(c_node->content, "let") == 0 || strcmp(c_node->content, "var") == 0)
 		{
-			DEFVAR(c_node->children[0]);
+			if (strcmp(c_node->parent->content, "if") == 0 && strcmp(c_node->parent->type, "keyword") == 0)
+			{
+				/* let a | var a */
+				/* empty */
+			}
+			else
+				DEFVAR(c_node->children[0]);
 			return;
 		}
 	}
@@ -378,7 +385,7 @@ void ADD(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	PrintCode("ADD GF@exressionSum ");
+	PrintCode("ADD GF@expressionSum GF@expressionSum ");
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
@@ -387,7 +394,7 @@ void SUB(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	PrintCode("SUB GF@exressionSum ");
+	PrintCode("SUB GF@expressionSum GF@expressionSum ");
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
@@ -396,7 +403,7 @@ void MUL(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	PrintCode("MUL GF@exressionSum ");
+	PrintCode("MUL GF@expressionSum GF@expressionSum ");
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
@@ -417,7 +424,7 @@ void IDIV(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	PrintCode("IDIV GF@exressionSum ");
+	PrintCode("IDIV GF@expressionSum GF@expressionSum ");
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }

@@ -1,2 +1,7 @@
-var a : Int = 10 - 20 + 30
+var a : Int?
 
+if let a {
+    write("not nil!")
+} else {
+    write("nil!")
+}
