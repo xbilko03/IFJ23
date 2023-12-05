@@ -105,10 +105,6 @@ void PrintSymbol(Node* c_symb)
 	{
 		PrintCode("NIL@NIL");
 	}
-	else if (strcmp(c_symb->type, "operator") == 0)
-	{
-		PrintCode("giga chad");
-	}
 
 	return;
 }
@@ -126,22 +122,51 @@ void ExpressionSum(Node* c_symb)
 {
 	if (strcmp(c_symb->type, "operator") == 0)
 	{
-		if (strcmp(c_symb->content, "+") == 0)
+		/* left side */
+
+		if (strcmp(c_symb->parent->content, "+") == 0)
+			ADD(c_symb->children[0]);
+		else if (strcmp(c_symb->parent->content, "-") == 0)
+			SUB(c_symb->children[0]);
+		else if (strcmp(c_symb->parent->content, "*") == 0)
+			MUL(c_symb->children[0]);
+		else if (strcmp(c_symb->parent->content, "/") == 0)
+			IDIV(c_symb->children[0]);
+
+		/* right side */
+		if (strcmp(c_symb->parent->type, "assign") == 0 || strcmp(c_symb->parent->type, "keyword") == 0)
 		{
-			ADD(c_symb);
+			ADD(c_symb->children[0]);
+			ExpressionSum(c_symb->children[1]);
 		}
+		else if(strcmp(c_symb->children[1]->type,"operator") == 0)
+			ExpressionSum(c_symb->children[1]);
+		else if (strcmp(c_symb->content, "+") == 0)
+			ADD(c_symb->children[1]);
 		else if (strcmp(c_symb->content, "-") == 0)
-		{
-			SUB(c_symb);
-		}
+			SUB(c_symb->children[1]);
 		else if (strcmp(c_symb->content, "*") == 0)
-		{
-			MUL(c_symb);
-		}
+			MUL(c_symb->children[1]);
 		else if (strcmp(c_symb->content, "/") == 0)
+			IDIV(c_symb->children[1]);
+	}
+	else
+	{
+		/* left side */
+		if (strcmp(c_symb->parent->type, "assign") == 0)
 		{
-			IDIV(c_symb);
+			PrintCode("MOVE GF@expressionSum ");
+			PrintSymbol(c_symb);
+			PrintCode("\n");
 		}
+		else if (strcmp(c_symb->parent->content, "+") == 0)
+			ADD(c_symb);
+		else if (strcmp(c_symb->parent->content, "-") == 0)
+			SUB(c_symb);
+		else if (strcmp(c_symb->parent->content, "*") == 0)
+			MUL(c_symb);
+		else if (strcmp(c_symb->parent->content, "/") == 0)
+			IDIV(c_symb);
 	}
 }
 
@@ -279,7 +304,18 @@ void DEFVAR(Node* c_var)
 	if (c_var->parent->numChildren > 1)
 	{
 		/* let a : Int = 5 */
-		MOVE(c_var, c_var->parent->children[1]);
+		if (strcmp(c_var->parent->children[1]->type, "operator") == 0)
+		{
+			PrintCode("MOVE GF@expressionSum INT@0\n");
+
+			ExpressionSum(c_var->parent->children[1]);
+
+			PrintCode("MOVE ");
+			PrintSymbol(c_var);
+			PrintCode(" GF@expressionSum\n");
+		}
+		else
+			MOVE(c_var, c_var->parent->children[1]);
 	}
 	return;
 }
@@ -342,69 +378,27 @@ void ADD(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	if (c_symb->children[0] != NULL)
-	{
-		PrintCode("ADD GF@exressionSum ");
-		PrintSymbol(c_symb->children[0]);
-		PrintCode("\n");
-	}
-	if (c_symb->children[1] != NULL)
-	{
-		if (strcmp(c_symb->children[1]->type, "operator") == 0)
-			ADD(c_symb->children[1]);
-		else
-		{
-			PrintCode("ADD GF@exressionSum ");
-			PrintSymbol(c_symb->children[1]);
-			PrintCode("\n");
-		}
-	}
+	PrintCode("ADD GF@exressionSum ");
+	PrintSymbol(c_symb);
+	PrintCode("\n");
 }
 
 void SUB(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	if (c_symb->children[0] != NULL)
-	{
-		PrintCode("SUB GF@exressionSum ");
-		PrintSymbol(c_symb->children[0]);
-		PrintCode("\n");
-	}
-	if (c_symb->children[1] != NULL)
-	{
-		if (strcmp(c_symb->children[1]->type, "operator") == 0)
-			SUB(c_symb->children[1]);
-		else
-		{
-			PrintCode("SUB GF@exressionSum ");
-			PrintSymbol(c_symb->children[1]);
-			PrintCode("\n");
-		}
-	}
+	PrintCode("SUB GF@exressionSum ");
+	PrintSymbol(c_symb);
+	PrintCode("\n");
 }
 
 void MUL(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	if (c_symb->children[0] != NULL)
-	{
-		PrintCode("MUL GF@exressionSum ");
-		PrintSymbol(c_symb->children[0]);
-		PrintCode("\n");
-	}
-	if (c_symb->children[1] != NULL)
-	{
-		if (strcmp(c_symb->children[1]->type, "operator") == 0)
-			MUL(c_symb->children[1]);
-		else
-		{
-			PrintCode("MUL GF@exressionSum ");
-			PrintSymbol(c_symb->children[1]);
-			PrintCode("\n");
-		}
-	}
+	PrintCode("MUL GF@exressionSum ");
+	PrintSymbol(c_symb);
+	PrintCode("\n");
 }
 
 /*
@@ -423,23 +417,9 @@ void IDIV(Node* c_symb)
 {
 	if (c_symb == NULL)
 		return;
-	if (c_symb->children[0] != NULL)
-	{
-		PrintCode("IDIV GF@exressionSum ");
-		PrintSymbol(c_symb->children[0]);
-		PrintCode("\n");
-	}
-	if (c_symb->children[1] != NULL)
-	{
-		if (strcmp(c_symb->children[1]->type, "operator") == 0)
-			IDIV(c_symb->children[1]);
-		else
-		{
-			PrintCode("IDIV GF@exressionSum ");
-			PrintSymbol(c_symb->children[1]);
-			PrintCode("\n");
-		}
-	}
+	PrintCode("IDIV GF@exressionSum ");
+	PrintSymbol(c_symb);
+	PrintCode("\n");
 }
 
 /*
