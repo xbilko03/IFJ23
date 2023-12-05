@@ -42,68 +42,47 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 	int hash = HashFunction(key);
   	TRPitem *item = TableFindItem(table, key);
 	if (item != NULL){ //already in table
-
-		if (item->content == false){
-			item->content = content;
-		} else {
-			if (strcmp(type->content, "let declaration") == 0){
-				if (content != NULL){
-					printf ("ERROOR PRIRADZOVANIE DO LET ZNOVU\n");
-				}
-			}
-		}
-				
+			
 		if (type != NULL){
 			if (item->type == NULL){ // insert first
-
-				item->type = malloc(sizeof(wordStr));
-				if(item->type == NULL){return;}
-
+				printf ("tu niesom\n");
 				item->type = type;
 				item->type->next = NULL;
 			} else { // insert after
-				while (item->type != NULL){
-					if (item->type == type){
-						//error code cant use same param in the function
+				wordStr* active = item->type;
+				while (active != NULL){
+					if (strcmp(active->content, type->content) == 0){
+						printf ("ERROR - same param in function\n");
 					}
-					if (item->type->next == NULL){
-						wordStr* current = malloc(sizeof(wordStr));
-						if (current == NULL){return;}
-
-						current = type;
-						item->type->next = current;
-
+					if (active->next == NULL){
+						active->next = type;
 						return;
 					}
-					item->type = item->type->next;
+					active = active->next;
 				}
 			}
 		}
 		return;
 	} else { //not in the table
-		TRPitem *new_item = malloc(sizeof(TRPitem));
-		if (new_item == NULL){return;}
-		new_item->key = key;
-
-		if (type != NULL){
-			new_item->type = malloc(sizeof(wordStr));
-			if (new_item->type == NULL){return;}
-			new_item->type = type;
-			new_item->type->next = NULL;
-			new_item->next = NULL;
-		}
-		if (table->items[hash] == NULL){ 
-			table->items[hash] = new_item;
-			return;
+		if (table->items[hash] == NULL){
+			table->items[hash] = malloc(sizeof(TRPitem));
+			if (table->items[hash] == NULL){return;}
+			table->items[hash]->key = key;
+			table->items[hash]->type = type;
+			table->items[hash]->content = content;
+			table->items[hash]->next = NULL;
 		} else {
 			TRPitem *last_item = table->items[hash];
 
-			while (last_item != NULL){ 
+			while (last_item != NULL){
 				if (last_item->next != NULL){
-				last_item = last_item->next;
+					last_item = last_item->next;
 				} else {
-				last_item->next = new_item;
-				return;
+					last_item->key = key;
+					last_item->type = type;
+					last_item->content = content;
+					last_item->next = NULL;
+					return;
 				}
 			}
 		}
@@ -132,5 +111,38 @@ void TableRemoveTable(TRP* table)
 			current = next;
 		}
 		table->items[i] = NULL;
+	}
+}
+void Print_tables(Node* root){
+	if (root != NULL){
+		if (strcmp(root->content, "root") == 0){
+			for (int i = 0; i < 255; i++){
+				if (root->TRP->items[i] != NULL){
+					wordStr* current = root->TRP->items[i]->type;
+					printf ("\n- %s - ", root->TRP->items[i]->key);
+					while (current != NULL){
+						printf ("- %s %s -", current->content, current->type);
+						current = current->next;
+					}
+				}
+			}
+			printf("\n-------------------------------");
+		}
+		if (strcmp(root->content, "body") == 0){
+			for (int i = 0; i < 255; i++){
+				if (root->TRP->items[i] != NULL){
+					wordStr* current = root->TRP->items[i]->type;
+					printf ("\n- %s - ", root->TRP->items[i]->key);
+					while (current != NULL){
+						printf ("- %s %s -", current->content, current->type);
+						current = current->next;
+					}
+				}
+			}
+			printf("\n------------------------\n");
+		}
+		for (int i = 0; i < root->numChildren; i++){
+			Print_tables (root->children[i]);
+		}
 	}
 }
