@@ -29,10 +29,10 @@ unsigned int FindTableIndex(char* symbol)
 	}
 	return 404;
 }
-void ADD(Node* c_var, Node* c_symb1, Node* c_symb2);
-void SUB(Node* c_var, Node* c_symb1, Node* c_symb2);
-void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2);
-void MUL(Node* c_var, Node* c_symb1, Node* c_symb2);
+void ADD(Node* c_symb);
+void SUB(Node* c_symb);
+void IDIV(Node* c_symb);
+void MUL(Node* c_symb);
 
 /* Print to stdout */
 void PrintCode(char* code)
@@ -105,6 +105,10 @@ void PrintSymbol(Node* c_symb)
 	{
 		PrintCode("NIL@NIL");
 	}
+	else if (strcmp(c_symb->type, "operator") == 0)
+	{
+		PrintCode("giga chad");
+	}
 
 	return;
 }
@@ -118,6 +122,28 @@ void PrintType(Node* c_symb)
 		PrintCode("double");
 	return;
 }
+void ExpressionSum(Node* c_symb)
+{
+	if (strcmp(c_symb->type, "operator") == 0)
+	{
+		if (strcmp(c_symb->content, "+") == 0)
+		{
+			ADD(c_symb);
+		}
+		else if (strcmp(c_symb->content, "-") == 0)
+		{
+			SUB(c_symb);
+		}
+		else if (strcmp(c_symb->content, "*") == 0)
+		{
+			MUL(c_symb);
+		}
+		else if (strcmp(c_symb->content, "/") == 0)
+		{
+			IDIV(c_symb);
+		}
+	}
+}
 
 /* Process AST */
 void ProcessNode(Node* c_node)
@@ -130,6 +156,7 @@ void ProcessNode(Node* c_node)
 		/* Mandatory Commands */
 		PrintCode(".IFJcode23\n");
 		PrintCode("DEFVAR GF@writeValue\n");
+		PrintCode("DEFVAR GF@expressionSum\n");
 		/* Add global TRP */
 		symTables[symIndex].symTable = c_node->TRP;
 		symTables[symIndex++].ID = symID++;
@@ -156,13 +183,15 @@ void ProcessNode(Node* c_node)
 	}
 	else if (strcmp(c_node->type, "assign") == 0)
 	{
-		/* not functional */
-		/* printf("NODE=%s\n", c_node->children[0]->content); */		
+		PrintCode("MOVE GF@expressionSum INT@0\n");
+
+		ExpressionSum(c_node->children[1]);
+
+		PrintCode("MOVE ");
+		PrintSymbol(c_node->children[0]);
+		PrintCode(" GF@expressionSum\n");
 	}
 	
-	/* Proccess Node here */
-
-
 	/* Go to the next node */
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
@@ -309,36 +338,73 @@ void CLEARS()
 	return;
 }
 
-/*
-* ADD ?var? ?symb1? ?symb2? 
-* Soucet dvou ciselnych hodnot. Secte ?symb1? a ?symb2?
-* (mus� b�t stejn�ho ?�seln�ho typu int nebo float) a v�slednou
-* hodnotu tehoz typu ulozi do promenne ?var?.
-*/
-void ADD(Node* c_var, Node* c_symb1, Node* c_symb2)
+void ADD(Node* c_symb)
 {
-	return;
+	if (c_symb == NULL)
+		return;
+	if (c_symb->children[0] != NULL)
+	{
+		PrintCode("ADD GF@exressionSum ");
+		PrintSymbol(c_symb->children[0]);
+		PrintCode("\n");
+	}
+	if (c_symb->children[1] != NULL)
+	{
+		if (strcmp(c_symb->children[1]->type, "operator") == 0)
+			ADD(c_symb->children[1]);
+		else
+		{
+			PrintCode("ADD GF@exressionSum ");
+			PrintSymbol(c_symb->children[1]);
+			PrintCode("\n");
+		}
+	}
 }
 
-/*
-* SUB ?var? ?symb1? ?symb2?
-* Odecitani dvou ciselnych hodnot. Odecte ?symb2? od ?symb1?
-* (musi byt stejneho ciselneho typu int nebo float)
-* a vyslednou hodnotu tehoz typu ulozi do promenne ?var?.
-*/
-void SUB(Node* c_var, Node* c_symb1, Node* c_symb2)
+void SUB(Node* c_symb)
 {
-	return;
+	if (c_symb == NULL)
+		return;
+	if (c_symb->children[0] != NULL)
+	{
+		PrintCode("SUB GF@exressionSum ");
+		PrintSymbol(c_symb->children[0]);
+		PrintCode("\n");
+	}
+	if (c_symb->children[1] != NULL)
+	{
+		if (strcmp(c_symb->children[1]->type, "operator") == 0)
+			SUB(c_symb->children[1]);
+		else
+		{
+			PrintCode("SUB GF@exressionSum ");
+			PrintSymbol(c_symb->children[1]);
+			PrintCode("\n");
+		}
+	}
 }
 
-/* MUL ?var? ?symb1? ?symb2?
-* Nasobeni dvou ciseln�ch hodnot Vyn�sob� ?symb1? a ?symb2?
-* (mus� b�t stejn�ho ?�seln�ho typu int nebo float)
-* a v�slednou hodnotu t�ho� typu ulo�� do promenn� ?var?.
-*/
-void MUL(Node* c_var, Node* c_symb1, Node* c_symb2)
+void MUL(Node* c_symb)
 {
-	return;
+	if (c_symb == NULL)
+		return;
+	if (c_symb->children[0] != NULL)
+	{
+		PrintCode("MUL GF@exressionSum ");
+		PrintSymbol(c_symb->children[0]);
+		PrintCode("\n");
+	}
+	if (c_symb->children[1] != NULL)
+	{
+		if (strcmp(c_symb->children[1]->type, "operator") == 0)
+			MUL(c_symb->children[1]);
+		else
+		{
+			PrintCode("MUL GF@exressionSum ");
+			PrintSymbol(c_symb->children[1]);
+			PrintCode("\n");
+		}
+	}
 }
 
 /*
@@ -348,21 +414,32 @@ void MUL(Node* c_var, Node* c_symb1, Node* c_symb2)
 * a v�sledek prirad� do promenn� ?var? (t� typu float).
 * Delen� nulou zpusob� chybu 57.
 */
-void DIV(Node* c_var, Node* c_symb1, Node* c_symb2)
+void DIV(Node* c_symb)
 {
 	return;
 }
 
-/*
-* IDIV ?var? ?symb1? ?symb2?
-* Delen� dvou celoc�seln�ch hodnot
-* Celoc�selne podel� hodnotu ze ?symb1? druhou hodnotou ze ?symb2?
-* (mus� b�t oba typu int) a v�sledek prirad� do promenn� ?var? typu int.
-* Delen� nulou zpusob� chybu 57.
-*/
-void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2)
+void IDIV(Node* c_symb)
 {
-	return;
+	if (c_symb == NULL)
+		return;
+	if (c_symb->children[0] != NULL)
+	{
+		PrintCode("IDIV GF@exressionSum ");
+		PrintSymbol(c_symb->children[0]);
+		PrintCode("\n");
+	}
+	if (c_symb->children[1] != NULL)
+	{
+		if (strcmp(c_symb->children[1]->type, "operator") == 0)
+			IDIV(c_symb->children[1]);
+		else
+		{
+			PrintCode("IDIV GF@exressionSum ");
+			PrintSymbol(c_symb->children[1]);
+			PrintCode("\n");
+		}
+	}
 }
 
 /*
