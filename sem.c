@@ -45,7 +45,7 @@ void Go_through_function(Node* root, TRP* global)
 				if (function == NULL){
 					Add_function_to_symtable (root, global);
 				} else{
-					printf ("redeklaracia funkcie");
+					//error - redeklaracia funkcie
 				}
 		} else if (strcmp(root->content, "body") == 0){
 
@@ -77,20 +77,38 @@ void Add_function_to_symtable (Node* root, TRP* global){
 	}
 }
 
-char* check_for_type (Node* root, char* type, TRP* global){
+char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_value){
 	char* looking_for_type = NULL;
-	if (strcmp(root->type, "operator") == 0 || strcmp(root->type, "compare") == 0){ // dokoncit pripady ked to je ine ako hodnota
+	if (strcmp(root->type, "operator") == 0 || strcmp(root->type, "compare") == 0){ 
 		looking_for_type = malloc(sizeof(char)*6);
-		looking_for_type = check_for_type (root->children[0], type, global);
+		char* second_operand = malloc(sizeof(char)*6);
+		looking_for_type = check_for_type (root->children[0], type, global, identifier_or_value);
+		second_operand = check_for_type (root->children[1], type, global, identifier_or_value);
+		if (identifier_or_value != NULL){
+			printf ("---hello - %s ---\n", identifier_or_value);
+		}
+		if (strcmp(looking_for_type, second_operand) != 0){
+			//error 
+		}
 	} else if (strcmp(root->type, "integer") == 0){
 		looking_for_type = malloc(sizeof(looking_for_type)*6);
 		looking_for_type = "Int";
+		identifier_or_value = malloc(sizeof(char)*6);
+		identifier_or_value = "value";
 	} else if (strcmp(root->type, "double") == 0){
 		looking_for_type = malloc(sizeof(looking_for_type)*6);
 		looking_for_type = "Double";
+		identifier_or_value = malloc(sizeof(char)*6);
+		identifier_or_value = "value";
 	} else if (strcmp(root->type, "string") == 0){
 		looking_for_type = malloc(sizeof(looking_for_type)*6);
 		looking_for_type = "String";
+		identifier_or_value = malloc(sizeof(char)*6);
+		identifier_or_value = "value";
+	} else if (strcmp(root->content, "nil") == 0){ //neviem ci je root->content/type pri hodnote nil
+		if (strcmp(type, "Int?") != 0 || strcmp(type, "String?") != 0 || strcmp(type, "Double?") != 0){
+			//error - nil tam kde sa neocakava
+		}
 	} else if (strcmp(root->type, "identifier") == 0){
 		TRP* current = global;
 		TRPitem* found = NULL;
@@ -101,8 +119,11 @@ char* check_for_type (Node* root, char* type, TRP* global){
 		if (found != NULL){
 			looking_for_type = malloc(sizeof(looking_for_type)*6);
 			looking_for_type = found->type->type;
+			identifier_or_value = malloc(sizeof(char)*11);
+			identifier_or_value = "identifier";
 		} else {
-			//error
+			//error - nedefinovana premenna alebo funkcia 3 5
+			// ak je za tym nieco je to funkcia
 		}
 	} else if (strcmp(root->content, "readInt") == 0){
 		looking_for_type = malloc(sizeof(looking_for_type)*6);
@@ -137,10 +158,13 @@ char* check_for_type (Node* root, char* type, TRP* global){
 		//error
 	}
 	if (looking_for_type != NULL && type != NULL){
-		if (strcmp(looking_for_type, type) != 0){
-			//error incompatible
-		} else{
+		if (strcmp(looking_for_type, type) == 0
+			||((strcmp(looking_for_type, "Int") == 0 || strcmp(looking_for_type, "Int?") == 0) && (strcmp(type, "Int") == 0 || strcmp(type, "Int?") == 0))
+			||((strcmp(looking_for_type, "Double") == 0 || strcmp(looking_for_type, "Double?") == 0) && (strcmp(type, "Double") == 0 || strcmp(type, "Double?") == 0))
+			||((strcmp(looking_for_type, "String") == 0 || strcmp(looking_for_type, "String?") == 0) && (strcmp(type, "String") == 0 || strcmp(type, "String?") == 0))){
 			return type;
+		} else{
+			//error incompatible 7
 		}
 	} else if (looking_for_type != NULL && type == NULL){
 		return looking_for_type;
@@ -170,20 +194,44 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 			if (root->children != NULL){
 				if(strcmp(root->children[0]->type, "identifier(type)") == 0){ // type of variable is in declaration
 					if(root->parent->children[1] != NULL){ // also there is value for variable
-						if (strcmp(root->children[0]->content, "Int?") == 0){
-							type_of_variable->type = check_for_type (root->parent->children[1], "Int", global);
+						if (strcmp(root->children[0]->content, "Int") == 0 || strcmp(root->children[0]->content, "Int?") == 0){
+							printf("%s %s\n", root->content, root->type);
+							printf ("%s %s %s\n",root->parent->children[1]->content,root->parent->children[1]->type, root->children[0]->content);
+							type_of_variable->type = check_for_type (root->parent->children[1], root->children[0]->content, global, NULL);
 							type_of_variable->next = NULL;
 							if (strcmp(root->type, "let declaration") == 0){
 								let_content = true;
 							}
-						} else if (strcmp(root->children[0]->content, "String") == 0){
-							type_of_variable->type = check_for_type (root->parent->children[1], "String", global);
+						} else if (strcmp(root->children[0]->content, "String") == 0 || strcmp(root->children[0]->content, "String?") == 0){
+							type_of_variable->type = check_for_type (root->parent->children[1], root->children[0]->content, global, NULL);
 							type_of_variable->next = NULL;
 							if (strcmp(root->type, "let declaration") == 0){
 								let_content = true;
 							}
-						} else if (strcmp(root->children[0]->content, "Double") == 0){
-							type_of_variable->type = check_for_type (root->parent->children[1], "Double", global);
+						} else if (strcmp(root->children[0]->content, "Double") == 0 || strcmp(root->children[0]->content, "Double") == 0){
+							type_of_variable->type = check_for_type (root->parent->children[1], root->children[0]->content, global, NULL);
+							type_of_variable->next = NULL;
+							if (strcmp(root->type, "let declaration") == 0){
+								let_content = true;
+							}
+						}
+						TableAddItem(&(*table), root->content, type_of_variable, &let_content);
+					} else {
+						
+						if (strcmp(root->children[0]->content, "Int") == 0 || strcmp(root->children[0]->content, "Int?") == 0){
+							type_of_variable->type = root->children[0]->content;
+							type_of_variable->next = NULL;
+							if (strcmp(root->type, "let declaration") == 0){
+								let_content = true;
+							}
+						} else if (strcmp(root->children[0]->content, "String") == 0 || strcmp(root->children[0]->content, "String?") == 0){
+							type_of_variable->type = root->children[0]->content;
+							type_of_variable->next = NULL;
+							if (strcmp(root->type, "let declaration") == 0){
+								let_content = true;
+							}
+						} else if (strcmp(root->children[0]->content, "Double") == 0 || strcmp(root->children[0]->content, "Double") == 0){
+							type_of_variable->type = root->children[0]->content;
 							type_of_variable->next = NULL;
 							if (strcmp(root->type, "let declaration") == 0){
 								let_content = true;
@@ -194,15 +242,20 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 				}
 			} else { // type of variable is not in the declaration
 				if(root->parent->children[1] != NULL){
-					type_of_variable->type = check_for_type(root->parent->children[1], NULL, global);
+					type_of_variable->type = check_for_type(root->parent->children[1], NULL, global, NULL);
 					type_of_variable->next = NULL;
 					if (strcmp(root->type, "let declaration") == 0){
 						let_content = true;
 					}
+					if (strcmp(type_of_variable->type, "xx")==0){
+						//error - nejde odvodit typ prememnej 8
+					}
 					TableAddItem(&(*table), root->content, type_of_variable, &let_content);
 				}
 			} 
+		} else {
+			//error - redifinicia premennej
 		}
 	}
-	//printf("%s %s\n", root->content, root->type);
+	// printf("%s %s\n", root->content, root->type);
 }

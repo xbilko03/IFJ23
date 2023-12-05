@@ -136,7 +136,7 @@ void Print_tables(Node* root){
 					}
 				}
 			}
-			printf("-------------------------------\n");
+			printf("\n-------------------------------");
 		}
 		if (strcmp(root->content, "body") == 0){
 			for (int i = 0; i < 255; i++){
@@ -149,7 +149,7 @@ void Print_tables(Node* root){
 					}
 				}
 			}
-			printf("------------------------\n");
+			printf("\n------------------------\n");
 		}
 		for (int i = 0; i < root->numChildren; i++){
 			Print_tables (root->children[i]);
