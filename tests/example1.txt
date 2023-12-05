@@ -1,7 +1,18 @@
-var a : Int?
+var a : Int? = 5
 
-if let a {
-    write("not nil!")
-} else {
-    write("nil!")
+if a < 4 {
+write("not nil!\n")
+
+	if( a < 10 ) {
+	write("ok\n")
+	}
+	else
+	{
+
+	}
 }
+else {
+write("nil!\n")
+}
+
+write("rip bozo\n")

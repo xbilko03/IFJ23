@@ -3,6 +3,10 @@
 TRP* trpList[256];
 unsigned int trpIndex = 0;
 
+unsigned int labelID = 0;
+unsigned int labelIndex = 0;
+unsigned int labelList[50];
+
 void PerformCodeGen(Node* tree)
 {
 	/* Cycle through AST */
@@ -170,6 +174,37 @@ void ExpressionSum(Node* c_symb)
 			IDIV(c_symb);
 	}
 }
+void ConditionJump(Node* c_symb)
+{
+	if (c_symb == NULL)
+		return;
+	else if (c_symb->children[0] == NULL)
+		return;
+	if (strcmp(c_symb->content, "if") == 0)
+	{
+		Node* c_node = c_symb->children[0];
+		if (strcmp(c_node->type, "compare") == 0)
+		{
+			if (strcmp(c_node->content, ">") == 0)
+				PrintCode("LT GF@compareValue ");
+			else if (strcmp(c_node->content, "<") == 0)
+				PrintCode("GT GF@compareValue ");
+			else if (strcmp(c_node->content, "==") == 0)
+				PrintCode("EQ GF@compareValue ");
+			PrintSymbol(c_symb->children[0]->children[0]);
+			PrintCode(" ");
+			PrintSymbol(c_symb->children[0]->children[1]);
+			PrintCode("\n");
+		}
+		PrintCode("JUMPIFEQ ");
+		fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+		PrintCode("GF@compareValue BOOL@true\n");
+	}
+	else if (strcmp(c_symb->content, "while") == 0)
+	{
+
+	}
+}
 
 /* Process AST */
 void ProcessNode(Node* c_node)
@@ -183,6 +218,7 @@ void ProcessNode(Node* c_node)
 		PrintCode(".IFJcode23\n");
 		PrintCode("DEFVAR GF@writeValue\n");
 		PrintCode("DEFVAR GF@expressionSum\n");
+		PrintCode("DEFVAR GF@compareValue\n");
 		/* Add global TRP */
 		symTables[symIndex].symTable = c_node->TRP;
 		symTables[symIndex++].ID = symID++;
@@ -199,6 +235,25 @@ void ProcessNode(Node* c_node)
 			else
 				DEFVAR(c_node->children[0]);
 			return;
+		}
+		else if (strcmp(c_node->content, "if") == 0)
+		{
+			PrintCode("LABEL LABEL");
+			labelList[labelIndex] = labelID++;
+			fprintf(stdout,"%d", labelList[labelIndex]);
+			labelIndex++;
+			PrintCode("\n");
+			ConditionJump(c_node);
+		}
+		else if (strcmp(c_node->content, "else") == 0)
+		{
+			PrintCode("LABEL LABEL");
+			fprintf(stdout, "%d", labelList[labelIndex - 1]);
+			PrintCode("end\n");
+
+			PrintCode("JUMP LABEL");
+			fprintf(stdout, "%d", labelList[labelIndex - 1]);
+			PrintCode("skip\n");
 		}
 	}
 	else if (strcmp(c_node->type, "body") == 0)
@@ -227,7 +282,7 @@ void ProcessNode(Node* c_node)
 	/* Go to the next node */
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
-		ProcessNode(c_node->children[i]);		
+		ProcessNode(c_node->children[i]);
 	}
 
 	/* if the body ends, destroy local table */
@@ -236,6 +291,14 @@ void ProcessNode(Node* c_node)
 		if (c_node->TRP == NULL)
 			return;
 		symIndex--;
+	}
+	if (strcmp(c_node->content, "else") == 0)
+	{
+		PrintCode("LABEL LABEL");
+		labelList[labelIndex] = labelID;
+		fprintf(stdout, "%d", labelList[labelIndex - 1]);
+		labelIndex--;
+		PrintCode("skip\n");
 	}
 	return;
 }
@@ -600,7 +663,7 @@ void TYPE(Node* c_var, Node* c_symb)
 * dule�itou pozici v k�du jako potenci�ln� c�l libovoln� skokov� instrukce.
 * Pokus o redefinici existuj�c�ho n�ve�t� je chybou 52.
 */
-void LABEL(Node* c_label)
+void LABEL(Node* c_label, char* type)
 {
 	return;
 }

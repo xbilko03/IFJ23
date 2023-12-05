@@ -1,8 +1,26 @@
+.IFJcode23
 DEFVAR GF@writeValue
 DEFVAR GF@expressionSum
+DEFVAR GF@compareValue
 DEFVAR GF@a0
-DEFVAR GF@a0
-MOVE GF@writeValue string@not\032nil!
+MOVE GF@a0 INT@5
+LABEL LABEL0
+GT GF@compareValue GF@a0 INT@4
+JUMPIFEQ LABEL0end GF@compareValue BOOL@true
+MOVE GF@writeValue string@not\032nil!\010
 WRITE GF@writeValue
-MOVE GF@writeValue string@nil!
+LABEL LABEL1
+GT GF@compareValue GF@a0 INT@10
+JUMPIFEQ LABEL1end GF@compareValue BOOL@true
+MOVE GF@writeValue string@ok\010
+WRITE GF@writeValue
+LABEL LABEL1end
+JUMP LABEL1skip
+LABEL LABEL1skip
+LABEL LABEL0end
+JUMP LABEL0skip
+MOVE GF@writeValue string@nil!\010
+WRITE GF@writeValue
+LABEL LABEL0skip
+MOVE GF@writeValue string@rip\032bozo\010
 WRITE GF@writeValue
