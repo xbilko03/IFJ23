@@ -20,12 +20,106 @@ symStr symTables[256];
 unsigned int symIndex = 0;
 unsigned int symID = 0;
 
+unsigned int FindTableIndex(char* symbol)
+{
+	for (int i = symIndex - 1; i > -1; i--)
+	{
+		if (TableFindItem(symTables[i].symTable, symbol) != NULL)
+			return symTables[i].ID;
+	}
+	return 404;
+}
 void ADD(Node* c_var, Node* c_symb1, Node* c_symb2);
 void SUB(Node* c_var, Node* c_symb1, Node* c_symb2);
 void IDIV(Node* c_var, Node* c_symb1, Node* c_symb2);
 void MUL(Node* c_var, Node* c_symb1, Node* c_symb2);
-void PrintFormattedStringCode(char* input, char* code);
 
+/* Print to stdout */
+void PrintCode(char* code)
+{
+	fprintf(stdout, "%s", code);
+	return;
+}
+void PrintString(char* input, char* code)
+{
+	if (input == NULL)
+		return;
+
+	PrintCode(code);
+
+	for (int i = 0;i < strlen(input); i++)
+	{
+		if (input[i] == '\n')
+		{
+			fprintf(stdout, "\\010");
+		}
+		else if (input[i] == ' ')
+		{
+			fprintf(stdout, "\\032");
+		}
+		else if (input[i] == '\\')
+		{
+			fprintf(stdout, "\\092");
+		}
+		else if (input[i] == '#')
+		{
+			fprintf(stdout, "\\035");
+		}
+		else
+		{
+			fprintf(stdout, "%c", input[i]);
+		}
+	}
+	return;
+}
+void PrintSymbol(Node* c_symb)
+{
+	if (strcmp(c_symb->type, "string") == 0)
+	{
+		PrintString(c_symb->content,"string@");
+	}
+	else if (strcmp(c_symb->type, "integer") == 0)
+	{
+		PrintCode("INT@");
+		PrintCode(c_symb->content);
+	}
+	else if (strcmp(c_symb->type, "double") == 0)
+	{
+		PrintCode("DOUBLE@");
+		PrintCode(c_symb->content);
+	}
+	else if (strcmp(c_symb->type, "identifier") == 0
+		|| strcmp(c_symb->type, "let declaration") == 0
+		|| strcmp(c_symb->type, "var declaration") == 0)
+	{
+		PrintCode("GF@");
+		PrintCode(c_symb->content);
+
+		unsigned int index = FindTableIndex(c_symb->content);
+		if (index != 404)
+		{
+			fprintf(stdout, "%d", index);
+		}
+	}
+	else if (strcmp(c_symb->type, "nil") == 0)
+	{
+		PrintCode("NIL@NIL");
+	}
+
+	return;
+}
+void PrintType(Node* c_symb)
+{
+	if (strcmp(c_symb->type, "integer") == 0)
+		PrintCode("int");
+	else if (strcmp(c_symb->type, "string") == 0)
+		PrintCode("string");
+	else if (strcmp(c_symb->type, "double") == 0)
+		PrintCode("double");
+	return;
+}
+
+/* Process AST */
 void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
@@ -36,6 +130,7 @@ void ProcessNode(Node* c_node)
 		/* Mandatory Commands */
 		PrintCode(".IFJcode23\n");
 		PrintCode("DEFVAR GF@writeValue\n");
+		/* Add global TRP */
 		symTables[symIndex].symTable = c_node->TRP;
 		symTables[symIndex++].ID = symID++;
 	}
@@ -49,6 +144,7 @@ void ProcessNode(Node* c_node)
 	}
 	else if (strcmp(c_node->type, "body") == 0)
 	{
+		/* Add local table (if it exists) */
 		if (c_node->TRP == NULL)
 			return;
 		symTables[symIndex].symTable = c_node->TRP;
@@ -60,17 +156,8 @@ void ProcessNode(Node* c_node)
 	}
 	else if (strcmp(c_node->type, "assign") == 0)
 	{
-		if (strcmp(c_node->children[1]->type, "operator") == 0)
-		{
-			MOVE(c_node->children[0], c_node->children[1]->children[0]);
-		}
-		else
-		{
-			for (int i = 1; i < c_node->numChildren; i++)
-			{
-				MOVE(c_node->children[0], c_node->children[i]);
-			}
-		}
+		/* not functional */
+		/* printf("NODE=%s\n", c_node->children[0]->content); */		
 	}
 	
 	/* Proccess Node here */
@@ -91,74 +178,19 @@ void ProcessNode(Node* c_node)
 	}
 	return;
 }
-
-unsigned int FindTableIndex(char* symbol)
-{
-	for (int i = symIndex - 1; i > -1; i--)
-	{
-		if (TableFindItem(symTables[i].symTable, symbol) != NULL)
-			return symTables[i].ID;
-	}
-	return 404;
-}
-/* Print CODE */
-void PrintCode(char* code)
-{
-	fprintf(stdout, "%s", code);
-	return;
-}
-
-/* Might not need everything, but its ready if needs be */
-
-/*
-* MOVE ?var? ?symb?
-* Prirazeni hodnoty do promenne zkopiruje hodnotu ?symb? do ?var?.
-* Napr.MOVE LF@par GF@var provede zkopirovani hodnoty promenne var v glob�ln�m r�mci do promenne par v lokalnim ramci.
-*/
-void PrintType(Node* c_symb)
-{
-	if (strcmp(c_symb->type, "integer") == 0)
-		PrintCode("int");
-	else if (strcmp(c_symb->type, "string") == 0)
-		PrintCode("string");
-	else if (strcmp(c_symb->type, "double") == 0)
-		PrintCode("double");
-	return;
-}
 void MOVE(Node* c_var, Node* c_symb)
 {
 	if (c_var == NULL || c_symb == NULL)
 		return;
-	PrintCode("MOVE GF@");
-	PrintCode(c_var->content);
-	unsigned int index = FindTableIndex(c_var->content);
-	if (index != 404)
-	{
-		fprintf(stdout, "%d", index);
-	}
+
+	/* MOVE GF@a1 */
+	PrintCode("MOVE ");
+	PrintSymbol(c_var);
+
 	PrintCode(" ");
-	/* if not var */
-	if (strcmp(c_symb->type, "string") == 0)
-	{
-		PrintFormattedStringCode(c_symb->content, "string@");
-		return;
-	}
-	else if (strcmp(c_symb->type, "identifier"))
-	{
-		PrintType(c_symb);
-		PrintCode("@");
-		PrintCode(c_symb->content);
-	}
-	if (strcmp(c_symb->type, "identifier") == 0)
-	{
-		PrintCode("GF@");
-		PrintCode(c_symb->content);
-		unsigned int index = FindTableIndex(c_symb->content);
-		if (index != 404)
-		{
-			fprintf(stdout, "%d", index);
-		}
-	}
+
+	/* MOVE GF@a1 INT@69 */
+	PrintSymbol(c_symb);
 	PrintCode("\n");
 	return;
 }
@@ -210,52 +242,15 @@ void DEFVAR(Node* c_var)
 	if (c_var == NULL)
 		return;
 
-	PrintCode("DEFVAR GF@");
-	PrintCode(c_var->content);
-	unsigned int index = FindTableIndex(c_var->content);
-	if (index != 404)
-	{
-		fprintf(stdout, "%d", index);
-	}
+	PrintCode("DEFVAR ");
+	PrintSymbol(c_var);
 	PrintCode("\n");
 
-	/* skip first child, MOVE others to this variable */
+	/* assign something to this defined variable */
 	if (c_var->parent->numChildren > 1)
 	{
-		/* not a sign +-* */
-		if (strcmp(c_var->parent->children[1]->type, "operator") == 0)
-		{
-			MOVE(c_var, c_var->parent->children[1]->children[0]);
-			MOVE(c_var, c_var->parent->children[1]->children[1]);
-			return;
-		}
-		else
-			MOVE(c_var, c_var->parent->children[1]);
-
-		/* temporary way to handle expressions */
-		for (int i = 1; i < c_var->parent->numChildren; i++)
-		{
-			if (strcmp(c_var->parent->children[i]->content, "+") == 0)
-			{
-				ADD(c_var, c_var, c_var->parent->children[i + 1]);
-				i++;
-			}
-			else if (strcmp(c_var->parent->children[i]->content, "-") == 0)
-			{
-				SUB(c_var, c_var, c_var->parent->children[i + 1]);
-				i++;
-			}
-			else if (strcmp(c_var->parent->children[i]->content, "/") == 0)
-			{
-				IDIV(c_var, c_var, c_var->parent->children[i + 1]);
-				i++;
-			}
-			else if (strcmp(c_var->parent->children[i]->content, "*") == 0)
-			{
-				MUL(c_var, c_var, c_var->parent->children[i + 1]);
-				i++;
-			}
-		}
+		/* let a : Int = 5 */
+		MOVE(c_var, c_var->parent->children[1]);
 	}
 	return;
 }
@@ -631,66 +626,13 @@ void DPRINT(Node* c_symb)
 /* func readString() -> String? */
 /* func readInt() -> Int? */
 /* func write(term1 , term2 , ..., termx) */
-void PrintFormattedStringCode(char* input,char* code)
-{
-	if (input == NULL)
-		return;
-	
-	PrintCode(code);
-
-	for (int i = 0;i < strlen(input); i++)
-	{
-		if (input[i] == '\n')
-		{
-			fprintf(stdout, "\\010");
-		}
-		else if (input[i] == ' ')
-		{
-			fprintf(stdout, "\\032");
-		}
-		else if (input[i] == '\\')
-		{
-			fprintf(stdout, "\\092");
-		}
-		else if (input[i] == '#')
-		{
-			fprintf(stdout, "\\035");
-		}
-		else
-		{
-			fprintf(stdout, "%c", input[i]);
-		}
-	}
-	PrintCode("\n");
-	return;
-}
 void INBUILT_WRITE(Node* c_node)
 {
 	for (int i = 0; i < c_node->numChildren; i++)
 	{
 		PrintCode("MOVE GF@writeValue ");
-		if (strcmp(c_node->children[i]->type, "string") == 0)
-		{
-			PrintFormattedStringCode(c_node->children[i]->content, "string@");
-		}
-		else if (strcmp(c_node->children[i]->type, "integer") == 0)
-		{
-			PrintCode("int@");
-			PrintCode(c_node->children[i]->content);
-			PrintCode("\n");
-		}
-		else if (strcmp(c_node->children[i]->type, "identifier") == 0)
-		{
-			PrintCode("GF@");
-			PrintCode(c_node->children[i]->content);
-			unsigned int index = FindTableIndex(c_node->children[i]->content);
-			if (index != 404)
-			{
-				fprintf(stdout, "%d", index);
-			}
-			PrintCode("\n");
-		}
-		PrintCode("WRITE GF@writeValue\n");
+		PrintSymbol(c_node->children[i]);
+		PrintCode("\nWRITE GF@writeValue\n");
 	}
 }
 /* func Int2Double(_ term : Int) -> Double */
