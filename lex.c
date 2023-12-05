@@ -523,7 +523,7 @@ MachineStates StateMachine(char input, MachineStates currentState)
         if (input == '+' || input == '-')
             return Double_exp_op;
         if (isdigit(input))
-            return Double_exp;
+            return Double_exp_op2;
         return Error;
     case Double_exp_op:
         if (isdigit(input))
