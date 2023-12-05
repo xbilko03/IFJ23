@@ -42,17 +42,7 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 	int hash = HashFunction(key);
   	TRPitem *item = TableFindItem(table, key);
 	if (item != NULL){ //already in table
-
-		// if (item->content == false){
-		// 	item->content = content;
-		// } else {
-		// 	if (strcmp(type->content, "let declaration") == 0){
-		// 		if (content != NULL){
-		// 			printf ("ERROOR - PRIRADZOVANIE DO LET ZNOVU\n");
-		// 		}
-		// 	}
-		// }
-				
+			
 		if (type != NULL){
 			if (item->type == NULL){ // insert first
 				printf ("tu niesom\n");
