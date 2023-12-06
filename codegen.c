@@ -42,6 +42,7 @@ void INBUILT_LENGTH(Node* c_node);
 void INBUILT_INT2DOUBLE(Node* c_node);
 void INBUILT_READSTRING(Node* c_node);
 void INBUILT_READINT(Node* c_node);
+void INBUILT_READDOUBLE(Node* c_node);
 void INBUILT_WRITE(Node* c_node);
 void INBUILT_DOUBLE2INT(Node* c_node);
 void INBUILT_SUBSTRING(Node* c_node);
@@ -481,6 +482,8 @@ void ProcessNode(Node* c_node)
 			INBUILT_READSTRING(c_node);
 		else if (strcmp(c_node->content, "readInt") == 0)
 			INBUILT_READINT(c_node);
+		else if (strcmp(c_node->content, "readDouble") == 0)
+			INBUILT_READDOUBLE(c_node);
 		else if (strcmp(c_node->content, "length") == 0)
 			INBUILT_LENGTH(c_node);
 		else if (strcmp(c_node->content, "substring") == 0)
@@ -668,43 +671,65 @@ void IDIV(Node* c_symb)
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
-
-/*
-* GETCHAR ?var? ?symb1? ?symb2?
-* Vrat znak retezce.
-* Do ?var? ulo�� retezec z jednoho znaku v retezci ?symb1?
-* na pozici ?symb2? (indexov�no	cel�m ?�slem od nuly).
-* Indexace mimo dan� ?et?zec vede na chybu 58.
-*/
-void GETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
-{
-	return;
-}
-
-/*
-* SETCHAR ?var? ?symb1? ?symb2?
-* Zmen znak retezce.
-* Zmodifikuje znak retezce ulo�en�ho v promenn� ?var?
-* na pozici ?symb1? (indexov�no	celoc�selne od nuly)
-* na znak v retezci ?symb2?
-* (prvn� znak, pokud obsahuje ?symb2? v�ce znaku).
-* V�sledn� retezec je opet ulo�en do ?var?. 
-* Pri indexaci mimo retezec ?var?
-* nebo v pr�pade pr�zdn�ho retezce v ?symb2? dojde k chyb? 58.
-*/
-void SETCHAR(Node* c_var, Node* c_symb1, Node* c_symb2)
-{
-	return;
-}
 /* func readString() -> String? */
 void INBUILT_READSTRING(Node* c_node)
 {
+	if (c_node->numChildren != 0)
+		return;
 
+	PrintCode("READ ");
+	PrintCode("GF@expressionSum ");
+	PrintCode("string");
+	PrintCode("\n");
+
+	if (strcmp(c_node->parent->type, "assign") == 0)
+	{
+		PrintCode("MOVE ");
+		PrintSymbol(c_node->parent->children[0]);
+		PrintCode(" ");
+		PrintCode("GF@expressionSum");
+		PrintCode("\n");
+	}
 }
 /* func readInt() -> Int? */
 void INBUILT_READINT(Node* c_node)
 {
+	if (c_node->numChildren != 0)
+		return;
 
+	PrintCode("READ ");
+	PrintCode("GF@expressionSum ");
+	PrintCode("int");
+	PrintCode("\n");
+
+	if (strcmp(c_node->parent->type, "assign") == 0)
+	{
+		PrintCode("MOVE ");
+		PrintSymbol(c_node->parent->children[0]);
+		PrintCode(" ");
+		PrintCode("GF@expressionSum");
+		PrintCode("\n");
+	}
+}
+/* func readInt() -> Int? */
+void INBUILT_READDOUBLE(Node* c_node)
+{
+	if (c_node->numChildren != 0)
+		return;
+
+	PrintCode("READ ");
+	PrintCode("GF@expressionSum ");
+	PrintCode("float");
+	PrintCode("\n");
+
+	if (strcmp(c_node->parent->type, "assign") == 0)
+	{
+		PrintCode("MOVE ");
+		PrintSymbol(c_node->parent->children[0]);
+		PrintCode(" ");
+		PrintCode("GF@expressionSum");
+		PrintCode("\n");
+	}
 }
 /* func write(term1 , term2 , ..., termx) */
 void INBUILT_WRITE(Node* c_node)
@@ -781,7 +806,7 @@ void INBUILT_SUBSTRING(Node* c_node)
 {
 	if (c_node->numChildren == 0)
 		return;
-
+	/* empty */
 }
 /* func ord(_ c : String) -> Int */
 void INBUILT_ORD(Node* c_node)

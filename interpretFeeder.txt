@@ -10,7 +10,7 @@ MOVE GF@b0 INT@103
 MOVE GF@expressionSum INT@0
 MOVE GF@expressionSum INT@0
 MOVE GF@a0 GF@expressionSum
-INT2CHAR GF@expressionSum GF@b0
+READ GF@expressionSum int
 MOVE GF@a0 GF@expressionSum
 MOVE GF@writeValue GF@a0
 WRITE GF@writeValue

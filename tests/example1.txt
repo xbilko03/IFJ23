@@ -1,5 +1,5 @@
 var a : Int
 var b : String = 103
 
-a = chr(b)
+a = readInt()
 write(a)
