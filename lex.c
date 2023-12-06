@@ -2,6 +2,7 @@
 
 void AddToken(MachineStates state, wordStr **Tokens, char *word)
 {
+    //Allocate memory for new token and set its values based on state
     if((*Tokens)->type != NULL)
     {
         (*Tokens)->next = malloc(sizeof(wordStr));
@@ -100,6 +101,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
     }
     else if (state == Integer)
     {
+        //Convert string to long int and exit if out of range
         long int i = strtol(word, NULL, 10);
         if ((i == LONG_MAX || i == LONG_MIN) && errno == ERANGE)
         {
@@ -110,6 +112,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
     }
     else if (state == Double || state == Double_exp_op2)
     {
+        //Convert string to double and exit if out of range
         strtod(word, NULL);
         if(errno == ERANGE)
         {
@@ -135,15 +138,7 @@ void AddToken(MachineStates state, wordStr **Tokens, char *word)
     }
 }
 
-void PrintWordList(wordStr *wordList)
-{
-    while (wordList != NULL)
-    {
-        //printf("%s %s\n", wordList->type, wordList->content);
-        wordList = wordList->next;
-    }
-}
-
+//Function that checks if word is a keyword
 bool Keyword(char* word)
 {
     if (strcmp(word, "else") == 0 || strcmp(word, "func") == 0 || strcmp(word, "if") == 0 
@@ -153,6 +148,7 @@ bool Keyword(char* word)
     return false;
 }
 
+//Function that checks if word is a type
 bool Type(char* word)
 {
     if (strcmp(word, "Double") == 0 || strcmp(word, "Double?") == 0 || strcmp(word, "Int") == 0 
@@ -166,8 +162,11 @@ char* EscapeSequence(char *word, bool multi)
     int lenght = strlen(word);
     char *tmp = malloc(sizeof(char) * lenght);
     int tmpIndex = 0;
+    //Skip first and last character if normal string
+    //Skip first 4 and last 4 characters if multi string to skip """\n and \n"""
     for (int i = multi ? 4 : 1; i < lenght-(multi ? 4 : 1); i++)
     {
+        //Replace escape sequence with correct character
         if (word[i] == '\\')
         {
             i++;
@@ -203,31 +202,35 @@ char* EscapeSequence(char *word, bool multi)
         }
         else
         {
+            //Copy character to tmp
             tmp[tmpIndex] = word[i];
             tmpIndex += 1;
         }
     }
     free(word);
+    //If we read empty string, return empty string
     if(tmpIndex == 0)
     {
         tmp[tmpIndex] = '\0';
         return tmp;
     }
-    tmp = realloc(tmp, sizeof(char) * tmpIndex);
+    tmp = realloc(tmp, sizeof(char) * tmpIndex); //Realloc tmp to correct size
     return tmp;
 }
 
 char HexEscape(char *word, int *i, int *lenght)
 {
-    char *hex = malloc(sizeof(char) * 9);
+    char *hex = malloc(sizeof(char) * 9); //8 hex digits + '\0'
     int hexIndex = 0;
     *i += 1;
     if (word[*i] == '{')
     {
+        //Read hex digits
         for (*i += 1; *i < *lenght; *i += 1)
         {
             if (isxdigit(word[*i]))
             {
+                //If we read more than 8 hex digits, exit program
                 if (hexIndex == 7)
                 {
                     ExitProgram(1, "Error: unknown escape sequence\n");
@@ -237,6 +240,7 @@ char HexEscape(char *word, int *i, int *lenght)
             }
             else if (word[*i] == '}')
             {
+                //If we read less than 1 hex digits, exit program
                 if (hexIndex == 0)
                 {
                     ExitProgram(1, "Error: unknown escape sequence\n");
@@ -249,8 +253,10 @@ char HexEscape(char *word, int *i, int *lenght)
                 ExitProgram(1, "Error: unknown escape sequence\n");
             }
         }
+        //Convert hex to int
         int tmp = strtol(hex, NULL, 16);
 
+        //Convert int to char if less or equal 255
         if (tmp <= 255)
         {
             char tmp2 = tmp;
@@ -267,11 +273,11 @@ char HexEscape(char *word, int *i, int *lenght)
         ExitProgram(1, "Error: unknown escape sequence\n");
     }
     ExitProgram(1, "Error: unknown escape sequence\n");
-    exit(1);
 }
 
 void Tokenizer(wordStr *LastToken)
 {
+    //Set default values
     MachineStates currentState = Start;
     MachineStates nextState = Start;
     size_t bufferSize = 32;
@@ -281,6 +287,7 @@ void Tokenizer(wordStr *LastToken)
     {
         char input = getchar();
         nextState = StateMachine(input, currentState);
+        //If we are in start state, we need to allocate memory for buffer
         if (currentState == Start)
         {
             if (nextState == Start)
@@ -291,25 +298,27 @@ void Tokenizer(wordStr *LastToken)
         {
             ExitProgram(1, "Error: unknown lexeme\n");
         }
+        //If we are in end state, we need to add token to list and reset values
         else if (nextState == End)
         {
             buffer[bufferLenght] = '\0';
             if (currentState != Comment_one_line && currentState != Comment_multi_line_end2)
                 AddToken(currentState, &LastToken, buffer);
             else
-                free(buffer);
+                free(buffer); //Free buffer, if current state is comment
             nextState = Start;
             bufferSize = 32;
             bufferLenght = 0;
-            ungetc(input, stdin);
+            ungetc(input, stdin); //Put back last read character
         }
         else if (nextState == Comment_one_line)
         {
+            //Skip line on one line comment
             while (input != '\n' && input != EOF)
             {
                 input = getchar();
             }
-            ungetc(input, stdin);
+            ungetc(input, stdin); //Put back last read character (\n)
         }
         else if (nextState == Endoffile)
         {
@@ -317,6 +326,7 @@ void Tokenizer(wordStr *LastToken)
         }
         else
         {
+            //Realloc buffer if needed
             if (bufferSize == bufferLenght)
             {
                 char *temp = realloc(buffer, bufferSize * 2);
@@ -327,6 +337,7 @@ void Tokenizer(wordStr *LastToken)
                 bufferSize *= 2;
                 buffer = temp;
             }
+            //Add character to buffer
             buffer[bufferLenght] = input;
             bufferLenght++;
         }
