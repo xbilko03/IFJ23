@@ -1,23 +1,8 @@
 #include "AST.h"
 
-void DeleteWordList(wordListStr* wordList)
-{
-	wordStr* currentWord = wordList->first;
-	wordStr* nextWord;
-
-	while(currentWord != NULL)
-	{
-		free(currentWord->type);
-		free(currentWord->content);
-		nextWord = currentWord->next;
-		free(currentWord);
-		currentWord = nextWord;
-	}
-	free(wordList);
-}
-
 Node* Node_insert(Node** parentAST, char* content, TRP* TRP, char* type)
 {
+	//alocate memory for new node and set its values
 	Node* childrenAST = (Node*)checked_malloc(sizeof(Node));
 	childrenAST->type = type;
 	childrenAST->children = NULL;
@@ -25,12 +10,13 @@ Node* Node_insert(Node** parentAST, char* content, TRP* TRP, char* type)
 	childrenAST->content = content;
 	childrenAST->TRP = TRP;
 
+	//if parent is null, set parent to new node and return
 	if(*parentAST == NULL)
 	{
 		*parentAST = childrenAST;
 		return childrenAST;
 	}
-	
+	//else, set parent of new node to parent, increment number of children of parent, and add new node to children of parent
 	childrenAST->parent = *parentAST;
 	(*parentAST)->numChildren++;
 	(*parentAST)->children = (Node**)checked_realloc((*parentAST)->children, sizeof(Node*) * ((*parentAST)->numChildren));
@@ -38,6 +24,7 @@ Node* Node_insert(Node** parentAST, char* content, TRP* TRP, char* type)
 	return childrenAST;
 }
 
+//Function that allocates memory and exits program if malloc fails
 void* checked_malloc(size_t size)
 {
 	void* ptr = malloc(size);
@@ -48,6 +35,7 @@ void* checked_malloc(size_t size)
 	return ptr;
 }
 
+//Function that reallocates memory and exits program if realloc fails
 void* checked_realloc(void* ptr, size_t size)
 {
 	void* newPtr = realloc(ptr, size);
@@ -57,32 +45,3 @@ void* checked_realloc(void* ptr, size_t size)
 	}
 	return newPtr;
 }
-
-//DEBUG
-void print_AST(Node* tree, bool* flag, int depth, bool isLast)
-{
-    if (tree == NULL) {
-        return;
-    }
-
-    for (int i = 0; i < depth; i++) {
-        printf("    ");
-    }
-
-    if (isLast) {
-        printf("+---");
-        flag[depth] = NULL;
-    } else {
-        printf("+---");
-    }
-	printf(" %s\n", tree->content);
-
-
-    int it = 0;
-    for (int i = 0; i < tree->numChildren; i++, it++) {
-        print_AST(tree->children[i], flag, depth + 1, it == ((tree->children[i]->numChildren)-1));
-
-        flag[depth] = true;
-    }
-}
-//END DEBUG
