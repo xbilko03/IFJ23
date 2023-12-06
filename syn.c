@@ -363,8 +363,6 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 	Node_insert(&test3, "test42", NULL, "test");
 	Node_insert(&test3, "test43", NULL, "test");
 	bool* flag = malloc(500 * sizeof(bool));
-    print_AST(DemoAST, flag, 0, false);
-    free(flag);
 	*/
 
 	//########################################
