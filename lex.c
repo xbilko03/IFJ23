@@ -273,6 +273,7 @@ char HexEscape(char *word, int *i, int *lenght)
         ExitProgram(1, "Error: unknown escape sequence\n");
     }
     ExitProgram(1, "Error: unknown escape sequence\n");
+    exit(1);
 }
 
 void Tokenizer(wordStr *LastToken)
