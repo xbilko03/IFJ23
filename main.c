@@ -32,11 +32,6 @@ int main(int argc, char **argv)
 	//printf("--------------------------------\n\n");
 
 	PerformSyntax(wordList, &(*root));
-	bool* flag = malloc(500 * sizeof(bool));
-    
-	print_AST(AST, flag, 0, false);
-    free(flag);
-
 	PerformSemantics(&root, &global);
 
 	PerformCodeGen(&(*root));
