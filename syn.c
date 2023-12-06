@@ -3,7 +3,6 @@
 
 #define maxCommandTokenCount 255
 
-//node* CreateNode(char* content, char* type);
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
 	printf("begin\n");
@@ -369,7 +368,7 @@ wordStr* prog_con(wordStr* currentWord, Node* DemoAST) {
 
 	//########################################
 	/*
-	1. <prog_con> -> func FID (<arg>) <types> EOL <prog_con> OK
+	1. <prog_con> -> func FID (<arg>) <types> EOL <prog_con>
 	*/
 	//func
 	if(strcmp(currentWord->content, "func") == 0) {
@@ -947,7 +946,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
 		}
-		else ExitProgram(2, "Missing ) in readString function\n");
+		else ExitProgram(4, "Missing ) in readString function\n");
 		//OK
 		return currentWord;
 	}
@@ -966,7 +965,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
 		}
-		else ExitProgram(2, "Missing ) in readInt function\n");
+		else ExitProgram(4, "Missing ) in readInt function\n");
 		//OK
 		return currentWord;
 	}
@@ -983,7 +982,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
 		}
-		else ExitProgram(2, "Missing ) in readDouble function\n");
+		else ExitProgram(4, "Missing ) in readDouble function\n");
 		//OK
 		return currentWord;
 	}
@@ -1001,7 +1000,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 			Node_insert(&int2double1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters chr_t in Int2Double function\n");
+		else ExitProgram(4, "Missing parameters chr_t in Int2Double function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1024,7 +1023,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 			Node_insert(&double2int1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters double_t in Double2Int function\n");
+		else ExitProgram(4, "Missing parameters double_t in Double2Int function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1047,7 +1046,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 			Node_insert(&length1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters length_t in length function\n");
+		else ExitProgram(4, "Missing parameters length_t in length function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1071,13 +1070,13 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, "of") == 0) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing of in substring function\n");
+		else ExitProgram(4, "Missing of in substring function\n");
 		//<length_t>
 		if((strcmp(currentWord->type, "string") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
 			Node_insert(&of1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters length_t in substring function\n");
+		else ExitProgram(4, "Missing parameters length_t in substring function\n");
 		//,
 		if(strcmp(currentWord->content, ",") == 0) {
 			currentWord = GetToken(currentWord, true, false);
@@ -1089,13 +1088,13 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, "startingAt") == 0) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing startingAt in substring function\n");
+		else ExitProgram(4, "Missing startingAt in substring function\n");
 		//<chr_t>
 		Node_insert(&startingAt1, currentWord->content, NULL, currentWord->type);
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters chr_t in substring function\n");
+		else ExitProgram(4, "Missing parameters chr_t in substring function\n");
 		//,
 		if(strcmp(currentWord->content, ",") == 0) {
 			currentWord = GetToken(currentWord, true, false);
@@ -1107,13 +1106,13 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 		if(strcmp(currentWord->content, "endingBefore") == 0) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing endingBefore in substring function\n");
+		else ExitProgram(4, "Missing endingBefore in substring function\n");
 		//<chr_t>
 		Node_insert(&endingBefore1, currentWord->content, NULL, currentWord->type);
 		if((strcmp(currentWord->type, "integer") == 0) || (strcmp(currentWord->type, "identifier") == 0)) {
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters chr_t in substring function\n");
+		else ExitProgram(4, "Missing parameters chr_t in substring function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1136,7 +1135,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 			Node_insert(&ord1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters length_t in ord function\n");
+		else ExitProgram(4, "Missing parameters length_t in ord function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1159,7 +1158,7 @@ wordStr* builtin(wordStr* currentWord, Node* parent) {
 			Node_insert(&chr1, currentWord->content, NULL, currentWord->type);
 			currentWord = GetToken(currentWord, true, false);
 		}
-		else ExitProgram(2, "Missing parameters chr_t in chr function\n");
+		else ExitProgram(4, "Missing parameters chr_t in chr function\n");
 		//)
 		if(strcmp(currentWord->content, ")") == 0) {
 			currentWord = GetToken(currentWord, false, true);
@@ -1330,7 +1329,9 @@ wordStr* types(wordStr* currentWord, Node* parent) { // OK
 		currentWord = GetToken(currentWord, true, false);
 
 		//<statement_with_return> SKIPTRUE
-		currentWord = statement(currentWord, &(*parent));
+		Node* void1 = Node_insert(&parent, "void", NULL, "void");
+		Node* funcbody1 = Node_insert(&parent, "body", NULL, "body");
+		currentWord = statement(currentWord, &(*funcbody1));
 		//if((result = prog_con(currentWord))) return result;
 		//after <statement_with_return>
 
