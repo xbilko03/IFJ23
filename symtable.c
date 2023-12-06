@@ -1,6 +1,6 @@
 #include "symtable.h"
 
-long HashFunction(char* key)
+long HashFunction(char* key) //assign the number to the key
 {
 	long result = 0;
 	int i;
@@ -37,7 +37,7 @@ TRPitem* TableFindItem(TRP* table, char *key)
 	return NULL;
 }
 
-void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
+void TableAddItem(TRP* table, char* key, wordStr* type, bool* content) //adding variables and functions to TRP
 {
 	int hash = HashFunction(key);
   	TRPitem *item = TableFindItem(table, key);
@@ -45,14 +45,13 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 			
 		if (type != NULL){
 			if (item->type == NULL){ // insert first
-				printf ("tu niesom\n");
 				item->type = type;
 				item->type->next = NULL;
 			} else { // insert after
 				wordStr* active = item->type;
 				while (active != NULL){
 					if (strcmp(active->content, type->content) == 0){
-						printf ("ERROR - same param in function\n");
+						ExitProgram(9,"Same parameters in declaration of function\n");
 					}
 					if (active->next == NULL){
 						active->next = type;
@@ -64,14 +63,14 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 		}
 		return;
 	} else { //not in the table
-		if (table->items[hash] == NULL){
+		if (table->items[hash] == NULL){ //insert first
 			table->items[hash] = malloc(sizeof(TRPitem));
 			if (table->items[hash] == NULL){return;}
 			table->items[hash]->key = key;
 			table->items[hash]->type = type;
 			table->items[hash]->content = content;
 			table->items[hash]->next = NULL;
-		} else {
+		} else { //insert after
 			TRPitem *last_item = table->items[hash];
 
 			while (last_item != NULL){
@@ -88,7 +87,7 @@ void TableAddItem(TRP* table, char* key, wordStr* type, bool* content)
 		}
   	}
 }
-void TableRemoveTypes (wordStr* type){
+void TableRemoveTypes (wordStr* type){ //remove the parameters from function or type of variables
 	wordStr* current = type;
 	wordStr* next;
 
@@ -99,7 +98,7 @@ void TableRemoveTypes (wordStr* type){
 	}
 	type = NULL;
 }
-void TableRemoveTable(TRP* table)
+void TableRemoveTable(TRP* table) 
 {
 	for (int i = 0; i < hashTableSize; i++){
 		TRPitem *current = table->items[i];
@@ -113,9 +112,9 @@ void TableRemoveTable(TRP* table)
 		table->items[i] = NULL;
 	}
 }
-void Print_tables(Node* root){
+void Print_tables(Node* root){ //help function to print all TRPs with its content
 	if (root != NULL){
-		if (strcmp(root->content, "root") == 0){
+		if (strcmp(root->content, "root") == 0){ //global TRP
 			for (int i = 0; i < 255; i++){
 				if (root->TRP->items[i] != NULL){
 					wordStr* current = root->TRP->items[i]->type;
@@ -128,7 +127,7 @@ void Print_tables(Node* root){
 			}
 			printf("\n-------------------------------");
 		}
-		if (strcmp(root->content, "body") == 0){
+		if (strcmp(root->content, "body") == 0){ //local TRPs
 			for (int i = 0; i < 255; i++){
 				if (root->TRP->items[i] != NULL){
 					wordStr* current = root->TRP->items[i]->type;
