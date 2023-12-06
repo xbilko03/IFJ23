@@ -5,24 +5,23 @@ void PerformSemantics(Node** AST, TRP** global)
 	Node* tree = *AST;
 	*global = TableInit(*global);
 	(*AST)->TRP = *global;
-	Go_through_function(tree, *global);
+	Go_through_function(tree, *global); 
 	Go_through(tree, *global, *global, NULL);
-	Print_tables(tree);
+	//Print_tables(tree);
 	return;
 }
 
-void Go_through(Node* root, TRP* table, TRP* global, TRPitem* function)
+void Go_through(Node* root, TRP* table, TRP* global, TRPitem* function) //function that will iterate through AST and check tokens
 {
 	if (root != NULL){
-		if (strcmp(root->content, "body") == 0){
+		if (strcmp(root->content, "body") == 0){ //making a local TRP to store variables
 			table->next = root->TRP;
 			TRP* local = root->TRP;
-			if (strcmp(root->parent->content, "func") == 0){
+			if (strcmp(root->parent->content, "func") == 0){ // checking if functions is declared
 				function = TableFindItem (global, root->parent->children[0]->content);
 				bool is_there = check_for_return (root->parent, global, function);
 				if (is_there == false){
-					printf ("error - chýba return vo funkcii 6\n");
-					//error - chýba return vo funkcii 6
+					ExitProgram(6,"There is no return in the function\n");
 				}
 			}
 			for (int i = 0; i < root->numChildren; i++){
@@ -30,7 +29,7 @@ void Go_through(Node* root, TRP* table, TRP* global, TRPitem* function)
 				Go_through (root->children[i], local, global, function);
 			}
 			function = NULL;
-			table->next = NULL;
+			table->next = NULL; //end of the local TRP
 			return;
 		} else {
 			for (int i = 0; i < root->numChildren; i++){
@@ -41,19 +40,18 @@ void Go_through(Node* root, TRP* table, TRP* global, TRPitem* function)
 	}
 }
 
-void Go_through_function(Node* root, TRP* global)
+void Go_through_function(Node* root, TRP* global) // help function to find user functions
 {
 	if (root != NULL){
 		if (strcmp(root->content, "func") == 0){
 			root->children[0]->type = "func identifier";
 				TRPitem* function = TableFindItem (global, root->children[0]->content);
-				if (function == NULL){
+				if (function == NULL){ //if there is no function in TRP add or print error when redeclared
 					Add_function_to_symtable (root, global);
 				} else{
-					printf ("error - redeklaracia funkcie\n");
-					//error - redeklaracia funkcie
+					ExitProgram(9,"Redeclaration of function\n");
 				}
-		} else if (strcmp(root->content, "body") == 0){
+		} else if (strcmp(root->content, "body") == 0){ //assign the TRP in the AST where the body is
 
 			TRP* local = NULL;
 			local = TableInit(local);
@@ -74,7 +72,7 @@ void Add_function_to_symtable (Node* root, TRP* global){
 		type_of_variable->next = NULL;
 		TableAddItem (&(*global), root->children[0]->content, type_of_variable, false);
 	}
-	for (int i = 0; i < root->children[0]->numChildren; i++){
+	for (int i = 0; i < root->children[0]->numChildren; i++){ //store params for function
 		wordStr* type_of_var = malloc(sizeof(wordStr));
 		type_of_var->content = root->children[0]->children[i]->children[0]->content;
 		type_of_var->type = root->children[0]->children[i]->children[0]->children[0]->content;
@@ -83,12 +81,12 @@ void Add_function_to_symtable (Node* root, TRP* global){
 	}
 }
 
-char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_value, TRPitem* function){
+char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_value, TRPitem* function){ //checking type or return and compatibility of identifiers
 	char* looking_for_type = NULL;
 	if (identifier_or_value == NULL){
 		identifier_or_value = malloc(sizeof(identifier_or_value)*11);
 	}
-	if (strcmp(root->type, "operator") == 0 || strcmp(root->type, "compare") == 0){ 
+	if (strcmp(root->type, "operator") == 0 || strcmp(root->type, "compare") == 0){ // checking if operand and operator can go together
 		looking_for_type = check_for_type (root->children[0], type, global, identifier_or_value, function);
 	
 		char * help = malloc(sizeof(identifier_or_value)*11);
@@ -99,8 +97,7 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 			if (type == NULL){
 				return "bool";
 			}
-			printf ("error - priradzovanie bool do variable 7\n");
-			//error - priradzovanie bool do variable 7
+			ExitProgram(7,"Cannot assign a bool to variable\n");
 		}
 	} else if (strcmp(root->type, "integer") == 0){
 		looking_for_type = "Int";
@@ -111,16 +108,14 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 	} else if (strcmp(root->type, "string") == 0){
 		looking_for_type = "String";
 		strcpy(identifier_or_value, "value");
-	} else if (strcmp(root->content, "nil") == 0){ //neviem ci je root->content/type pri hodnote nil
+	} else if (strcmp(root->content, "nil") == 0){ 
 		if (strcmp(type, "Int?") != 0 || strcmp(type, "String?") != 0 || strcmp(type, "Double?") != 0){
-			printf ("error - nil tam kde sa neocakava\n");
-			//error - nil tam kde sa neocakava 
+			ExitProgram(7,"Cannot assign nil to variable with type?\n");
 		}
 	} else if (strcmp(root->type, "identifier") == 0){
 		if (type != NULL){
 			if (strcmp(type, "void") == 0){
-				printf ("error - priradzovanie void funkcie do premennej\n");
-				// error - priradzovanie void funkcie do premennej
+				ExitProgram(7,"Cannot assign void function to variable\n");
 			}
 		}
 		if (function != NULL){
@@ -145,11 +140,9 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 				strcpy(identifier_or_value, "identifier");
 			} else {
 				if (root->children != NULL){
-					printf ("error - nedefinovana funkcia 3 - %s\n", root->content);
-					//error - nedefinovana premenna alebo funkcia 3 5
+					ExitProgram(3,"Undefined function\n");
 				} else {
-					printf ("error - nedefinovana premenna 5 - %s\n", root->content);
-					//error - nedefinovana premenna alebo funkcia 3 5
+					ExitProgram(5,"Undefined variable\n");
 				}
 			}
 		}
@@ -160,7 +153,7 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 	} else if (strcmp(root->content, "readString") == 0){
 		looking_for_type = "String";
 	} else if (strcmp(root->content, "write") == 0){
-		//error
+		ExitProgram(7,"Cannot assign void to variable\n");
 	} else if (strcmp(root->content, "Int2Double") == 0){
 		looking_for_type = "Double";
 	} else if (strcmp(root->content, "Double2Int") == 0){
@@ -173,9 +166,7 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 		looking_for_type = "Int";
 	} else if (strcmp(root->content, "chr") == 0){
 		looking_for_type = "String";
-	} else if (strcmp(root->content, "func") == 0){
-		//error
-	}
+	} 
 	if (looking_for_type != NULL && type != NULL){
 		if (strcmp(looking_for_type, type) == 0
 			||((strcmp(looking_for_type, "Int") == 0 || strcmp(looking_for_type, "Int?") == 0) && (strcmp(type, "Int") == 0 || strcmp(type, "Int?") == 0))
@@ -188,8 +179,7 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 															|| (strcmp(looking_for_type, "Double?") == 0))){
 			return type;
 		} else {
-			printf("error incompatible 7\n");
-			//error incompatible 7
+			ExitProgram(7,"Incompatible types\n");
 		}
 	} else if (looking_for_type != NULL && type == NULL){
 		return looking_for_type;
@@ -197,7 +187,7 @@ char* check_for_type (Node* root, char* type, TRP* global, char* identifier_or_v
 	return "xx";
 }
 
-void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* function){
+void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* function){ //checking if content in the node is used correctly
 	if (strcmp(root->content, "let") == 0){
 		if (root->children[0] != NULL){
 			root->children[0]->type = "let declaration";
@@ -206,10 +196,10 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 		if (root->children[0] != NULL){
 			root->children[0]->type = "var declaration";
 		}
-	} else if (strcmp(root->type, "let declaration") == 0 || strcmp(root->type, "var declaration") == 0){
+	} else if (strcmp(root->type, "let declaration") == 0 || strcmp(root->type, "var declaration") == 0){ //adding variables to TRP
 		TRP* current = global;
 		TRPitem* found = NULL;
-		while (found == NULL && current != NULL){
+		while (found == NULL && current != NULL){ //looking if the variable is already in the table
 			found = TableFindItem(current, root->content);
 			if (found != NULL){break;}
 			current = current->next;
@@ -242,8 +232,8 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 								let_content = true;
 							}
 						}
-						TableAddItem(&(*table), root->content, type_of_variable, &let_content);
-					} else {
+						TableAddItem(&(*table), root->content, type_of_variable, &let_content); // if everything is ok, variable will be added to TRP
+					} else { //only tzpe of variable is in the function
 						
 						if (strcmp(root->children[0]->content, "Int") == 0 || strcmp(root->children[0]->content, "Int?") == 0){
 							type_of_variable->type = root->children[0]->content;
@@ -270,7 +260,7 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 						TableAddItem(&(*table), root->content, type_of_variable, &let_content);
 					}
 				}
-			} else { // type of variable is not in the declaration
+			} else { // type of variable is not in the declaration, need to assign the type by value
 				if(root->parent->children[1] != NULL){
 					type_of_variable->type = check_for_type(root->parent->children[1], NULL, global, NULL, NULL);
 					type_of_variable->next = NULL;
@@ -279,32 +269,30 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 						let_content = true;
 					}
 					if (strcmp(type_of_variable->type, "xx")==0){
-						printf("error - nejde odvodit typ prememnej 8\n");
-						//error - nejde odvodit typ prememnej 8
+						ExitProgram(8,"Cannot deduce type of variable\n");
 					}
 					TableAddItem(&(*table), root->content, type_of_variable, &let_content);
 				}
 			} 
-		} else {
+		} else { //if let declaration is after if
 			if (root->parent->parent != NULL){
 				if (strcmp(root->parent->parent->content, "if") == 0){
 					return;
 				}
 			}
-			printf("error - redifinicia premennej 3 %s\n", root->content);
-			//error - redifinicia premennej 3
+			ExitProgram(3,"Redefinition of variable\n");
 		}
 	} else if (strcmp(root->type, "identifier") == 0){
 		TRP* current = global;
 		if (function != NULL){
 			while(current != NULL){
-				TRPitem* found = TableFindItem(current, function->key);
+				TRPitem* found = TableFindItem(current, function->key); //checking if the identifier is parameter of function
 				if (found != NULL){
 					wordStr* is_there = found->type;
 					while (is_there != NULL){
 						if (strcmp(root->content, is_there->content) == 0){
 							if (root->parent != NULL && strcmp(root->parent->content, "=") == 0){
-								check_for_type (root->parent->children[1],is_there->type, global, NULL, NULL);
+								check_for_type (root->parent->children[1],is_there->type, global, NULL, NULL); //if identifier was found chceck the operations with it
 							}
 							return;
 						}
@@ -314,100 +302,117 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 				current = current->next;
 			}
 		}
-			current = global;
+			current = global; //checking if identifier is in the TRP
 			while(current != NULL){
 				TRPitem* found = TableFindItem(current, root->content);
 			if (found != NULL){
 				if (root->parent != NULL && strcmp(root->parent->content, "=") == 0){
 					if (found->type->content != NULL && strcmp(found->type->content, "let declaration") == 0){
-						printf("error - priradzovanie do let premennej\n");
-						//error - priradzovanie do let premennej
+						ExitProgram(9,"Assigning again to let variable\n");
 					}
 					check_for_type (root->parent->children[1],found->type->type, global, NULL, function);
 				}
-				if (root->children != NULL){
+				if (root->children != NULL){ //identfier is function
 					int count_of_params = -1;
 					wordStr* count = found->type;
 					while (count != NULL){
 						count_of_params += 1;
+						if (strcmp(count->content, "Return") != 0){
+							for(int i = 0; i < root->numChildren; i++){
+								if (root->children[i]->children != NULL){ //check for usage of parameters in call of a function
+									char* type_of_variable = check_for_type(root->children[i]->children[0], NULL, global, NULL, found);
+									if (strcmp(type_of_variable, found->type->type) == 0 
+										|| ((strcmp(type_of_variable, "Int") == 0) && (strcmp(found->type->type, "Int?") == 0))
+										|| ((strcmp(type_of_variable, "Int?") == 0) && (strcmp(found->type->type, "Int") == 0))
+										|| ((strcmp(type_of_variable, "String") == 0) && (strcmp(found->type->type, "String?") == 0))
+										|| ((strcmp(type_of_variable, "String?") == 0) && (strcmp(found->type->type, "String") == 0))
+										|| ((strcmp(type_of_variable, "Double") == 0) && (strcmp(found->type->type, "Double?") == 0))
+										|| ((strcmp(type_of_variable, "Double?") == 0) && (strcmp(found->type->type, "Double") == 0))){
+									} else {
+										ExitProgram(4,"Incorrect type of parameters in a function\n");
+									}
+								} else {	//check for usage of parameters in call of a function
+									char* type_of_variable = check_for_type(root->children[i], NULL, global, NULL, found);
+									if (strcmp(type_of_variable, found->type->type) == 0 
+										|| ((strcmp(type_of_variable, "Int") == 0) && (strcmp(found->type->type, "Int?") == 0))
+										|| ((strcmp(type_of_variable, "Int?") == 0) && (strcmp(found->type->type, "Int") == 0))
+										|| ((strcmp(type_of_variable, "String") == 0) && (strcmp(found->type->type, "String?") == 0))
+										|| ((strcmp(type_of_variable, "String?") == 0) && (strcmp(found->type->type, "String") == 0))
+										|| ((strcmp(type_of_variable, "Double") == 0) && (strcmp(found->type->type, "Double?") == 0))
+										|| ((strcmp(type_of_variable, "Double?") == 0) && (strcmp(found->type->type, "Double") == 0))){
+									} else {
+										ExitProgram(4,"Incorrect type of parameters in a function\n");
+									}
+								}
+							}
+						}
 						count = count->next;
 					}
 					if (count_of_params != root->numChildren){
-						printf("error nespravny pocet parametrov vo funkcii 4\n");
-						//error nespravny pocet parametrov vo funkcii 4
+						ExitProgram(4,"Incorrect number of parameters in a function\n");
 					}
 				}
 				return;
 			}
 			current = current->next;
 			}
-			ExitProgram(5,"Nedefinovana premenna\n");
+			ExitProgram(5,"Undefined variable\n");
 	} else if (strcmp(root->content, "if") == 0 || strcmp(root->content, "while") == 0){
-		if (strcmp(root->children[0]->content, "let") == 0){
+		if (strcmp(root->children[0]->content, "let") == 0){ //let declaration can be after if
 			return;
-		} else if (strcmp(root->children[0]->type, "compare") == 0){
+		} else if (strcmp(root->children[0]->type, "compare") == 0){ //expect let declaration there can be only bool type
 			check_for_type(root->children[0], NULL, global, NULL, function);
 		} else {
-				printf("error - something else than bool in the if or while 7\n");
-				//error - something else than bool in the if or while 7
+				ExitProgram(7,"Non-bool type in the if or while\n");
 		}
-	} else if (strcmp(root->content, "Int2Double") == 0 || strcmp(root->content, "chr") == 0){
+	} else if (strcmp(root->content, "Int2Double") == 0 || strcmp(root->content, "chr") == 0){ //checking if the parameter in the function is a wrong type
 		if (root->children[0] != NULL){
 			check_for_type(root->children[0], "Int", global, NULL, NULL);
 		} else {
-			printf("error - zly pocet parametrov vo funkcii 4\n");
-			//error - zly pocet parametrov vo funkcii 4
+			ExitProgram(4,"Incorrect number of parameters in function\n");
 		}
-	} else if (strcmp(root->content, "Double2Int") == 0){
+	} else if (strcmp(root->content, "Double2Int") == 0){ //checking if the parameter in the function is a wrong type
 		if (root->children[0] != NULL){
 			check_for_type(root->children[0], "Double", global, NULL, NULL);
 		} else {
-			printf("error - zly pocet parametrov vo funkcii 4\n");
-			//error - zly pocet parametrov vo funkcii 4
+			ExitProgram(4,"Incorrect number of parameters in function\n");
 		}
-	} else if (strcmp(root->content, "length") == 0 || strcmp(root->content, "ord") == 0){
+	} else if (strcmp(root->content, "length") == 0 || strcmp(root->content, "ord") == 0){ //checking if the parameter in the function is a wrong type
 		if (root->children[0] != NULL){
 			check_for_type(root->children[0], "String", global, NULL, NULL);
 		} else {
-			printf("error - zly pocet parametrov vo funkcii 4\n");
-			//error - zly pocet parametrov vo funkcii 4
+			ExitProgram(4,"Incorrect number of parameters in function\n");
 		}
 	} else if (strcmp(root->content, "substring") == 0){ 
 		if (root->children != NULL){
 			if(root->children[0] != NULL && root->children[1] != NULL && root->children[2] != NULL){
 				char* help1 = check_for_type(root->children[0]->children[0], NULL, global, NULL, NULL);
 				if (strcmp(help1, "String") != 0){
-					printf("error - zly typ vo funkcii 4\n");
-					//error - zly typ vo funkcii 4
+					ExitProgram(4,"Incorrect type of parameter in a function\n");
 				}
 				char* help2 = check_for_type(root->children[1]->children[0], NULL, global, NULL, NULL);
 				if (strcmp(help2, "Int") != 0){
-					printf("error - zly typ vo funkcii 4\n");
-					//error - zly typ vo funkcii 4
+					ExitProgram(4,"Incorrect type of parameter in a function\n");
 				}
 				char* help3 = check_for_type(root->children[2]->children[0], NULL, global, NULL, NULL);
 				if (strcmp(help3, "Int") != 0){
-					printf("error - zly typ vo funkcii 4\n");
-					//error - zly typ vo funkcii 4
+					ExitProgram(4,"Incorrect type of parameter in a function\n");
 				}
 			} else {
-				printf("error - nesedi pocet parametrov 4\n");
-				// error - nesedi pocet parametrov 4
+				ExitProgram(4,"Incorrect number of parameters in function\n");
 			}
 		}
-	} else if (strcmp(root->content, "return") == 0){
-		if (table == global && function == NULL){
-			printf("error - return mimo funkcie\n");
-			//error - return mimo funkcie
+	} else if (strcmp(root->content, "return") == 0){ 
+		if (table == global && function == NULL){ 
+			ExitProgram(9,"Return where not expected\n");
 		}
 		if (function != NULL){
 			if (strcmp(function->type->type, "void") != 0){
 				if (root->children == NULL){
-					printf("error - chyba vyraz v returne 6\n");
-					//error - chyba vyraz v returne 6
+					ExitProgram(6,"Missing expression in return\n");
 				return;
 				}
-				char* type_of_variable = check_for_type(root->children[0], NULL, global, NULL, function);
+				char* type_of_variable = check_for_type(root->children[0], NULL, global, NULL, function); //checking if the type after return is correct
 				if (strcmp(type_of_variable, function->type->type) == 0 
 					|| ((strcmp(type_of_variable, "Int") == 0) && (strcmp(function->type->type, "Int?") == 0))
 					|| ((strcmp(type_of_variable, "Int?") == 0) && (strcmp(function->type->type, "Int") == 0))
@@ -416,21 +421,18 @@ void Type_of_node (struct Node* root, TRP* table, struct TRP* global, TRPitem* f
 					|| ((strcmp(type_of_variable, "Double") == 0) && (strcmp(function->type->type, "Double?") == 0))
 					|| ((strcmp(type_of_variable, "Double?") == 0) && (strcmp(function->type->type, "Double") == 0))){
 				} else {
-					printf("error - zly typ v returne 4\n");
-					//error - zly typ v returne 4
+					ExitProgram(4,"Incorrect type of expression in return\n");
 				}
 			} else {
-				if (root->children != NULL){
-					printf("error - prebytocny vyraz v return vo void funkcii 6\n");
-					// error - prebytocny vyraz v return vo void funkcii 6
+				if (root->children != NULL){ //if there is something after return in void function
+					ExitProgram(6,"Void function has no return\n");
 				}
 			}
 		}
 	} 
-	//printf("%s %s\n", root->content, root->type);
 }
 
-bool check_for_return (Node* root, TRP* global, TRPitem* function){
+bool check_for_return (Node* root, TRP* global, TRPitem* function){ //help function to find "return" in the body of function
 	if (function != NULL){
 		if (strcmp(root->content, "return") == 0){
 			return true;
