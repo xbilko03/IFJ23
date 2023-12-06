@@ -18,6 +18,7 @@ typedef struct Node{
 	char* type;
 } Node;
 
+void DeleteWordList(wordListStr* wordList);
 Node* Node_insert(Node** AST, char* content, TRP* TRP, char* type);
 void* checked_malloc(size_t size);
 void* checked_realloc(void* ptr, size_t size);
