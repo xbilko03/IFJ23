@@ -1,18 +1,9 @@
-var a : Int? = 5
+func gg(with param : String, buchac a : Int ) -> String {
+let r : String = "gaming"
 
-if a < 4 {
-write("not nil!\n")
+write(r)
 
-	if( a < 10 ) {
-	write("ok\n")
-	}
-	else
-	{
-
-	}
+return r
 }
-else {
-write("nil!\n")
-}
-
-write("rip bozo\n")
+var a
+a = gg(with: "ahoj", buchac: 69)

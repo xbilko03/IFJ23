@@ -106,9 +106,9 @@ void PrintSymbol(Node* c_symb)
 			fprintf(stdout, "%d", index);
 		}
 	}
-	else if (strcmp(c_symb->type, "nil") == 0)
+	else if (strcmp(c_symb->content, "nil") == 0 && strcmp(c_symb->type, "keyword") == 0)
 	{
-		PrintCode("NIL@NIL");
+		PrintCode("NIL@nil");
 	}
 
 	return;
@@ -183,26 +183,114 @@ void ConditionJump(Node* c_symb)
 	if (strcmp(c_symb->content, "if") == 0)
 	{
 		Node* c_node = c_symb->children[0];
-		if (strcmp(c_node->type, "compare") == 0)
+		if (strcmp(c_node->type, "keyword") == 0 && strcmp(c_node->content, "let") == 0)
 		{
-			if (strcmp(c_node->content, ">") == 0)
+			c_node = c_node->children[0];
+			PrintCode("EQ GF@compareValue ");
+			PrintSymbol(c_node);
+			PrintCode(" ");
+			PrintCode("NIL@nil");
+			PrintCode("\n");
+		}
+		else if (strcmp(c_node->type, "compare") == 0)
+		{
+			if (strcmp(c_node->content, ">=") == 0)
 				PrintCode("LT GF@compareValue ");
-			else if (strcmp(c_node->content, "<") == 0)
+			else if (strcmp(c_node->content, "<=") == 0)
 				PrintCode("GT GF@compareValue ");
-			else if (strcmp(c_node->content, "==") == 0)
+			else if (strcmp(c_node->content, "==") == 0 || strcmp(c_node->content, "!=") == 0)
 				PrintCode("EQ GF@compareValue ");
+			else if (strcmp(c_node->content, "<") == 0)
+			{
+				PrintCode("EQ GF@compareValue ");
+				PrintSymbol(c_symb->children[0]->children[0]);
+				PrintCode(" ");
+				PrintSymbol(c_symb->children[0]->children[1]);
+				PrintCode("\n");
+				PrintCode("JUMPIFEQ ");
+				fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+				PrintCode("GF@compareValue BOOL@true\n");
+				PrintCode("GT GF@compareValue ");
+			}
+			else if (strcmp(c_node->content, ">") == 0)
+			{
+				PrintCode("EQ GF@compareValue ");
+				PrintSymbol(c_symb->children[0]->children[0]);
+				PrintCode(" ");
+				PrintSymbol(c_symb->children[0]->children[1]);
+				PrintCode("\n");
+				PrintCode("JUMPIFEQ ");
+				fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+				PrintCode("GF@compareValue BOOL@true\n");
+				PrintCode("LT GF@compareValue ");
+			}
 			PrintSymbol(c_symb->children[0]->children[0]);
 			PrintCode(" ");
 			PrintSymbol(c_symb->children[0]->children[1]);
 			PrintCode("\n");
 		}
-		PrintCode("JUMPIFEQ ");
+		if(strcmp(c_node->content, "!=") == 0)
+			PrintCode("JUMPIFNEQ ");
+		else
+			PrintCode("JUMPIFEQ ");
 		fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
 		PrintCode("GF@compareValue BOOL@true\n");
 	}
 	else if (strcmp(c_symb->content, "while") == 0)
 	{
-
+		Node* c_node = c_symb->children[0];
+		if (strcmp(c_node->type, "keyword") == 0 && strcmp(c_node->content, "let") == 0)
+		{
+			c_node = c_node->children[0];
+			PrintCode("EQ GF@compareValue ");
+			PrintSymbol(c_node);
+			PrintCode(" ");
+			PrintCode("NIL@nil");
+			PrintCode("\n");
+		}
+		else if (strcmp(c_node->type, "compare") == 0)
+		{
+			if (strcmp(c_node->content, ">=") == 0)
+				PrintCode("LT GF@compareValue ");
+			else if (strcmp(c_node->content, "<=") == 0)
+				PrintCode("GT GF@compareValue ");
+			else if (strcmp(c_node->content, "==") == 0 || strcmp(c_node->content, "!=") == 0)
+				PrintCode("EQ GF@compareValue ");
+			else if (strcmp(c_node->content, "<") == 0)
+			{
+				PrintCode("EQ GF@compareValue ");
+				PrintSymbol(c_symb->children[0]->children[0]);
+				PrintCode(" ");
+				PrintSymbol(c_symb->children[0]->children[1]);
+				PrintCode("\n");
+				PrintCode("JUMPIFEQ ");
+				fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+				PrintCode("GF@compareValue BOOL@true\n");
+				PrintCode("GT GF@compareValue ");
+			}
+			else if (strcmp(c_node->content, ">") == 0)
+			{
+				PrintCode("EQ GF@compareValue ");
+				PrintSymbol(c_symb->children[0]->children[0]);
+				PrintCode(" ");
+				PrintSymbol(c_symb->children[0]->children[1]);
+				PrintCode("\n");
+				PrintCode("JUMPIFEQ ");
+				fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+				PrintCode("GF@compareValue BOOL@true\n");
+				PrintCode("LT GF@compareValue ");
+			}
+			PrintSymbol(c_symb->children[0]->children[0]);
+			PrintCode(" ");
+			PrintSymbol(c_symb->children[0]->children[1]);
+			PrintCode("\n");
+		}
+		if (strcmp(c_node->content, "!=") == 0)
+			PrintCode("JUMPIFNEQ ");
+		else
+			PrintCode("JUMPIFEQ ");
+		fprintf(stdout, "LABEL%dend ", labelList[labelIndex - 1]);
+		PrintCode("GF@compareValue BOOL@true\n");
 	}
 }
 
@@ -247,13 +335,22 @@ void ProcessNode(Node* c_node)
 		}
 		else if (strcmp(c_node->content, "else") == 0)
 		{
-			PrintCode("LABEL LABEL");
-			fprintf(stdout, "%d", labelList[labelIndex - 1]);
-			PrintCode("end\n");
-
 			PrintCode("JUMP LABEL");
 			fprintf(stdout, "%d", labelList[labelIndex - 1]);
 			PrintCode("skip\n");
+
+			PrintCode("LABEL LABEL");
+			fprintf(stdout, "%d", labelList[labelIndex - 1]);
+			PrintCode("end\n");
+		}
+		else if (strcmp(c_node->content, "while") == 0)
+		{
+			PrintCode("LABEL LABEL");
+			labelList[labelIndex] = labelID++;
+			fprintf(stdout, "%d", labelList[labelIndex]);
+			labelIndex++;
+			PrintCode("\n");
+			ConditionJump(c_node);
 		}
 	}
 	else if (strcmp(c_node->type, "body") == 0)
@@ -299,6 +396,19 @@ void ProcessNode(Node* c_node)
 		fprintf(stdout, "%d", labelList[labelIndex - 1]);
 		labelIndex--;
 		PrintCode("skip\n");
+	}
+	if (strcmp(c_node->content, "while") == 0)
+	{
+		PrintCode("JUMP LABEL");
+		labelList[labelIndex] = labelID;
+		fprintf(stdout, "%d", labelList[labelIndex - 1]);
+		PrintCode("\n");
+
+		PrintCode("LABEL LABEL");
+		labelList[labelIndex] = labelID;
+		fprintf(stdout, "%d", labelList[labelIndex - 1]);
+		labelIndex--;
+		PrintCode("end\n");
 	}
 	return;
 }
@@ -386,6 +496,12 @@ void DEFVAR(Node* c_var)
 		}
 		else
 			MOVE(c_var, c_var->parent->children[1]);
+	}
+	else
+	{
+		PrintCode("MOVE ");
+		PrintSymbol(c_var);
+		PrintCode(" NIL@nil\n");
 	}
 	return;
 }
