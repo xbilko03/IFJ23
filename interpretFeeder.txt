@@ -3,29 +3,14 @@ DEFVAR GF@writeValue
 DEFVAR GF@expressionSum
 DEFVAR GF@compareValue
 DEFVAR GF@funcReturn
-DEFVAR GF@param_func
-MOVE GF@param_func NIL@nil
-DEFVAR GF@with_func
-MOVE GF@with_func NIL@nil
-DEFVAR GF@a_func
-MOVE GF@a_func NIL@nil
-DEFVAR GF@buchac_func
-MOVE GF@buchac_func NIL@nil
-JUMP funcggskip
-LABEL funcgg
-MOVE GF@param_func GF@with_func
-MOVE GF@a_func GF@buchac_func
-MOVE GF@funcReturn GF@param_func
-RETURN
-LABEL funcggskip
+DEFVAR GF@a0
+MOVE GF@a0 NIL@nil
 DEFVAR GF@b0
-MOVE GF@b0 string@hello
+MOVE GF@b0 INT@103
 MOVE GF@expressionSum INT@0
-MOVE GF@b0 GF@expressionSum
-MOVE GF@with_func string@ahoj\010
-MOVE GF@buchac_func INT@69
-CALL funcgg
-MOVE GF@expressionSum GF@funcReturn
-MOVE GF@b0 GF@expressionSum
-MOVE GF@writeValue GF@b0
+MOVE GF@expressionSum INT@0
+MOVE GF@a0 GF@expressionSum
+INT2CHAR GF@expressionSum GF@b0
+MOVE GF@a0 GF@expressionSum
+MOVE GF@writeValue GF@a0
 WRITE GF@writeValue

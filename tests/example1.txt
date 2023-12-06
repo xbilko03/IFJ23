@@ -1,10 +1,5 @@
-func gg(with param : String, buchac a : Int ) -> String {
+var a : Int
+var b : String = 103
 
-return param
-}
-
-var b : String = "hello"
-
-b = gg(with: "ahoj\n", buchac: 69)
-
-write(b)
+a = chr(b)
+write(a)
