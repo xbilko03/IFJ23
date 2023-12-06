@@ -1,0 +1,16 @@
+.IFJcode23
+DEFVAR GF@writeValue
+DEFVAR GF@expressionSum
+DEFVAR GF@compareValue
+DEFVAR GF@funcReturn
+DEFVAR GF@a0
+MOVE GF@a0 NIL@nil
+DEFVAR GF@b0
+MOVE GF@b0 INT@103
+MOVE GF@expressionSum INT@0
+MOVE GF@expressionSum INT@0
+MOVE GF@a0 GF@expressionSum
+READ GF@expressionSum int
+MOVE GF@a0 GF@expressionSum
+MOVE GF@writeValue GF@a0
+WRITE GF@writeValue

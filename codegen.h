@@ -5,11 +5,7 @@
 #include "symtable.h"
 #include <string.h>
 
+/* Pass through all the nodes of the DemoAST and puts the IFJCODE23 code to the stdout */
 void PerformCodeGen(Node* DemoAST);
-void ProcessNode(Node* c_node);
-void PrintCode(char* code);
-void INBUILT_WRITE(Node* c_node);
-void DEFVAR(Node* c_var);
-void MOVE(Node* c_var, Node* c_symb);
 
 #endif
