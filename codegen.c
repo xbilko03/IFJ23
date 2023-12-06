@@ -1,39 +1,11 @@
 #include "codegen.h"
 
-TRP* trpList[256];
-unsigned int trpIndex = 0;
-
-unsigned int labelID = 0;
-unsigned int labelIndex = 0;
-unsigned int labelList[50];
-
-void PerformCodeGen(Node* tree)
-{
-	/* Cycle through AST */
-	ProcessNode(tree);
-
-	return;
-}
-typedef struct
-{
-	TRP* symTable;
-	unsigned int ID;
-}symStr;
-
-symStr symTables[256];
-unsigned int symIndex = 0;
-unsigned int symID = 0;
-int functionActiveFlag = 0;
-
-unsigned int FindTableIndex(char* symbol)
-{
-	for (int i = symIndex - 1; i > -1; i--)
-	{
-		if (TableFindItem(symTables[i].symTable, symbol) != NULL)
-			return symTables[i].ID;
-	}
-	return 404;
-}
+/* local functions */
+void ProcessNode(Node* c_node);
+void PrintCode(char* code);
+void INBUILT_WRITE(Node* c_node);
+void DEFVAR(Node* c_var);
+void MOVE(Node* c_var, Node* c_symb);
 void ADD(Node* c_symb);
 void SUB(Node* c_symb);
 void IDIV(Node* c_symb);
@@ -49,12 +21,52 @@ void INBUILT_SUBSTRING(Node* c_node);
 void INBUILT_ORD(Node* c_node);
 void INBUILT_CHR(Node* c_node);
 
-/* Print to stdout */
+/* Pass through all the nodes of the DemoAST and puts the IFJCODE23 code to the stdout */
+void PerformCodeGen(Node* tree)
+{
+	/* Cycle through AST */
+	ProcessNode(tree);
+
+	return;
+}
+
+/* Symtables for code generation */
+TRP* trpList[256];
+typedef struct
+{
+	TRP* symTable;
+	unsigned int ID;
+}symStr;
+symStr symTables[256];
+unsigned int symIndex = 0;
+unsigned int symID = 0;
+unsigned int FindTableIndex(char* symbol)
+{
+	for (int i = symIndex - 1; i > -1; i--)
+	{
+		if (TableFindItem(symTables[i].symTable, symbol) != NULL)
+			return symTables[i].ID;
+	}
+	return 404;
+}
+/* Symtables for code generation */
+
+/* Labels for jumping in the code */
+unsigned int labelID = 0;
+unsigned int labelIndex = 0;
+unsigned int labelList[50];
+/* Labels for jumping in the code */
+
+/* in-function code generation flag */
+int functionActiveFlag = 0;
+
+/* Prints code to the stdout */
 void PrintCode(char* code)
 {
 	fprintf(stdout, "%s", code);
 	return;
 }
+/* Translates the escape sequences, then print the given string in this IFJCODE-friendly way */
 void PrintString(char* input, char* code)
 {
 	if (input == NULL)
@@ -87,9 +99,9 @@ void PrintString(char* input, char* code)
 	}
 	return;
 }
+/* Prints the value of a given c_symb */
 void PrintSymbol(Node* c_symb)
 {
-	//printf("received=%s of type %s\n", c_symb->content,c_symb->type);
 	if (strcmp(c_symb->type, "string") == 0)
 	{
 		PrintString(c_symb->content,"string@");
@@ -151,6 +163,7 @@ void PrintSymbol(Node* c_symb)
 
 	return;
 }
+/* Prints type of a given c_symb */
 void PrintType(Node* c_symb)
 {
 	if (strcmp(c_symb->type, "integer") == 0)
@@ -161,12 +174,12 @@ void PrintType(Node* c_symb)
 		PrintCode("double");
 	return;
 }
+/* Calculates the corresponding expression in a given c_symb AST branch and stores it inside of GF@expressionSum */
 void ExpressionSum(Node* c_symb)
 {	
 	if (strcmp(c_symb->type, "operator") == 0)
 	{
 		/* left side */
-
 		if (strcmp(c_symb->parent->content, "+") == 0)
 			ADD(c_symb->children[0]);
 		else if (strcmp(c_symb->parent->content, "-") == 0)
@@ -217,6 +230,7 @@ void ExpressionSum(Node* c_symb)
 			IDIV(c_symb);
 	}
 }
+/* Process the condition whether it should jump or not, useful in generating whiles/ifs */
 void ConditionJump(Node* c_symb)
 {
 	if (c_symb == NULL)
@@ -225,6 +239,7 @@ void ConditionJump(Node* c_symb)
 		return;
 	if (strcmp(c_symb->content, "if") == 0)
 	{
+		/* take the child, there is an expression in it, judge by it */
 		Node* c_node = c_symb->children[0];
 		if (strcmp(c_node->type, "keyword") == 0 && strcmp(c_node->content, "let") == 0)
 		{
@@ -281,6 +296,7 @@ void ConditionJump(Node* c_symb)
 	}
 	else if (strcmp(c_symb->content, "while") == 0)
 	{
+		/* take the child, there is an expression in it, judge by it */
 		Node* c_node = c_symb->children[0];
 		if (strcmp(c_node->type, "keyword") == 0 && strcmp(c_node->content, "let") == 0)
 		{
@@ -336,6 +352,7 @@ void ConditionJump(Node* c_symb)
 		PrintCode("GF@compareValue BOOL@true\n");
 	}
 }
+/* Declares all required variables for a user-defined function, starting with c_symb and going down the AST from this ndoe */
 void FunctionDeclaration(Node* c_symb)
 {
 	if (c_symb->numChildren < 1)
@@ -349,15 +366,11 @@ void FunctionDeclaration(Node* c_symb)
 	}
 	return;
 }
-
-/* Process AST */
+/* Passes through all the AST nodes, generates code for each node */
 void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
-
-	//printf("__NODE %s of type %s\n", c_node->content, c_node->type);
-
 	/* Proccess Node here */
 	if (strcmp(c_node->content, "root") == 0)
 	{
@@ -576,6 +589,7 @@ void ProcessNode(Node* c_node)
 	}
 	return;
 }
+/* Moves the c_symb to the c_var */
 void MOVE(Node* c_var, Node* c_symb)
 {
 	if (c_var == NULL || c_symb == NULL)
@@ -592,18 +606,11 @@ void MOVE(Node* c_var, Node* c_symb)
 	PrintCode("\n");
 	return;
 }
-
-/*
-* DEFVAR ?var?
-* Definuj novou prom?nnou v ramci
-* Definuje promennou v urcenem ramci dle ?var?. Tato promenn� je zatim neinicializovana 
-* a bez urceni typu, ktery bude urcen az prirazenim nejake hodnoty.
-*/
+/* Define c_var and assign the corresponding value if needs be */
 void DEFVAR(Node* c_var)
 {
 	if (c_var == NULL)
 		return;
-
 	PrintCode("DEFVAR ");
 	PrintSymbol(c_var);
 	PrintCode("\n");
@@ -635,7 +642,7 @@ void DEFVAR(Node* c_var)
 	}
 	return;
 }
-
+/* Adds the c_symb to the GF@expressionSum */
 void ADD(Node* c_symb)
 {
 	if (c_symb == NULL)
@@ -644,7 +651,7 @@ void ADD(Node* c_symb)
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
-
+/* Substracts the c_symb out of the GF@expressionSum */
 void SUB(Node* c_symb)
 {
 	if (c_symb == NULL)
@@ -653,7 +660,7 @@ void SUB(Node* c_symb)
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
-
+/* Multiplies the c_symb with the GF@expressionSum */
 void MUL(Node* c_symb)
 {
 	if (c_symb == NULL)
@@ -662,7 +669,7 @@ void MUL(Node* c_symb)
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
-
+/* Multiplies the c_symb with the GF@expressionSum */
 void IDIV(Node* c_symb)
 {
 	if (c_symb == NULL)
@@ -671,6 +678,7 @@ void IDIV(Node* c_symb)
 	PrintSymbol(c_symb);
 	PrintCode("\n");
 }
+/* Inbuilt functions */
 /* func readString() -> String? */
 void INBUILT_READSTRING(Node* c_node)
 {
