@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file AST.h
+ * @author Viliam Chudáčik - xchuda06
+ */
+
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 #include <stdbool.h>
@@ -21,5 +27,4 @@ typedef struct Node{
 Node* Node_insert(Node** AST, char* content, TRP* TRP, char* type);
 void* checked_malloc(size_t size);
 void* checked_realloc(void* ptr, size_t size);
-void print_AST(Node* tree, bool* flag, int depth, bool isLast);
 #endif

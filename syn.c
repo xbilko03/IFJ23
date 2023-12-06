@@ -1,12 +1,10 @@
-/*##################################################################
-Name of project: Implementace překladače imperativního jazyka IFJ23
-Author: Marcel Feiler
-Login: xfeile00
-*/
+/**
+ * @name IFJ2023 Compiler
+ * @file syn.c
+ * @author Marcel Feiler - xfeile00
+ */
 
 #include "syn.h"
-
-#define maxCommandTokenCount 255
 
 void PerformSyntax(wordListStr* wrdList, Node* DemoAST) {
 	if(wrdList->first->content == NULL) {

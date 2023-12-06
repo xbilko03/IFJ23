@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file lex.c
+ * @author Viliam Chudáčik - xchuda06
+ */
+
 #include "lex.h"
 
 void AddToken(MachineStates state, wordStr **Tokens, char *word)
@@ -273,6 +279,7 @@ char HexEscape(char *word, int *i, int *lenght)
         ExitProgram(1, "Error: unknown escape sequence\n");
     }
     ExitProgram(1, "Error: unknown escape sequence\n");
+    exit(1);
 }
 
 void Tokenizer(wordStr *LastToken)

@@ -1,3 +1,8 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file AST.c
+ * @author Viliam Chudáčik - xchuda06
+ */
 #include "AST.h"
 
 Node* Node_insert(Node** parentAST, char* content, TRP* TRP, char* type)

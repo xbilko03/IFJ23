@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file sem.c
+ * @author Juraj Budai - xbudai02
+ */
+
 #include "sem.h"
 
 void PerformSemantics(Node** AST, TRP** global)
@@ -7,7 +13,6 @@ void PerformSemantics(Node** AST, TRP** global)
 	(*AST)->TRP = *global;
 	Go_through_function(tree, *global); 
 	Go_through(tree, *global, *global, NULL);
-	//Print_tables(tree);
 	return;
 }
 

@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file sem.h
+ * @author Juraj Budai - xbudai02
+ */
+
 #ifndef SEM_H
 #define SEM_H
 #include <stdio.h>

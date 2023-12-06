@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file lex.h
+ * @author Viliam Chudáčik - xchuda06
+ */
+
 #ifndef LEX_H
 #define LEX_H
 #include <ctype.h> 

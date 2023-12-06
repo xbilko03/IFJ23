@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file symtable.c
+ * @author Juraj Budai - xbudai02
+ */
+
 #include "symtable.h"
 
 long HashFunction(char* key) //assign the number to the key

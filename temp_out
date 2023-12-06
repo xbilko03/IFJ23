@@ -1,6 +1,5 @@
-begin
-+--- root
 .IFJcode23
 DEFVAR GF@writeValue
 DEFVAR GF@expressionSum
 DEFVAR GF@compareValue
+DEFVAR GF@funcReturn

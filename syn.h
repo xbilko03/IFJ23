@@ -1,8 +1,8 @@
-/*
-Name of project: Implementace překladače imperativního jazyka IFJ23
-Author: Marcel Feiler
-Login: xfeile00
-*/
+/**
+ * @name IFJ2023 Compiler
+ * @file syn.h
+ * @author Marcel Feiler - xfeile00
+ */
 
 #ifndef SYN_H
 #define SYN_H
@@ -13,7 +13,6 @@ Login: xfeile00
 #include <stdlib.h>
 #include "error.h"
 
-#define maxCommandTokenCount 255
 
 /*
 PerformSyntax -> general function for performing syntax control

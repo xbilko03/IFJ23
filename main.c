@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file main.c
+ * @author Viliam Chudáčik - xchuda06, Jozef Bilko - xbilko03, Marcel Feiler - xfeile00, Juraj Budai - xbudai02
+ */
+
 #include <stdio.h>
 #include "AST.h"
 #include <stdlib.h>
@@ -10,8 +16,6 @@
 
 int main(int argc, char **argv)
 {
-	//printf("\nBegin\n");
-	
 	//Create Word List
 	wordListStr* wordList;
 	wordList = malloc(sizeof(wordListStr));
@@ -27,17 +31,9 @@ int main(int argc, char **argv)
 	TRP* global = NULL;
 	Node* root = Node_insert(&AST, "root", NULL, "root");
 
-	//PrintWordList(wordList->first);
-
-	//printf("--------------------------------\n\n");
-
 	PerformSyntax(wordList, &(*root));
 	PerformSemantics(&root, &global);
 
 	PerformCodeGen(&(*root));
-
-	//DeleteWordList(wordList);
-
-	//printf("\nEnd\n");
 	return 0;
 }

@@ -1,3 +1,9 @@
+/**
+ * @name IFJ2023 Compiler
+ * @file symtable.h
+ * @author Juraj Budai - xbudai02
+ */
+
 #ifndef SYMTABLE_H
 #define SYMTABLE_H
 #include "lex_struct.h"
