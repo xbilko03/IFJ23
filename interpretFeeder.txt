@@ -2,18 +2,30 @@
 DEFVAR GF@writeValue
 DEFVAR GF@expressionSum
 DEFVAR GF@compareValue
-DEFVAR GF@a0
-MOVE GF@a0 INT@4
-LABEL LABEL0
-EQ GF@compareValue GF@a0 INT@4
-JUMPIFEQ LABEL0end GF@compareValue BOOL@true
-LT GF@compareValue GF@a0 INT@4
-JUMPIFEQ LABEL0end GF@compareValue BOOL@true
-MOVE GF@writeValue string@oki\010
-WRITE GF@writeValue
+DEFVAR GF@funcReturn
+DEFVAR GF@param_func
+MOVE GF@param_func NIL@nil
+DEFVAR GF@with_func
+MOVE GF@with_func NIL@nil
+DEFVAR GF@a_func
+MOVE GF@a_func NIL@nil
+DEFVAR GF@buchac_func
+MOVE GF@buchac_func NIL@nil
+JUMP funcggskip
+LABEL funcgg
+MOVE GF@param_func GF@with_func
+MOVE GF@a_func GF@buchac_func
+MOVE GF@funcReturn GF@param_func
+RETURN
+LABEL funcggskip
+DEFVAR GF@b0
+MOVE GF@b0 string@hello
 MOVE GF@expressionSum INT@0
-ADD GF@expressionSum GF@expressionSum GF@a0
-SUB GF@expressionSum GF@expressionSum INT@1
-MOVE GF@a0 GF@expressionSum
-JUMP LABEL0
-LABEL LABEL0end
+MOVE GF@b0 GF@expressionSum
+MOVE GF@with_func string@ahoj\010
+MOVE GF@buchac_func INT@69
+CALL funcgg
+MOVE GF@expressionSum GF@funcReturn
+MOVE GF@b0 GF@expressionSum
+MOVE GF@writeValue GF@b0
+WRITE GF@writeValue

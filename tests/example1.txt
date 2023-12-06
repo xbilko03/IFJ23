@@ -1,9 +1,10 @@
 func gg(with param : String, buchac a : Int ) -> String {
-let r : String = "gaming"
 
-write(r)
-
-return r
+return param
 }
-var a
-a = gg(with: "ahoj", buchac: 69)
+
+var b : String = "hello"
+
+b = gg(with: "ahoj\n", buchac: 69)
+
+write(b)

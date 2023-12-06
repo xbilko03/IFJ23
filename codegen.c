@@ -23,6 +23,8 @@ typedef struct
 symStr symTables[256];
 unsigned int symIndex = 0;
 unsigned int symID = 0;
+unsigned int paramIndex = 0;
+int functionActiveFlag = 0;
 
 unsigned int FindTableIndex(char* symbol)
 {
@@ -78,6 +80,7 @@ void PrintString(char* input, char* code)
 }
 void PrintSymbol(Node* c_symb)
 {
+	//printf("received=%s of type %s\n", c_symb->content,c_symb->type);
 	if (strcmp(c_symb->type, "string") == 0)
 	{
 		PrintString(c_symb->content,"string@");
@@ -99,16 +102,37 @@ void PrintSymbol(Node* c_symb)
 	{
 		PrintCode("GF@");
 		PrintCode(c_symb->content);
-
-		unsigned int index = FindTableIndex(c_symb->content);
-		if (index != 404)
+		if(functionActiveFlag == 1)
+			PrintCode("_func");
+		else
 		{
-			fprintf(stdout, "%d", index);
+			unsigned int index = FindTableIndex(c_symb->content);
+			if (index != 404)
+			{
+				fprintf(stdout, "%d", index);
+			}
 		}
+
+	}
+	else if (strcmp(c_symb->type, "paramid") == 0)
+	{
+		PrintCode("GF@");
+		PrintCode(c_symb->content);
+		PrintCode("_func");
 	}
 	else if (strcmp(c_symb->content, "nil") == 0 && strcmp(c_symb->type, "keyword") == 0)
 	{
 		PrintCode("NIL@nil");
+	}
+	else if (strcmp(c_symb->type, "func identfier") == 0)
+	{
+		PrintCode(c_symb->content);
+	}
+	else if(strcmp(c_symb->type, "paramname") == 0)
+	{
+		PrintCode("GF@");
+		PrintCode(c_symb->content);
+		PrintCode("_func");
 	}
 
 	return;
@@ -124,7 +148,7 @@ void PrintType(Node* c_symb)
 	return;
 }
 void ExpressionSum(Node* c_symb)
-{
+{	
 	if (strcmp(c_symb->type, "operator") == 0)
 	{
 		/* left side */
@@ -158,8 +182,13 @@ void ExpressionSum(Node* c_symb)
 	else
 	{
 		/* left side */
-		if (strcmp(c_symb->parent->type, "assign") == 0)
+		if (strcmp(c_symb->parent->type, "assign") == 0 )
 		{
+			if (c_symb->children > 0)
+			{
+				if (strcmp(c_symb->children[0]->type,"paramname") == 0)
+					return;
+			}
 			PrintCode("MOVE GF@expressionSum ");
 			PrintSymbol(c_symb);
 			PrintCode("\n");
@@ -293,12 +322,28 @@ void ConditionJump(Node* c_symb)
 		PrintCode("GF@compareValue BOOL@true\n");
 	}
 }
+void FunctionDeclaration(Node* c_symb)
+{
+	if (c_symb->numChildren < 1)
+		return;
+
+	Node* c_node = c_symb->children[0];
+	for (int i = 0; i < c_node->numChildren; i++)
+	{
+		DEFVAR(c_node->children[i]->children[0]);
+		DEFVAR(c_node->children[i]);
+	}
+	return;
+}
 
 /* Process AST */
 void ProcessNode(Node* c_node)
 {
 	if (c_node == NULL)
 		return;
+
+	//printf("__NODE %s of type %s\n", c_node->content, c_node->type);
+
 	/* Proccess Node here */
 	if (strcmp(c_node->content, "root") == 0)
 	{
@@ -307,6 +352,7 @@ void ProcessNode(Node* c_node)
 		PrintCode("DEFVAR GF@writeValue\n");
 		PrintCode("DEFVAR GF@expressionSum\n");
 		PrintCode("DEFVAR GF@compareValue\n");
+		PrintCode("DEFVAR GF@funcReturn\n");
 		/* Add global TRP */
 		symTables[symIndex].symTable = c_node->TRP;
 		symTables[symIndex++].ID = symID++;
@@ -352,8 +398,57 @@ void ProcessNode(Node* c_node)
 			PrintCode("\n");
 			ConditionJump(c_node);
 		}
+		else if (strcmp(c_node->content, "func") == 0)
+		{
+			/* define variables */
+			FunctionDeclaration(c_node);
+
+			PrintCode("JUMP func");
+			PrintSymbol(c_node->children[0]);
+			PrintCode("skip\n");
+
+			PrintCode("LABEL func");
+			PrintSymbol(c_node->children[0]);
+			PrintCode("\n");
+
+			/* process body */
+			functionActiveFlag = 1;
+
+			/* move values to local variables */
+			for (int i = 0; i < c_node->children[0]->numChildren; i++)
+			{
+				PrintCode("MOVE ");
+				PrintSymbol(c_node->children[0]->children[i]->children[0]);
+				PrintCode(" ");
+				PrintCode("GF@");
+				PrintCode(c_node->children[0]->children[i]->content);
+				PrintCode("_func");
+				PrintCode("\n");
+			}
+
+			ProcessNode(c_node->children[2]);
+			functionActiveFlag = 0;
+
+			/* return from func */
+			PrintCode("RETURN\n");
+			/* skip function */
+			PrintCode("LABEL func");
+			PrintSymbol(c_node->children[0]);
+			PrintCode("skip\n");
+			return;
+		}
+		else if (strcmp(c_node->content, "return") == 0)
+		{
+			if (c_node->numChildren > 0)
+			{
+				PrintCode("MOVE GF@funcReturn ");
+				PrintSymbol(c_node->children[0]);
+				PrintCode("\n");
+			}
+			return;
+		}
 	}
-	else if (strcmp(c_node->type, "body") == 0)
+	else if (strcmp(c_node->type, "body") == 0 )
 	{
 		/* Add local table (if it exists) */
 		if (c_node->TRP == NULL)
@@ -361,19 +456,53 @@ void ProcessNode(Node* c_node)
 		symTables[symIndex].symTable = c_node->TRP;
 		symTables[symIndex++].ID = symID++;
 	}
-	else if (strcmp(c_node->type, "function") == 0 && strcmp(c_node->content, "write") == 0)
+	else if (strcmp(c_node->type, "function") == 0)
 	{
-		INBUILT_WRITE(c_node);
+		if(strcmp(c_node->content, "write") == 0)
+			INBUILT_WRITE(c_node);
 	}
 	else if (strcmp(c_node->type, "assign") == 0)
 	{
 		PrintCode("MOVE GF@expressionSum INT@0\n");
-
 		ExpressionSum(c_node->children[1]);
-
 		PrintCode("MOVE ");
 		PrintSymbol(c_node->children[0]);
-		PrintCode(" GF@expressionSum\n");
+		PrintCode(" GF@expressionSum\n");	
+	}
+	else if (strcmp(c_node->type, "identifier") == 0)
+	{
+		/* call function */
+		if (c_node->numChildren != 0 && strcmp(c_node->children[0]->type, "paramname") == 0)
+		{
+			/* params func */
+
+			/* assign params to params inside of the function */
+			for (int i = 0; i < c_node->numChildren; i++)
+			{
+				PrintCode("MOVE GF@");
+				PrintCode(c_node->children[i]->content);
+				PrintCode("_func");
+				PrintCode(" ");
+				PrintSymbol(c_node->children[i]->children[0]);
+				PrintCode("\n");
+			}
+
+			/* call func */
+			PrintCode("CALL func");
+			PrintCode(c_node->content);
+			PrintCode("\n");
+
+			/* return assign */
+			if (strcmp(c_node->parent->type,"assign") == 0)
+			{
+				PrintCode("MOVE GF@expressionSum GF@funcReturn\n");
+				PrintCode("MOVE ");
+				PrintSymbol(c_node->parent->children[0]);
+				PrintCode(" GF@expressionSum");
+				PrintCode("\n");
+			}
+			return;
+		}
 	}
 	
 	/* Go to the next node */
@@ -481,7 +610,7 @@ void DEFVAR(Node* c_var)
 	PrintCode("\n");
 
 	/* assign something to this defined variable */
-	if (c_var->parent->numChildren > 1)
+	if (c_var->parent->numChildren > 1 && strcmp(c_var->parent->type,"func identfier") != 0)
 	{
 		/* let a : Int = 5 */
 		if (strcmp(c_var->parent->children[1]->type, "operator") == 0)
@@ -495,7 +624,9 @@ void DEFVAR(Node* c_var)
 			PrintCode(" GF@expressionSum\n");
 		}
 		else
+		{
 			MOVE(c_var, c_var->parent->children[1]);
+		}
 	}
 	else
 	{
